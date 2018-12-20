@@ -57,10 +57,10 @@ class DockerImageGenerator(object):
             print('^^^^^^')
             cmd = 'docker build -t %s %s' %  (self.image_name, td)
             try:
-                print(cmd)
-                result = subprocess.check_output(cmd, shell=True).decode('utf-8')
-                print(result)
-            except subprocess.CalledProcessError as ex:
+                docker_client = docker.APIClient()
+                for line in docker_client.build(path=td, rm=True, nocache=True, tag=self.image_name):
+                    print(line)
+            except docker.errors.APIError as ex:
                 print("Docker build failed\n", ex)
                 print(ex.output)
                 return False
@@ -181,8 +181,10 @@ def main():
     if args.pull:
         docker_client = docker.APIClient()
         try:
-            docker_client.pull(base_image)
-        except requests.exceptions.HTTPError as ex:
+            print("Pulling image %s" % base_image)
+            for line in docker_client.pull(base_image, stream=True):
+                print(line)
+        except docker.errors.APIError as ex:
             print('Pull of %s failed: %s' % (base_image, ex))
             pass
     df = generate_dockerfile(extensions, base_image)
