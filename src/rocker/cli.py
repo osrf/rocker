@@ -179,7 +179,7 @@ def main():
     base_image = args.image[0]
 
     if args.pull:
-        docker_client = docker.from_env()
+        docker_client = docker.APIClient()
         try:
             docker_client.pull(base_image)
         except requests.exceptions.HTTPError as ex:
