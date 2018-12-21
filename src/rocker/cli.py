@@ -46,7 +46,7 @@ class DockerImageGenerator(object):
         self.built = False
         self.image_name = image_name
     
-    def build(self):
+    def build(self, **kwargs):
         with tempfile.TemporaryDirectory() as td:
             df = os.path.join(td, 'Dockerfile')
             print("Writing dockerfile to %s" % df)
@@ -58,7 +58,7 @@ class DockerImageGenerator(object):
             cmd = 'docker build -t %s %s' %  (self.image_name, td)
             try:
                 docker_client = docker.APIClient()
-                for line in docker_client.build(path=td, rm=True, nocache=True, tag=self.image_name):
+                for line in docker_client.build(path=td, rm=True, nocache=kwargs.get('nocache', False), tag=self.image_name):
                     print(line)
             except docker.errors.APIError as ex:
                 print("Docker build failed\n", ex)
@@ -149,6 +149,7 @@ def main():
     parser.add_argument('--execute', action='store_true')
     parser.add_argument('--user', action='store_true')
     parser.add_argument('--home', action='store_true')
+    parser.add_argument('--nocache', action='store_true')
     parser.add_argument('--pull', action='store_true')
     parser.add_argument('--network', choices=['bridge', 'host', 'overlay', 'none'])
     parser.add_argument('--pulse-audio', action='store_true')
@@ -193,7 +194,7 @@ def main():
     if args.extensions:
         image_name += "_%s" % '_'.join(args.extensions)
     dig = DockerImageGenerator(df, image_name)
-    dig.build()
+    dig.build(**vars(args))
     dig.run(command=' '.join(args.image[1:]), **vars(args))
     return 1
 
