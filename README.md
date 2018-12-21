@@ -17,9 +17,7 @@ Install rocker
 
     cd ~/rocker_venv
     . ~/rocker_venv/bin/activate
-    git clone https://github.com/tfoote/rocker.git
-    cd rocker
-    python setup.py develop
+    pip install git+https://github.com/tfoote/rocker.git
 
 For any new terminal re activate the venv before trying to use it.
 
