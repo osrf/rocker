@@ -1,8 +1,12 @@
-
+# Things that would be good to add
 
 convert expandable options to entry points
 Roll runtime options into expandability
 add support for prerequisite checks. (aka able to make sure the dockerfile is compatible)
 Add additional host detection options to extension points
+ - Detect alternative base OS xenial vs bionic
+ - Detect different kernels/nvidia drivers
 
+Add support for profiles
 
+Provide a non-command line API for use in tooling such as unit tests.
