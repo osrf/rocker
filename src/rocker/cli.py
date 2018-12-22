@@ -110,7 +110,6 @@ def main():
     parser = argparse.ArgumentParser(description='A tool for running docker with extra options')
     parser.add_argument('image', nargs='+')
     parser.add_argument('--execute', action='store_true')
-    # parser.add_argument('--user', action='store_true')
     parser.add_argument('--nocache', action='store_true')
     parser.add_argument('--pull', action='store_true')
     parser.add_argument('--network', choices=['bridge', 'host', 'overlay', 'none'])
@@ -121,37 +120,16 @@ def main():
     in pkg_resources.iter_entry_points('rocker.extensions')
     }
     print("Plugins found: %s" % [p.get_name() for p in plugins.values()])
-    for _, p in plugins.items():
-        pi = p() 
-        pi.register_arguments(parser)
+    for p in plugins.values():
+        p.register_arguments(parser)
 
     args = parser.parse_args()
     args_dict = vars(args)
     
     active_extensions = [e() for e in plugins.values() if args_dict.get(e.get_name())]
+    # Force user to end if present otherwise it will 
     active_extensions.sort(key=lambda e:e.get_name().startswith('user'))
-    print("active extensions %s" % [e.get_name() for e in active_extensions])
-
-    # extensions = []
-    # if args.nvidia and 'nvidia' not in args.extensions:
-    #     extensions.append(Extensions('nvidia'))
-    #     print("Added nvidia extension automatically")
-    # for extension in args.extensions:
-    #     extensions.append(Extensions(extension))
-    # # Pulse must be before user for snippet ordering as root
-    # if args.pulse_audio:
-    #     extensions.append(Extensions('pulse'))
-    #     if 'user' not in args.extensions:
-    #         extensions.append(Extensions('user'))
-    #         args.extensions.append('user')
-    # if args.user and 'user' not in args.extensions:
-    #     args.extensions.append('user')
-    #     extensions.append(Extensions('user'))
-    # if args.home:
-    #     if 'user' not in args.extensions:
-    #         extensions.append(Extensions('user'))
-    #         args.extensions.append('user')
-
+    print("Active extensions %s" % [e.get_name() for e in active_extensions])
 
     base_image = args.image[0]
 
