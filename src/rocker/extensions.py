@@ -6,6 +6,7 @@ from pathlib import Path
 
 import subprocess
 
+import distro
 
 def name_to_argument(name):
     return '--%s' % name.replace('_', '-')
@@ -78,6 +79,7 @@ class Nvidia(RockerExtension):
         self.env_subs = None
         self.name = Nvidia.get_name()
         self.xauth = '/tmp/.docker.xauth'
+        self.supported_versions = ['16.04', '18.04']
 
 
     def get_environment_subs(self):
@@ -86,6 +88,16 @@ class Nvidia(RockerExtension):
             self.env_subs['user_id'] = os.getuid()
             self.env_subs['username'] = getpass.getuser()
             self.env_subs['DISPLAY'] = os.getenv('DISPLAY')
+            self.env_subs['distro_id'] = distro.id()
+            if self.env_subs['distro_id'] != 'ubuntu':
+                print("WARNING distro id %s not supported by Nvidia " % self.env_subs['distro_id'])
+                sys.exit(1)
+            self.env_subs['distro_version'] = distro.version()
+            if self.env_subs['distro_version'] not in self.supported_versions:
+                print("WARNING distro version %s not in supported list by Nvidia " % self.env_subs['distro_id'])
+                sys.exit(1)
+                # TODO(tfoote) add a standard mechanism for checking preconditions and disabling plugins
+
         return self.env_subs
 
     def get_preamble(self, cliargs):

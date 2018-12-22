@@ -3,6 +3,7 @@
 from setuptools import setup
 
 install_requires = [
+    'distro',
     'docker',
     'empy',
     'pexpect',
