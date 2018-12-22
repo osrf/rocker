@@ -18,7 +18,14 @@ kwargs = {
     'entry_points': {
         'console_scripts': [
             'rocker = rocker.cli:main',
-	    ]
+	    ],
+        'rocker.extensions': [
+            'dev_helpers = rocker.extensions:DevHelpers',
+            'nvidia = rocker.extensions:Nvidia',
+            'pulse = rocker.extensions:PulseAudio',
+            'home = rocker.extensions:HomeDir',
+            'user = rocker.extensions:User',
+        ]
 	},
     'author': 'Tully Foote',
     'author_email': 'tfoote@osrfoundation.org',
