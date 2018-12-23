@@ -2,6 +2,16 @@
 
 A tool to run docker images with local support injected for things like nvidia support. And user id specific files for cleaner mounting file permissions.
 
+# Prerequisites
+
+This should work on most systems using with a recent docker version available. 
+
+## NVIDIA settings
+
+For the NVIDIA option this has been demonstrated using Ubuntu 16.04.5 running Kernel 4.15 and nvidia docker2 and the nvidia 384 driver.
+It did not work using the nvidia 340 driver.
+
+
 # Installation
 
 To set things up in a virtual environment for isolation is a good way. If you don't already have it install python3's venv module.
