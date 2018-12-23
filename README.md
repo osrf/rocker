@@ -11,6 +11,8 @@ This should work on most systems using with a recent docker version available.
 For the NVIDIA option this has been demonstrated using Ubuntu 16.04.5 running Kernel 4.15 and nvidia docker2 and the nvidia 384 driver.
 It did not work using the nvidia 340 driver.
 
+It's also expected to work with 18.04 and a recent nvidia driver as well.
+
 
 # Installation
 
