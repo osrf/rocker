@@ -41,15 +41,25 @@ class DockerImageGenerator(object):
             cmd = 'docker build -t %s %s' %  (self.image_name, td)
             try:
                 docker_client = docker.APIClient()
-                for line in docker_client.build(path=td, rm=True, nocache=kwargs.get('nocache', False), tag=self.image_name):
-                    print(line)
+                success_detected = False
+                for line in docker_client.build(path=td, rm=True, decode=True, nocache=kwargs.get('nocache', False), tag=self.image_name):
+                    output = line.get('stream', '').rstrip()
+                    if not output:
+                        # print("non stream data", line)
+                        continue
+                    print("building > %s" % output)
+                    if output.startswith("Successfully tagged") and self.image_name in output:
+                        success_detected = True
+                if success_detected:
+                        self.built = True
+                        return True
+ 
             except docker.errors.APIError as ex:
                 print("Docker build failed\n", ex)
                 print(ex.output)
                 return False
-
-        self.built = True
-        return True
+        # Unknown error 
+        return False
 
     def run(self, command=[], **kwargs):
         if not self.built:
