@@ -38,11 +38,17 @@ class DockerImageGenerator(object):
             print('vvvvvv')
             print(self.dockerfile)
             print('^^^^^^')
-            cmd = 'docker build -t %s %s' %  (self.image_name, td)
+            arguments = {}
+            arguments['path'] = td
+            arguments['rm'] = True
+            arguments['decode'] = True
+            arguments['nocache'] = kwargs.get('nocache', False)
+            arguments['tag'] = self.image_name
+            print("Building docker file with arguments: ", arguments)
             try:
                 docker_client = docker.APIClient()
                 success_detected = False
-                for line in docker_client.build(path=td, rm=True, decode=True, nocache=kwargs.get('nocache', False), tag=self.image_name):
+                for line in docker_client.build(**arguments):
                     output = line.get('stream', '').rstrip()
                     if not output:
                         # print("non stream data", line)
