@@ -1,3 +1,4 @@
+import grp
 import os
 import em
 import getpass
@@ -157,6 +158,8 @@ class PulseAudio(RockerExtension):
         if not self.env_subs:
             self.env_subs = {}
             self.env_subs['user_id'] = os.getuid()
+            self.env_subs['XDG_RUNTIME_DIR'] = os.getenv('XDG_RUNTIME_DIR')
+            self.env_subs['audio_group_id'] = grp.getgrnam('audio').gr_gid
         return self.env_subs
 
     def get_preamble(self, cliargs):
@@ -167,7 +170,9 @@ class PulseAudio(RockerExtension):
         return em.expand(snippet, self.get_environment_subs())
 
     def get_docker_args(self, cliargs):
-        return ' -v /run/user/%(user_id)s/pulse:/run/user/%(user_id)s/pulse --device /dev/snd' % self.get_environment_subs()
+        args = ' -v /run/user/%(user_id)s/pulse:/run/user/%(user_id)s/pulse --device /dev/snd '\
+        ' -e PULSE_SERVER=unix:%(XDG_RUNTIME_DIR)s/pulse/native -v %(XDG_RUNTIME_DIR)s/pulse/native:%(XDG_RUNTIME_DIR)s/pulse/native --group-add %(audio_group_id)s '
+        return args % self.get_environment_subs()
 
     def precondition_environment(self, cliargs):
         pass

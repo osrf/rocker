@@ -1,5 +1,5 @@
 RUN mkdir -p /etc/pulse
-RUN echo $'\n\
+RUN echo '\n\
 # Connect to the hosts server using the mounted UNIX socket\n\
 default-server = unix:/run/user/@(user_id)/pulse/native\n\
 \n\
