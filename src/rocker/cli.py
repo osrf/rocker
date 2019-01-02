@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+from collections import OrderedDict
 import os
 import sys
 
@@ -130,11 +131,16 @@ def main():
     parser.add_argument('--pull', action='store_true')
     parser.add_argument('--network', choices=['bridge', 'host', 'overlay', 'none'])
 
-    plugins = {
+    unordered_plugins = {
     entry_point.name: entry_point.load()
     for entry_point
     in pkg_resources.iter_entry_points('rocker.extensions')
     }
+    # Order plugins by extension point name for consistent ordering below
+    plugin_names = list(unordered_plugins.keys())
+    plugin_names.sort()
+    plugins = OrderedDict([(k, unordered_plugins[k]) for k in plugin_names])
+
     print("Plugins found: %s" % [p.get_name() for p in plugins.values()])
     for p in plugins.values():
         p.register_arguments(parser)
