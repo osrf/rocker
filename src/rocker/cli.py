@@ -100,7 +100,15 @@ class DockerImageGenerator(object):
         network = kwargs.get('network', False)
         if network:
             docker_args += ' --network %s ' % network
-        
+
+        devices = kwargs.get('devices', None)
+        if devices:
+            for device in devices:
+                if not os.path.exists(device):
+                    print("ERROR device %s doesn't exist. Skipping" % device)
+                    continue
+                docker_args += ' --device %s ' % device
+
         for e in self.active_extensions:
             docker_args += e.get_docker_args(self.cliargs)
 
@@ -145,6 +153,7 @@ def main():
     parser.add_argument('--nocache', action='store_true')
     parser.add_argument('--pull', action='store_true')
     parser.add_argument('--network', choices=['bridge', 'host', 'overlay', 'none'])
+    parser.add_argument('--devices', nargs='*')
 
     unordered_plugins = {
     entry_point.name: entry_point.load()
