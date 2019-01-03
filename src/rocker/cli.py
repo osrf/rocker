@@ -97,7 +97,8 @@ class DockerImageGenerator(object):
 
         docker_args = ''
 
-        if kwargs.get('network', False):
+        network = kwargs.get('network', False)
+        if network:
             docker_args += ' --network %s ' % network
         
         for e in self.active_extensions:
