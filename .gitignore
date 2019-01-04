@@ -1,2 +1,6 @@
 *.egg-info
 __pycache__
+dist
+deb_dist
+*.pyc
+.coverage
