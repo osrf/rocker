@@ -33,11 +33,14 @@ kwargs = {
     'keywords': ['Docker'],
     'classifiers': [
         'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
         'License :: OSI Approved :: Apache Software License'
     ],
     'description': 'A tool to run docker containers with extras',
     'long_description': 'A tool to run docker containers with extra added like nvidia gui support overlayed.',
-    'license': 'Apache',
+    'license': 'Apache License 2.0',
+    'python_requires': '>=3.0',
+
     'install_requires': install_requires,
 }
 
