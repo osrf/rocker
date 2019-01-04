@@ -29,7 +29,7 @@ Install crocker
 
     cd ~/crocker_venv
     . ~/crocker_venv/bin/activate
-    pip install git+https://github.com/tfoote/crocker.git
+    pip install git+https://github.com/osrf/crocker.git
 
 For any new terminal re activate the venv before trying to use it.
 
