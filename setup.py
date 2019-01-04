@@ -11,21 +11,21 @@ install_requires = [
 ]
 
 kwargs = {
-    'name': 'rocker',
+    'name': 'crocker',
     'version': '0.0.1',
-    'packages': ['rocker'],
+    'packages': ['crocker'],
     'package_dir': {'': 'src'},
-    'package_data': {'rocker': ['templates/*.em']},
+    'package_data': {'crocker': ['templates/*.em']},
     'entry_points': {
         'console_scripts': [
-            'rocker = rocker.cli:main',
+            'crocker = crocker.cli:main',
 	    ],
-        'rocker.extensions': [
-            'dev_helpers = rocker.extensions:DevHelpers',
-            'nvidia = rocker.extensions:Nvidia',
-            'pulse = rocker.extensions:PulseAudio',
-            'home = rocker.extensions:HomeDir',
-            'user = rocker.extensions:User',
+        'crocker.extensions': [
+            'dev_helpers = crocker.extensions:DevHelpers',
+            'nvidia = crocker.extensions:Nvidia',
+            'pulse = crocker.extensions:PulseAudio',
+            'home = crocker.extensions:HomeDir',
+            'user = crocker.extensions:User',
         ]
 	},
     'author': 'Tully Foote',

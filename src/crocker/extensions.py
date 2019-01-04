@@ -26,7 +26,7 @@ import distro
 def name_to_argument(name):
     return '--%s' % name.replace('_', '-')
 
-class RockerExtension(object):
+class crockerExtension(object):
 
     def precondition_environment(self, cliargs):
         """Modify the local environment such as setup tempfiles"""
@@ -54,7 +54,7 @@ class RockerExtension(object):
     def register_arguments(parser):
         raise NotImplementedError
 
-class DevHelpers(RockerExtension):
+class DevHelpers(crockerExtension):
     @staticmethod
     def get_name():
         return 'dev_helpers'
@@ -75,7 +75,7 @@ class DevHelpers(RockerExtension):
         return ''
 
     def get_snippet(self, cliargs):
-        snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
+        snippet = pkgutil.get_data('crocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
         return em.expand(snippet, self.get_environment_subs())
 
     @staticmethod
@@ -85,7 +85,7 @@ class DevHelpers(RockerExtension):
             help="add development tools emacs and byobu to your environment")
 
 
-class Nvidia(RockerExtension):
+class Nvidia(crockerExtension):
     @staticmethod
     def get_name():
         return 'nvidia'
@@ -116,11 +116,11 @@ class Nvidia(RockerExtension):
         return self.env_subs
 
     def get_preamble(self, cliargs):
-        preamble = pkgutil.get_data('rocker', 'templates/%s_preamble.Dockerfile.em' % self.name).decode('utf-8')
+        preamble = pkgutil.get_data('crocker', 'templates/%s_preamble.Dockerfile.em' % self.name).decode('utf-8')
         return em.expand(preamble, self.get_environment_subs())
 
     def get_snippet(self, cliargs):
-        snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
+        snippet = pkgutil.get_data('crocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
         return em.expand(snippet, self.get_environment_subs())
 
     def get_docker_args(self, cliargs):
@@ -158,7 +158,7 @@ class Nvidia(RockerExtension):
             help="Enable nvidia")
 
 
-class PulseAudio(RockerExtension):
+class PulseAudio(crockerExtension):
     @staticmethod
     def get_name():
         return 'pulse'
@@ -180,7 +180,7 @@ class PulseAudio(RockerExtension):
         return ''
 
     def get_snippet(self, cliargs):
-        snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
+        snippet = pkgutil.get_data('crocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
         return em.expand(snippet, self.get_environment_subs())
 
     def get_docker_args(self, cliargs):
@@ -198,7 +198,7 @@ class PulseAudio(RockerExtension):
             help="mount pulse audio devices")
 
 
-class HomeDir(RockerExtension):
+class HomeDir(crockerExtension):
     @staticmethod
     def get_name():
         return 'home'
@@ -217,7 +217,7 @@ class HomeDir(RockerExtension):
             help="mount the users home directory")
 
 
-class User(RockerExtension):
+class User(crockerExtension):
     @staticmethod
     def get_name():
         return 'user'
@@ -234,7 +234,7 @@ class User(RockerExtension):
         self.name = User.get_name()
 
     def get_snippet(self, cliargs):
-        snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
+        snippet = pkgutil.get_data('crocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
         return em.expand(snippet, self.get_environment_subs())
 
     @staticmethod

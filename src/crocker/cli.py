@@ -39,7 +39,7 @@ class DockerImageGenerator(object):
 
         self.dockerfile = generate_dockerfile(active_extensions, self.cliargs, base_image)
         # print(df)
-        self.image_name = "rocker_" + base_image
+        self.image_name = "crocker_" + base_image
         if self.active_extensions:
             self.image_name += "_%s" % '_'.join([e.name for e in active_extensions])
 
@@ -158,7 +158,7 @@ def main():
     unordered_plugins = {
     entry_point.name: entry_point.load()
     for entry_point
-    in pkg_resources.iter_entry_points('rocker.extensions')
+    in pkg_resources.iter_entry_points('crocker.extensions')
     }
     # Order plugins by extension point name for consistent ordering below
     plugin_names = list(unordered_plugins.keys())
