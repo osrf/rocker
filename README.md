@@ -1,6 +1,6 @@
 # crocker
 
-A tool to run docker images with local support injected for things like nvidia support. And user id specific files for cleaner mounting file permissions.
+A tool to run docker images with customized local support injected for things like nvidia support. And user id specific files for cleaner mounting file permissions.
 
 # Prerequisites
 
