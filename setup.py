@@ -11,21 +11,21 @@ install_requires = [
 ]
 
 kwargs = {
-    'name': 'crocker',
+    'name': 'rocker',
     'version': '0.0.1',
-    'packages': ['crocker'],
+    'packages': ['rocker'],
     'package_dir': {'': 'src'},
-    'package_data': {'crocker': ['templates/*.em']},
+    'package_data': {'rocker': ['templates/*.em']},
     'entry_points': {
         'console_scripts': [
-            'crocker = crocker.cli:main',
+            'rocker = rocker.cli:main',
 	    ],
-        'crocker.extensions': [
-            'dev_helpers = crocker.extensions:DevHelpers',
-            'nvidia = crocker.extensions:Nvidia',
-            'pulse = crocker.extensions:PulseAudio',
-            'home = crocker.extensions:HomeDir',
-            'user = crocker.extensions:User',
+        'rocker.extensions': [
+            'dev_helpers = rocker.extensions:DevHelpers',
+            'nvidia = rocker.extensions:Nvidia',
+            'pulse = rocker.extensions:PulseAudio',
+            'home = rocker.extensions:HomeDir',
+            'user = rocker.extensions:User',
         ]
 	},
     'author': 'Tully Foote',
@@ -42,7 +42,7 @@ kwargs = {
     'python_requires': '>=3.0',
 
     'install_requires': install_requires,
-    'url': 'https://github.com/osrf/crocker'
+    'url': 'https://github.com/osrf/rocker'
 }
 
 setup(**kwargs)

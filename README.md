@@ -1,4 +1,4 @@
-# crocker
+# rocker
 
 A tool to run docker images with customized local support injected for things like nvidia support. And user id specific files for cleaner mounting file permissions.
 
@@ -22,18 +22,18 @@ To set things up in a virtual environment for isolation is a good way. If you do
 
 Create a venv
 
-    mkdir -p ~/crocker_venv
-    python3 -m venv ~/crocker_venv
+    mkdir -p ~/rocker_venv
+    python3 -m venv ~/rocker_venv
 
-Install crocker
+Install rocker
 
-    cd ~/crocker_venv
-    . ~/crocker_venv/bin/activate
-    pip install git+https://github.com/osrf/crocker.git
+    cd ~/rocker_venv
+    . ~/rocker_venv/bin/activate
+    pip install git+https://github.com/osrf/rocker.git
 
 For any new terminal re activate the venv before trying to use it.
 
-    . ~/crocker_venv/bin/activate
+    . ~/rocker_venv/bin/activate
     
 
 # Example usage
@@ -43,7 +43,7 @@ For any new terminal re activate the venv before trying to use it.
 
 Example usage with an iris
 
-    crocker --nvidia --user --exec --pull --pulse tfoote/drone_demo roslaunch sitl_launcher demo.launch mavros:=true gui:=false
+    rocker --nvidia --user --exec --pull --pulse tfoote/drone_demo roslaunch sitl_launcher demo.launch mavros:=true gui:=false
 
 After the ekf converges, 
 
@@ -54,6 +54,6 @@ You can send a takeoff command and then click to command the vehicle to fly to a
 
 Example usage with a plane 
 
-    crocker --nvidia --user --exec --pull --pulse tfoote/drone_demo roslaunch sitl_launcher plane_demo.launch world_name:=worlds/plane.world gui:=false
+    rocker --nvidia --user --exec --pull --pulse tfoote/drone_demo roslaunch sitl_launcher plane_demo.launch world_name:=worlds/plane.world gui:=false
 
 In QGroundControl go ahead and make a mission, upload it, and then start the mission.
