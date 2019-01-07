@@ -118,19 +118,19 @@ class DockerImageGenerator(object):
   %(docker_args)s \
   %(image)s %(command)s" % locals()
 #   $DOCKER_OPTS \
-        try:
-            if kwargs.get('execute', False):
+        if kwargs.get('noexecute', False):
+            print("Run this command: \n\n\n")
+            print(cmd)
+        else:
+            try:
                 print("Executing command: ")
                 print(cmd)
                 p = pexpect.spawn(cmd)
                 p.interact()
-            else:
-                print("Run this command: \n\n\n")
-                print(cmd)
-        except subprocess.CalledProcessError as ex:
-            print("Docker run failed\n", ex)
-            print(ex.output)
-            return False
+            except subprocess.CalledProcessError as ex:
+                print("Docker run failed\n", ex)
+                print(ex.output)
+                return False
 
 
 def generate_dockerfile(extensions, args_dict, base_image):
@@ -149,7 +149,7 @@ def main():
 
     parser = argparse.ArgumentParser(description='A tool for running docker with extra options')
     parser.add_argument('image', nargs='+')
-    parser.add_argument('--execute', action='store_true')
+    parser.add_argument('--noexecute', action='store_true')
     parser.add_argument('--nocache', action='store_true')
     parser.add_argument('--pull', action='store_true')
     parser.add_argument('--network', choices=['bridge', 'host', 'overlay', 'none'])
