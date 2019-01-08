@@ -73,16 +73,16 @@ class DockerImageGenerator(object):
                         success_detected = True
                 if success_detected:
                         self.built = True
-                        return True
+                        return 0
  
             except docker.errors.APIError as ex:
                 print("Docker build failed\n", ex)
                 print(ex.output)
-                return False
+                return 1
         # Unknown error 
-        return False
+        return 2
 
-    def run(self, command=[], **kwargs):
+    def run(self, command='', **kwargs):
         if not self.built:
             print("Cannot run if build has not passed.")
             return False
@@ -127,10 +127,12 @@ class DockerImageGenerator(object):
                 print(cmd)
                 p = pexpect.spawn(cmd)
                 p.interact()
+                p.terminate()
+                return p.exitstatus
             except subprocess.CalledProcessError as ex:
                 print("Docker run failed\n", ex)
                 print(ex.output)
-                return False
+                return 1
 
 
 def generate_dockerfile(extensions, args_dict, base_image):
@@ -192,10 +194,8 @@ def main():
             print('Pull of %s failed: %s' % (base_image, ex))
             pass
     dig = DockerImageGenerator(active_extensions, args_dict, base_image)
-    dig.build(**vars(args))
-    dig.run(command=' '.join(args.image[1:]), **args_dict)
-    return 1
+    exit_code = dig.build(**vars(args))
+    if exit_code != 0:
+        return exit_code
+    return dig.run(command=' '.join(args.image[1:]), **args_dict)
 
-
-if __name__ == '__main__':
-    sys.exit(main() or 0)
