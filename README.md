@@ -48,7 +48,25 @@ Install rocker
 For any new terminal re activate the venv before trying to use it.
 
     . ~/rocker_venv/bin/activate
-    
+
+### Testing
+
+To run tests install nose and coverage in the venv
+
+    . ~/rocker_venv/bin/activate
+    pip install nose
+    pip install coverage
+
+Then you can run nosetests.
+
+    nosetests-3.4 --with-coverage --cover-package rocker -s test/
+
+NOtes: 
+
+- Make sure to use the python3 one from inside the environment.
+- You also must run with the console output due to [#9](https://github.com/osrf/rocker/issues/9)
+- The tests include an nvidia test which assumes you're using a machine with an nvidia gpu.
+
 
 # Example usage
 
