@@ -16,6 +16,20 @@ It's also expected to work with 18.04 and a recent nvidia driver as well.
 
 # Installation
 
+## Debians
+Debian packages are available from the ROS repositories. You can set them up in step one [here](http://wiki.ros.org/kinetic/Installation/Ubuntu) then come back.
+
+Then you can `sudo apt-get install python3-rocker`
+
+## PIP
+
+Rocker is available via pip you can install it via pip using
+
+`pip install rocker`
+
+
+
+## Development
 To set things up in a virtual environment for isolation is a good way. If you don't already have it install python3's venv module.
 
     sudo apt-get install python3-venv
@@ -43,7 +57,7 @@ For any new terminal re activate the venv before trying to use it.
 
 Example usage with an iris
 
-    rocker --nvidia --user --exec --pull --pulse tfoote/drone_demo roslaunch sitl_launcher demo.launch mavros:=true gui:=false
+    rocker --nvidia --user --pull --pulse tfoote/drone_demo roslaunch sitl_launcher demo.launch mavros:=true gui:=false
 
 After the ekf converges, 
 
@@ -54,6 +68,6 @@ You can send a takeoff command and then click to command the vehicle to fly to a
 
 Example usage with a plane 
 
-    rocker --nvidia --user --exec --pull --pulse tfoote/drone_demo roslaunch sitl_launcher plane_demo.launch world_name:=worlds/plane.world gui:=false
+    rocker --nvidia --user --pull --pulse tfoote/drone_demo roslaunch sitl_launcher plane_demo.launch world_name:=worlds/plane.world gui:=false
 
 In QGroundControl go ahead and make a mission, upload it, and then start the mission.
