@@ -36,7 +36,7 @@ class HomeExtensionTest(unittest.TestCase):
         self.assertEqual(p.get_snippet(mock_cliargs), '')
         self.assertEqual(p.get_preamble(mock_cliargs), '')
         args = p.get_docker_args(mock_cliargs)
-        self.assertTrue('-v%s:%s' % (Path.home(), Path.home()) in args)
+        self.assertTrue('-v %s:%s' % (Path.home(), Path.home()) in args)
 
 
 class UserExtensionTest(unittest.TestCase):
