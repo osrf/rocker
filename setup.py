@@ -12,7 +12,7 @@ install_requires = [
 
 kwargs = {
     'name': 'rocker',
-    'version': '0.0.1',
+    'version': '0.1.1',
     'packages': ['rocker'],
     'package_dir': {'': 'src'},
     'package_data': {'rocker': ['templates/*.em']},
