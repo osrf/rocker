@@ -4,3 +4,4 @@ dist
 deb_dist
 *.pyc
 .coverage
+build
