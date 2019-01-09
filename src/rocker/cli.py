@@ -27,7 +27,8 @@ from .core import list_plugins
 def main():
 
     parser = argparse.ArgumentParser(description='A tool for running docker with extra options')
-    parser.add_argument('image', nargs='+')
+    parser.add_argument('image')
+    parser.add_argument('command', nargs='*', default='')
     parser.add_argument('--noexecute', action='store_true')
     parser.add_argument('--nocache', action='store_true')
     parser.add_argument('--pull', action='store_true')
@@ -47,7 +48,7 @@ def main():
     active_extensions.sort(key=lambda e:e.get_name().startswith('user'))
     print("Active extensions %s" % [e.get_name() for e in active_extensions])
 
-    base_image = args.image[0]
+    base_image = args.image
 
     if args.pull:
         docker_client = docker.APIClient()
@@ -62,5 +63,7 @@ def main():
     exit_code = dig.build(**vars(args))
     if exit_code != 0:
         return exit_code
-    return dig.run(command=' '.join(args.image[1:]), **args_dict)
+    # Convert command into string
+    args.command = ' '.join(args.command)
+    return dig.run(**args_dict)
 
