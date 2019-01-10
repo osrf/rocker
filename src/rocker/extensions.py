@@ -18,10 +18,11 @@ import em
 import getpass
 import pkgutil
 from pathlib import Path
-
 import subprocess
+import sys
 
-import distro
+from .os_detector import build_detector_image
+from .os_detector import detect_os
 
 def name_to_argument(name):
     return '--%s' % name.replace('_', '-')
@@ -94,22 +95,25 @@ class Nvidia(RockerExtension):
         self.env_subs = None
         self.name = Nvidia.get_name()
         self.xauth = '/tmp/.docker.xauth'
+        self.supported_distros = ['Ubuntu']
         self.supported_versions = ['16.04', '18.04']
 
 
-    def get_environment_subs(self):
+    def get_environment_subs(self, cliargs={}):
         if not self.env_subs:
+            build_detector_image()
+            dist, ver, codename = detect_os(cliargs['image'])
             self.env_subs = {}
             self.env_subs['user_id'] = os.getuid()
             self.env_subs['username'] = getpass.getuser()
             self.env_subs['DISPLAY'] = os.getenv('DISPLAY')
-            self.env_subs['distro_id'] = distro.id()
-            if self.env_subs['distro_id'] != 'ubuntu':
-                print("WARNING distro id %s not supported by Nvidia " % self.env_subs['distro_id'])
+            self.env_subs['image_distro_id'] = dist
+            if self.env_subs['image_distro_id'] not in self.supported_distros:
+                print("WARNING distro id %s not supported by Nvidia supported " % self.env_subs['image_distro_id'], self.supported_distros)
                 sys.exit(1)
-            self.env_subs['distro_version'] = distro.version()
-            if self.env_subs['distro_version'] not in self.supported_versions:
-                print("WARNING distro version %s not in supported list by Nvidia " % self.env_subs['distro_id'])
+            self.env_subs['image_distro_version'] = ver
+            if self.env_subs['image_distro_version'] not in self.supported_versions:
+                print("WARNING distro version %s not in supported list by Nvidia supported versions" % self.env_subs['image_distro_version'], self.supported_versions)
                 sys.exit(1)
                 # TODO(tfoote) add a standard mechanism for checking preconditions and disabling plugins
 
@@ -117,11 +121,11 @@ class Nvidia(RockerExtension):
 
     def get_preamble(self, cliargs):
         preamble = pkgutil.get_data('rocker', 'templates/%s_preamble.Dockerfile.em' % self.name).decode('utf-8')
-        return em.expand(preamble, self.get_environment_subs())
+        return em.expand(preamble, self.get_environment_subs(cliargs))
 
     def get_snippet(self, cliargs):
         snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
-        return em.expand(snippet, self.get_environment_subs())
+        return em.expand(snippet, self.get_environment_subs(cliargs))
 
     def get_docker_args(self, cliargs):
         xauth = self.xauth

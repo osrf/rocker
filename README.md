@@ -27,11 +27,6 @@ Debian packages are available from the ROS repositories. You can set them up in 
 
 Then you can `sudo apt-get install python3-rocker`
 
-On Ubuntu older than bionic you will need to install python3-distro manually first. 
-
-See https://github.com/osrf/rocker/blob/master/backport_xenial.bash for tested on xenial.
-
-
 ## PIP
 
 Rocker is available via pip you can install it via pip using

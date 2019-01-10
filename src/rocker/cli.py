@@ -58,6 +58,7 @@ def main():
     dig = DockerImageGenerator(active_extensions, args_dict, base_image)
     exit_code = dig.build(**vars(args))
     if exit_code != 0:
+        print("Build failed exiting")
         return exit_code
     # Convert command into string
     args.command = ' '.join(args.command)

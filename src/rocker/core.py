@@ -81,12 +81,16 @@ class DockerImageGenerator(object):
                 if success_detected:
                         self.built = True
                         return 0
+                else:
+                    print("no more output and success not detected")
+                    return 2
  
             except docker.errors.APIError as ex:
                 print("Docker build failed\n", ex)
                 print(ex.output)
                 return 1
         # Unknown error 
+        print("Unknown error")
         return 2
 
     def run(self, command='', **kwargs):
