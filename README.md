@@ -2,6 +2,12 @@
 
 A tool to run docker images with customized local support injected for things like nvidia support. And user id specific files for cleaner mounting file permissions.
 
+## Know extensions
+
+Rocker supports extensions via entry points there are some built in but you can add your own. Here's a list of public repositories with extensions.
+
+- Off-your-rocker: https://github.com/sloretz/off-your-rocker
+
 # Prerequisites
 
 This should work on most systems using with a recent docker version available. 
