@@ -27,11 +27,9 @@ Debian packages are available from the ROS repositories. You can set them up in 
 
 Then you can `sudo apt-get install python3-rocker`
 
-On Ubuntu older than bionic you will need to install python3-distro manually first. Pulled from [here](https://packages.ubuntu.com/bionic/all/python3-distro/download)
+On Ubuntu older than bionic you will need to install python3-distro manually first. 
 
-    cd /tmp
-    wget http://ftp.osuosl.org/pub/ubuntu/pool/universe/p/python-distro/python3-distro_1.0.1-2_all.deb
-    sudo dpkg -i python3-distro_1.0.1-2_all.deb
+See https://github.com/osrf/rocker/blob/master/backport_xenial.bash for tested on xenial.
 
 
 ## PIP
@@ -102,3 +100,7 @@ Example usage with a plane
     rocker --nvidia --user --pull --pulse tfoote/drone_demo roslaunch sitl_launcher plane_demo.launch world_name:=worlds/plane.world gui:=false
 
 In QGroundControl go ahead and make a mission, upload it, and then start the mission.
+
+## ROS 2 rviz
+
+    rocker --nvidia --net=host osrf/ros:crystal-desktop rviz2
