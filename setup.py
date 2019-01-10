@@ -4,10 +4,9 @@ from setuptools import setup
 
 install_requires = [
     'distro',
-    'docker',
+    'docker-py',
     'empy',
     'pexpect',
-    'requests',
 ]
 
 kwargs = {
