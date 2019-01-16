@@ -1,13 +1,33 @@
 #!/usr/bin/env python3
 
+import os
 from setuptools import setup
 
 install_requires = [
     'distro',
-    'docker-py',
     'empy',
     'pexpect',
 ]
+
+# docker API used to be in a package called `docker-py` before the 2.0 release
+docker_package = 'docker'
+try:
+    import docker
+except ImportError:
+    # Docker is not yet installed, pick library based on platform
+    # Use old name if platform has pre-2.0 version
+    if os.path.isfile('/etc/os-release'):
+        with open('/etc/os-release') as fin:
+            content = fin.read()
+        if 'xenial' in content:
+            docker_package = 'docker-py'
+else:
+    # Docker is installed, pick library based on what we found
+    ver = docker.__version__.split('.')
+    if int(ver[0]) < 2:
+        docker_package = 'docker-py'
+
+install_requires.append(docker_package)
 
 kwargs = {
     'name': 'rocker',
