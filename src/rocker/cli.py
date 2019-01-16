@@ -51,7 +51,11 @@ def main():
     base_image = args.image
 
     if args.pull:
-        docker_client = docker.APIClient()
+        try:
+            docker_client = docker.APIClient()
+        except AttributeError:
+            # docker-py pre 2.0
+            docker_client = docker.Client()
         try:
             print("Pulling image %s" % base_image)
             for line in docker_client.pull(base_image, stream=True):
