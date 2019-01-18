@@ -12,6 +12,10 @@ wget http://ftp.osuosl.org/pub/ubuntu/pool/universe/d/docker-pycreds/python3-doc
 # Note might need to change arch assuming amd64
 wget http://ftp.osuosl.org/pub/ubuntu/pool/universe/g/golang-github-docker-docker-credential-helpers/golang-docker-credential-helpers_0.5.0-2_amd64.deb
 
+# Ensure a few dependencies
+sudo apt-get install -y libsecret-1-0 libsecret-common python3-idna python3-pkg-resources python3-six
+
+
 sudo dpkg -i python3-distro_1.0.1-2_all.deb
 sudo apt-get install python3-certifi
 sudo dpkg -i golang-docker-credential-helpers_0.5.0-2_amd64.deb
