@@ -19,6 +19,7 @@ import docker
 import unittest
 import pexpect
 
+import em
 
 from io import BytesIO as StringIO
 
@@ -38,7 +39,17 @@ CMD glmark2 --validate
         self.dockerfile_tag = 'rocker_test_glmark2'
         iof = StringIO(dockerfile.encode())
         im = client.images.build(fileobj = iof, tag=self.dockerfile_tag)
-        
+
+    def setUp(self):
+        # Work around interference between empy Interpreter
+        # stdout proxy and test runner. empy installs a proxy on stdout
+        # to be able to capture the information.
+        # And the test runner creates a new stdout object for each test.
+        # This breaks empy as it assumes that the proxy has persistent
+        # between instances of the Interpreter class
+        # empy will error with the exception
+        # "em.Error: interpreter stdout proxy lost"
+        em.Interpreter._wasProxyInstalled = False
     
     def test_no_nvidia_glmark2(self):
         dig = DockerImageGenerator([], [], self.dockerfile_tag)
