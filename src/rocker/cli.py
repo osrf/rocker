@@ -18,11 +18,10 @@ import argparse
 import os
 import sys
 
-
-import docker
-
 from .core import DockerImageGenerator
 from .core import list_plugins
+from .core import pull_image
+
 
 def main():
 
@@ -51,18 +50,8 @@ def main():
     base_image = args.image
 
     if args.pull:
-        try:
-            docker_client = docker.APIClient()
-        except AttributeError:
-            # docker-py pre 2.0
-            docker_client = docker.Client()
-        try:
-            print("Pulling image %s" % base_image)
-            for line in docker_client.pull(base_image, stream=True):
-                print(line)
-        except docker.errors.APIError as ex:
-            print('Pull of %s failed: %s' % (base_image, ex))
-            pass
+        pull_image(base_image)
+
     dig = DockerImageGenerator(active_extensions, args_dict, base_image)
     exit_code = dig.build(**vars(args))
     if exit_code != 0:
