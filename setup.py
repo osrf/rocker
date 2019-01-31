@@ -38,6 +38,7 @@ kwargs = {
     'entry_points': {
         'console_scripts': [
             'rocker = rocker.cli:main',
+            'detect_docker_image_os = rocker.cli:detect_image_os',
 	    ],
         'rocker.extensions': [
             'dev_helpers = rocker.extensions:DevHelpers',

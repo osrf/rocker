@@ -22,6 +22,9 @@ from .core import DockerImageGenerator
 from .core import list_plugins
 from .core import pull_image
 
+from .os_detector import build_detector_image
+from .os_detector import detect_os
+
 
 def main():
 
@@ -60,3 +63,17 @@ def main():
     args.command = ' '.join(args.command)
     return dig.run(**args_dict)
 
+
+def detect_image_os():
+    parser = argparse.ArgumentParser(description='Detect the os in an image')
+    parser.add_argument('image')
+
+    args = parser.parse_args()    
+
+    build_detector_image()
+    results = detect_os(args.image)
+    print(results)
+    if results:
+        return 0
+    else:
+        return 1
