@@ -64,12 +64,10 @@ def detect_os(image_name):
     
 
     cmd="docker run -it --rm %s" % dockerfile_tag
-    try:
-        p = pexpect.spawn(cmd)
-        output = p.read()
-        p.terminate()
+    p = pexpect.spawn(cmd)
+    output = p.read()
+    p.terminate()
+    if p.exitstatus == 0:
         return literal_eval(output.decode().strip())
-    except subprocess.CalledProcessError as ex:
-        print("Docker run failed\n", ex)
-        print(ex.output)
+    else:
         return None
