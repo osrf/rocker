@@ -159,3 +159,18 @@ def list_plugins(extension_point='rocker.extensions'):
     plugin_names = list(unordered_plugins.keys())
     plugin_names.sort()
     return OrderedDict([(k, unordered_plugins[k]) for k in plugin_names])
+
+
+def pull_image(image_name):
+    try:
+        docker_client = docker.APIClient()
+    except AttributeError:
+        # docker-py pre 2.0
+        docker_client = docker.Client()
+    try:
+        print("Pulling image %s" % image_name)
+        for line in docker_client.pull(image_name, stream=True):
+            print(line)
+    except docker.errors.APIError as ex:
+        print('Pull of %s failed: %s' % (image_name, ex))
+        pass
