@@ -29,6 +29,15 @@ import docker
 import pexpect
 
 
+def get_docker_client():
+    """Simple helper function for pre 2.0 imports"""
+    try:
+        docker_client = docker.APIClient()
+    except AttributeError:
+        # docker-py pre 2.0
+        docker_client = docker.Client()
+    return docker_client
+
 class DockerImageGenerator(object):
     def __init__(self, active_extensions, cliargs, base_image):
         self.built = False
@@ -59,11 +68,7 @@ class DockerImageGenerator(object):
             arguments['tag'] = self.image_name
             print("Building docker file with arguments: ", arguments)
             try:
-                try:
-                    docker_client = docker.APIClient()
-                except AttributeError:
-                    # docker-py pre 2.0
-                    docker_client = docker.Client()
+                docker_client = get_docker_client()
                 success_detected = False
                 for line in docker_client.build(**arguments):
                     output = line.get('stream', '').rstrip()
@@ -162,15 +167,12 @@ def list_plugins(extension_point='rocker.extensions'):
 
 
 def pull_image(image_name):
-    try:
-        docker_client = docker.APIClient()
-    except AttributeError:
-        # docker-py pre 2.0
-        docker_client = docker.Client()
+    docker_client = get_docker_client()
     try:
         print("Pulling image %s" % image_name)
         for line in docker_client.pull(image_name, stream=True):
             print(line)
+        return True
     except docker.errors.APIError as ex:
         print('Pull of %s failed: %s' % (image_name, ex))
-        pass
+        return False

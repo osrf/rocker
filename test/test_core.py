@@ -15,10 +15,14 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import docker
 import unittest
 
+from itertools import chain
 
 from rocker.cli import DockerImageGenerator, list_plugins
+from rocker.core import pull_image
+from rocker.core import get_docker_client
 
 class RockerCoreTest(unittest.TestCase):
     
@@ -29,3 +33,18 @@ class RockerCoreTest(unittest.TestCase):
         self.assertTrue('pulse' in plugin_names )
         self.assertTrue('user' in plugin_names )
         self.assertTrue('home' in plugin_names )
+
+    def test_pull_image(self):
+        TEST_IMAGE='alpine:latest'
+        docker_client = get_docker_client()
+
+        l = docker_client.images()
+        tags = set(chain.from_iterable([i['RepoTags'] for i in l if i['RepoTags']]))
+        print(tags)
+        if TEST_IMAGE in tags:
+            docker_client.remove_image(TEST_IMAGE)
+            print('removed image %s' % TEST_IMAGE)
+        self.assertTrue(pull_image(TEST_IMAGE))
+
+    def test_failed_pull_image(self):
+        self.assertFalse(pull_image("osrf/ros:does_not_exist"))
