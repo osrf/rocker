@@ -42,6 +42,7 @@ class DockerImageGenerator(object):
     def __init__(self, active_extensions, cliargs, base_image):
         self.built = False
         self.cliargs = cliargs
+        self.cliargs['base_image'] = base_image # inject base image into arguments for use
         self.active_extensions = active_extensions
 
         self.dockerfile = generate_dockerfile(active_extensions, self.cliargs, base_image)

@@ -102,7 +102,7 @@ class Nvidia(RockerExtension):
     def get_environment_subs(self, cliargs={}):
         if not self.env_subs:
             build_detector_image()
-            dist, ver, codename = detect_os(cliargs['image'])
+            dist, ver, codename = detect_os(cliargs['base_image'])
             self.env_subs = {}
             self.env_subs['user_id'] = os.getuid()
             self.env_subs['username'] = getpass.getuser()
