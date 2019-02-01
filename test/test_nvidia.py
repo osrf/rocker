@@ -38,7 +38,7 @@ RUN apt-get update && apt-get install glmark2 -y && apt-get clean
 
 CMD glmark2 --validate
 """
-            dockerfile_tag = 'rocker_%s_test_glmark2' % distro_version
+            dockerfile_tag = 'testfixture_%s_glmark2' % distro_version
             iof = StringIO((dockerfile % locals()).encode())
             im = client.images.build(fileobj = iof, tag=dockerfile_tag)
             self.dockerfile_tags.append(dockerfile_tag)
@@ -62,7 +62,7 @@ CMD glmark2 --validate
 
     def test_nvidia_glmark2(self):
         plugins = list_plugins()
-        desired_plugins = ['nvidia']
+        desired_plugins = ['nvidia', 'user']
         active_extensions = [e() for e in plugins.values() if e.get_name() in desired_plugins]
         for tag in self.dockerfile_tags:
             dig = DockerImageGenerator(active_extensions, {}, tag)
