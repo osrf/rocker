@@ -61,16 +61,16 @@ class DevHelpers(RockerExtension):
         return 'dev_helpers'
 
     def __init__(self):
-        self.env_subs = None
+        self._env_subs = None
         self.name = DevHelpers.get_name()
 
 
     def get_environment_subs(self):
-        if not self.env_subs:
-            self.env_subs = {}
-            self.env_subs['user_id'] = os.getuid()
-            self.env_subs['username'] = getpass.getuser()
-        return self.env_subs
+        if not self._env_subs:
+            self._env_subs = {}
+            self._env_subs['user_id'] = os.getuid()
+            self._env_subs['username'] = getpass.getuser()
+        return self._env_subs
 
     def get_preamble(self, cliargs):
         return ''
@@ -92,7 +92,7 @@ class Nvidia(RockerExtension):
         return 'nvidia'
 
     def __init__(self):
-        self.env_subs = None
+        self._env_subs = None
         self.name = Nvidia.get_name()
         self.xauth = '/tmp/.docker.xauth'
         self.supported_distros = ['Ubuntu']
@@ -100,24 +100,26 @@ class Nvidia(RockerExtension):
 
 
     def get_environment_subs(self, cliargs={}):
-        if not self.env_subs:
-            build_detector_image()
-            dist, ver, codename = detect_os(cliargs['base_image'])
-            self.env_subs = {}
-            self.env_subs['user_id'] = os.getuid()
-            self.env_subs['username'] = getpass.getuser()
-            self.env_subs['DISPLAY'] = os.getenv('DISPLAY')
-            self.env_subs['image_distro_id'] = dist
-            if self.env_subs['image_distro_id'] not in self.supported_distros:
-                print("WARNING distro id %s not supported by Nvidia supported " % self.env_subs['image_distro_id'], self.supported_distros)
-                sys.exit(1)
-            self.env_subs['image_distro_version'] = ver
-            if self.env_subs['image_distro_version'] not in self.supported_versions:
-                print("WARNING distro version %s not in supported list by Nvidia supported versions" % self.env_subs['image_distro_version'], self.supported_versions)
-                sys.exit(1)
-                # TODO(tfoote) add a standard mechanism for checking preconditions and disabling plugins
+        if not self._env_subs:
+            self._env_subs = {}
+            self._env_subs['user_id'] = os.getuid()
+            self._env_subs['username'] = getpass.getuser()
+            self._env_subs['DISPLAY'] = os.getenv('DISPLAY')
+        
+        # non static elements test every time
+        build_detector_image()
+        dist, ver, codename = detect_os(cliargs['base_image'])
+        self._env_subs['image_distro_id'] = dist
+        if self._env_subs['image_distro_id'] not in self.supported_distros:
+            print("WARNING distro id %s not supported by Nvidia supported " % self._env_subs['image_distro_id'], self.supported_distros)
+            sys.exit(1)
+        self._env_subs['image_distro_version'] = ver
+        if self._env_subs['image_distro_version'] not in self.supported_versions:
+            print("WARNING distro version %s not in supported list by Nvidia supported versions" % self._env_subs['image_distro_version'], self.supported_versions)
+            sys.exit(1)
+            # TODO(tfoote) add a standard mechanism for checking preconditions and disabling plugins
 
-        return self.env_subs
+        return self._env_subs
 
     def get_preamble(self, cliargs):
         preamble = pkgutil.get_data('rocker', 'templates/%s_preamble.Dockerfile.em' % self.name).decode('utf-8')
@@ -168,17 +170,17 @@ class PulseAudio(RockerExtension):
         return 'pulse'
 
     def __init__(self):
-        self.env_subs = None
+        self._env_subs = None
         self.name = PulseAudio.get_name()
 
 
     def get_environment_subs(self):
-        if not self.env_subs:
-            self.env_subs = {}
-            self.env_subs['user_id'] = os.getuid()
-            self.env_subs['XDG_RUNTIME_DIR'] = os.getenv('XDG_RUNTIME_DIR')
-            self.env_subs['audio_group_id'] = grp.getgrnam('audio').gr_gid
-        return self.env_subs
+        if not self._env_subs:
+            self._env_subs = {}
+            self._env_subs['user_id'] = os.getuid()
+            self._env_subs['XDG_RUNTIME_DIR'] = os.getenv('XDG_RUNTIME_DIR')
+            self._env_subs['audio_group_id'] = grp.getgrnam('audio').gr_gid
+        return self._env_subs
 
     def get_preamble(self, cliargs):
         return ''
@@ -208,7 +210,6 @@ class HomeDir(RockerExtension):
         return 'home'
 
     def __init__(self):
-        self.env_subs = None
         self.name = HomeDir.get_name()
 
     def get_docker_args(self, cliargs):
@@ -227,14 +228,14 @@ class User(RockerExtension):
         return 'user'
 
     def get_environment_subs(self):
-        if not self.env_subs:
-            self.env_subs = {}
-            self.env_subs['user_id'] = os.getuid()
-            self.env_subs['username'] = getpass.getuser()
-        return self.env_subs
+        if not self._env_subs:
+            self._env_subs = {}
+            self._env_subs['user_id'] = os.getuid()
+            self._env_subs['username'] = getpass.getuser()
+        return self._env_subs
 
     def __init__(self):
-        self.env_subs = None
+        self._env_subs = None
         self.name = User.get_name()
 
     def get_snippet(self, cliargs):

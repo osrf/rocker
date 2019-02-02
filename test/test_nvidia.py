@@ -23,12 +23,14 @@ import em
 
 from io import BytesIO as StringIO
 
-from rocker.cli import DockerImageGenerator, list_plugins
+from rocker.cli import DockerImageGenerator
+from rocker.cli import list_plugins
+from rocker.core import get_docker_client
 
 class NvidiaTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        client = docker.from_env()
+        client = get_docker_client()
         self.dockerfile_tags = []
         for distro_version in ['xenial', 'bionic']:
             dockerfile = """
@@ -40,7 +42,10 @@ CMD glmark2 --validate
 """
             dockerfile_tag = 'testfixture_%s_glmark2' % distro_version
             iof = StringIO((dockerfile % locals()).encode())
-            im = client.images.build(fileobj = iof, tag=dockerfile_tag)
+            im = client.build(fileobj = iof, tag=dockerfile_tag)
+            for e in im:
+                pass
+                #print(e)
             self.dockerfile_tags.append(dockerfile_tag)
 
     def setUp(self):
