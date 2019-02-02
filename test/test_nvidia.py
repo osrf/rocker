@@ -23,22 +23,30 @@ import em
 
 from io import BytesIO as StringIO
 
-from rocker.cli import DockerImageGenerator, list_plugins
+from rocker.cli import DockerImageGenerator
+from rocker.cli import list_plugins
+from rocker.core import get_docker_client
 
 class NvidiaTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        client = docker.from_env()
-        dockerfile = """
-FROM ubuntu:xenial
+        client = get_docker_client()
+        self.dockerfile_tags = []
+        for distro_version in ['xenial', 'bionic']:
+            dockerfile = """
+FROM ubuntu:%(distro_version)s
 
 RUN apt-get update && apt-get install glmark2 -y && apt-get clean
 
 CMD glmark2 --validate
 """
-        self.dockerfile_tag = 'rocker_test_glmark2'
-        iof = StringIO(dockerfile.encode())
-        im = client.images.build(fileobj = iof, tag=self.dockerfile_tag)
+            dockerfile_tag = 'testfixture_%s_glmark2' % distro_version
+            iof = StringIO((dockerfile % locals()).encode())
+            im = client.build(fileobj = iof, tag=dockerfile_tag)
+            for e in im:
+                pass
+                #print(e)
+            self.dockerfile_tags.append(dockerfile_tag)
 
     def setUp(self):
         # Work around interference between empy Interpreter
@@ -52,14 +60,16 @@ CMD glmark2 --validate
         em.Interpreter._wasProxyInstalled = False
     
     def test_no_nvidia_glmark2(self):
-        dig = DockerImageGenerator([], [], self.dockerfile_tag)
-        self.assertEqual(dig.build(), 0)
-        self.assertNotEqual(dig.run(), 0)
+        for tag in self.dockerfile_tags:
+            dig = DockerImageGenerator([], {}, tag)
+            self.assertEqual(dig.build(), 0)
+            self.assertNotEqual(dig.run(), 0)
 
     def test_nvidia_glmark2(self):
         plugins = list_plugins()
         desired_plugins = ['nvidia', 'user']
         active_extensions = [e() for e in plugins.values() if e.get_name() in desired_plugins]
-        dig = DockerImageGenerator(active_extensions, '', self.dockerfile_tag)
-        self.assertEqual(dig.build(), 0)
-        self.assertEqual(dig.run(), 0)
+        for tag in self.dockerfile_tags:
+            dig = DockerImageGenerator(active_extensions, {}, tag)
+            self.assertEqual(dig.build(), 0)
+            self.assertEqual(dig.run(), 0)

@@ -10,14 +10,18 @@ Rocker supports extensions via entry points there are some built in but you can 
 
 # Prerequisites
 
-This should work on most systems using with a recent docker version available. 
+This should work on most systems using with a recent docker version available.
+
+Docker installation instructions: https://docs.docker.com/install/
 
 ## NVIDIA settings
 
 For the NVIDIA option this has been demonstrated using Ubuntu 16.04.5 running Kernel 4.15 and nvidia docker2 and the nvidia 384 driver.
 It did not work using the nvidia 340 driver.
 
-It's also expected to work with 18.04 and a recent nvidia driver as well.
+It's also been tested on Ubuntu 18.04 with the 390 Nvidia driver.
+
+Install nvidia-docker 2: https://github.com/nvidia/nvidia-docker/wiki/Installation-(version-2.0)
 
 
 # Installation
@@ -26,11 +30,6 @@ It's also expected to work with 18.04 and a recent nvidia driver as well.
 Debian packages are available from the ROS repositories. You can set them up in step one [here](http://wiki.ros.org/kinetic/Installation/Ubuntu) then come back.
 
 Then you can `sudo apt-get install python3-rocker`
-
-On Ubuntu older than bionic you will need to install python3-distro manually first. 
-
-See https://github.com/osrf/rocker/blob/master/backport_xenial.bash for tested on xenial.
-
 
 ## PIP
 
@@ -70,23 +69,22 @@ To run tests install nose and coverage in the venv
 
 Then you can run nosetests.
 
-    nosetests-3.4 --with-coverage --cover-package rocker -s test/
+    nosetests-3.4 --with-coverage --cover-package rocker
 
-NOtes: 
+Notes:
 
-- Make sure to use the python3 one from inside the environment.
-- You also must run with the console output due to [#9](https://github.com/osrf/rocker/issues/9)
+- Make sure to use the python3 instance of nosetest from inside the environment.
 - The tests include an nvidia test which assumes you're using a machine with an nvidia gpu.
 
 
 # Example usage
 
 
-## Fly a iris
+## Fly a drone
 
 Example usage with an iris
 
-    rocker --nvidia --user --pull --pulse tfoote/drone_demo roslaunch sitl_launcher demo.launch mavros:=true gui:=false
+    rocker --nvidia --user --pull --pulse tfoote/drone_demo
 
 After the ekf converges, 
 
@@ -103,4 +101,15 @@ In QGroundControl go ahead and make a mission, upload it, and then start the mis
 
 ## ROS 2 rviz
 
-    rocker --nvidia --net=host osrf/ros:crystal-desktop rviz2
+    rocker --nvidia osrf/ros:crystal-desktop rviz2
+
+
+## Generic gazebo
+
+On Xenial
+
+    rocker --nvidia osrf/ros:kinetic-desktop-full gazebo
+
+On Bionic
+
+    rocker --nvidia osrf/ros:melodic-desktop-full gazebo

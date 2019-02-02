@@ -4,7 +4,6 @@ import os
 from setuptools import setup
 
 install_requires = [
-    'distro',
     'empy',
     'pexpect',
 ]
