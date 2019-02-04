@@ -11,6 +11,7 @@ install:
   - pip install .
   - pip install nose
   - pip install coverage
+  - pip install codecov
 
 # Nvidia not available on travis
 script:
