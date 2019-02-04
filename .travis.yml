@@ -1,0 +1,17 @@
+language: python
+python:
+  - "3.5"
+  - "3.6"
+
+
+services:
+  - docker
+
+install:
+  - pip install .
+  - pip install nose
+  - pip install coverage
+
+# Nvidia not available on travis
+script:
+  - nosetests --with-coverage --cover-package rocker --exclude test_nvidia_glmark2
