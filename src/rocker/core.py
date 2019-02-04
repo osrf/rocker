@@ -28,6 +28,35 @@ import em
 import docker
 import pexpect
 
+class RockerExtension(object):
+    """The base class for Rocker extension points"""
+
+    def precondition_environment(self, cliargs):
+        """Modify the local environment such as setup tempfiles"""
+        pass
+
+    def validate_environment(self, cliargs):
+        """ Check that the environment is something that can be used.
+        This will check that we're on the right base OS and that the 
+        necessary resources are available, like hardware."""
+        pass
+
+    def get_preamble(self, cliargs):
+        return ''
+
+    def get_snippet(self, cliargs):
+        return ''
+
+    def get_name(self, cliargs):
+        raise NotImplementedError
+    
+    def get_docker_args(self, cliargs):
+        return ''
+
+    @staticmethod
+    def register_arguments(parser):
+        raise NotImplementedError
+
 
 def get_docker_client():
     """Simple helper function for pre 2.0 imports"""
