@@ -41,7 +41,7 @@ kwargs = {
 	    ],
         'rocker.extensions': [
             'dev_helpers = rocker.extensions:DevHelpers',
-            'nvidia = rocker.extensions:Nvidia',
+            'nvidia = rocker.nvidia_extension:Nvidia',
             'pulse = rocker.extensions:PulseAudio',
             'home = rocker.extensions:HomeDir',
             'user = rocker.extensions:User',
