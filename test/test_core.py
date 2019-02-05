@@ -25,7 +25,18 @@ from rocker.core import pull_image
 from rocker.core import get_docker_client
 
 class RockerCoreTest(unittest.TestCase):
-    
+
+    def setUp(self):
+        # Work around interference between empy Interpreter
+        # stdout proxy and test runner. empy installs a proxy on stdout
+        # to be able to capture the information.
+        # And the test runner creates a new stdout object for each test.
+        # This breaks empy as it assumes that the proxy has persistent
+        # between instances of the Interpreter class
+        # empy will error with the exception
+        # "em.Error: interpreter stdout proxy lost"
+        em.Interpreter._wasProxyInstalled = False
+
     def test_list_plugins(self):
         plugins_found = list_plugins()
         plugin_names = plugins_found.keys()
