@@ -16,6 +16,7 @@
 # under the License.
 
 import docker
+import em
 import unittest
 
 from itertools import chain

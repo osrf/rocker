@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import em
 import getpass
 import os
 import unittest
