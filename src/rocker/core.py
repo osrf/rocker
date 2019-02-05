@@ -126,7 +126,7 @@ class DockerImageGenerator(object):
     def run(self, command='', **kwargs):
         if not self.built:
             print("Cannot run if build has not passed.")
-            return False
+            return 1
 
         for e in self.active_extensions:
             try:

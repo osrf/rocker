@@ -48,3 +48,15 @@ class RockerCoreTest(unittest.TestCase):
 
     def test_failed_pull_image(self):
         self.assertFalse(pull_image("osrf/ros:does_not_exist"))
+
+    def test_run_before_build(self):
+        dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
+        self.assertEqual(dig.run('true'), 1)
+        self.assertEqual(dig.build(), 0)
+        self.assertEqual(dig.run('true'), 0)
+
+    def test_return_code(self):
+        dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
+        self.assertEqual(dig.build(), 0)
+        self.assertEqual(dig.run('true'), 0)
+        self.assertEqual(dig.run('false'), 1)
