@@ -16,6 +16,7 @@
 # under the License.
 
 import docker
+import em
 import unittest
 
 from itertools import chain
@@ -25,7 +26,18 @@ from rocker.core import pull_image
 from rocker.core import get_docker_client
 
 class RockerCoreTest(unittest.TestCase):
-    
+
+    def setUp(self):
+        # Work around interference between empy Interpreter
+        # stdout proxy and test runner. empy installs a proxy on stdout
+        # to be able to capture the information.
+        # And the test runner creates a new stdout object for each test.
+        # This breaks empy as it assumes that the proxy has persistent
+        # between instances of the Interpreter class
+        # empy will error with the exception
+        # "em.Error: interpreter stdout proxy lost"
+        em.Interpreter._wasProxyInstalled = False
+
     def test_list_plugins(self):
         plugins_found = list_plugins()
         plugin_names = plugins_found.keys()
@@ -48,3 +60,24 @@ class RockerCoreTest(unittest.TestCase):
 
     def test_failed_pull_image(self):
         self.assertFalse(pull_image("osrf/ros:does_not_exist"))
+
+    def test_run_before_build(self):
+        dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
+        self.assertEqual(dig.run('true'), 1)
+        self.assertEqual(dig.build(), 0)
+        self.assertEqual(dig.run('true'), 0)
+
+    def test_return_code_no_extensions(self):
+        dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
+        self.assertEqual(dig.build(), 0)
+        self.assertEqual(dig.run('true'), 0)
+        self.assertEqual(dig.run('false'), 1)
+
+    def test_return_code_multiple_extensions(self):
+        plugins = list_plugins()
+        desired_plugins = ['home', 'user']
+        active_extensions = [e() for e in plugins.values() if e.get_name() in desired_plugins]
+        dig = DockerImageGenerator(active_extensions, {}, 'ubuntu:bionic')
+        self.assertEqual(dig.build(), 0)
+        self.assertEqual(dig.run('true'), 0)
+        self.assertEqual(dig.run('false'), 1)

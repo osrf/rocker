@@ -16,10 +16,10 @@
 # under the License.
 
 import docker
+import em
 import unittest
 import pexpect
 
-import em
 
 from io import BytesIO as StringIO
 
