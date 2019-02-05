@@ -55,8 +55,17 @@ class RockerCoreTest(unittest.TestCase):
         self.assertEqual(dig.build(), 0)
         self.assertEqual(dig.run('true'), 0)
 
-    def test_return_code(self):
+    def test_return_code_no_extensions(self):
         dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
+        self.assertEqual(dig.build(), 0)
+        self.assertEqual(dig.run('true'), 0)
+        self.assertEqual(dig.run('false'), 1)
+
+    def test_return_code_multiple_extensions(self):
+        plugins = list_plugins()
+        desired_plugins = ['home', 'user']
+        active_extensions = [e() for e in plugins.values() if e.get_name() in desired_plugins]
+        dig = DockerImageGenerator(active_extensions, {}, 'ubuntu:bionic')
         self.assertEqual(dig.build(), 0)
         self.assertEqual(dig.run('true'), 0)
         self.assertEqual(dig.run('false'), 1)
