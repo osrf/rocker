@@ -25,6 +25,18 @@ from rocker.cli import list_plugins
 
 
 class HomeExtensionTest(unittest.TestCase):
+
+    def setUp(self):
+        # Work around interference between empy Interpreter
+        # stdout proxy and test runner. empy installs a proxy on stdout
+        # to be able to capture the information.
+        # And the test runner creates a new stdout object for each test.
+        # This breaks empy as it assumes that the proxy has persistent
+        # between instances of the Interpreter class
+        # empy will error with the exception
+        # "em.Error: interpreter stdout proxy lost"
+        em.Interpreter._wasProxyInstalled = False
+
     def test_user_extension(self):
         plugins = list_plugins()
         home_plugin = plugins['home']
@@ -40,6 +52,18 @@ class HomeExtensionTest(unittest.TestCase):
 
 
 class UserExtensionTest(unittest.TestCase):
+
+    def setUp(self):
+        # Work around interference between empy Interpreter
+        # stdout proxy and test runner. empy installs a proxy on stdout
+        # to be able to capture the information.
+        # And the test runner creates a new stdout object for each test.
+        # This breaks empy as it assumes that the proxy has persistent
+        # between instances of the Interpreter class
+        # empy will error with the exception
+        # "em.Error: interpreter stdout proxy lost"
+        em.Interpreter._wasProxyInstalled = False
+
     def test_user_extension(self):
         plugins = list_plugins()
         user_plugin = plugins['user']
