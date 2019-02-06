@@ -119,9 +119,6 @@ class DockerImageGenerator(object):
                 print("Docker build failed\n", ex)
                 print(ex.output)
                 return 1
-        # Unknown error 
-        print("Unknown error")
-        return 2
 
     def run(self, command='', **kwargs):
         if not self.built:
@@ -162,6 +159,7 @@ class DockerImageGenerator(object):
         if kwargs.get('noexecute', False):
             print("Run this command: \n\n\n")
             print(cmd)
+            return 0
         else:
             try:
                 print("Executing command: ")
@@ -170,9 +168,8 @@ class DockerImageGenerator(object):
                 p.interact()
                 p.terminate()
                 return p.exitstatus
-            except subprocess.CalledProcessError as ex:
+            except pexpect.ExceptionPexpect as ex:
                 print("Docker run failed\n", ex)
-                print(ex.output)
                 return 1
 
 

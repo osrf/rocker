@@ -81,3 +81,21 @@ class RockerCoreTest(unittest.TestCase):
         self.assertEqual(dig.build(), 0)
         self.assertEqual(dig.run('true'), 0)
         self.assertEqual(dig.run('false'), 1)
+
+    def test_noexecute(self):
+        dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
+        self.assertEqual(dig.build(), 0)
+        self.assertEqual(dig.run('true', noexecute=True), 0)
+
+    def test_device(self):
+        dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
+        self.assertEqual(dig.build(), 0)
+        self.assertEqual(dig.run('true', devices=['/dev/random']), 0)
+        self.assertEqual(dig.run('true', devices=['/dev/does_not_exist']), 0)
+
+    def test_network(self):
+        dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
+        self.assertEqual(dig.build(), 0)
+        networks = ['bridge', 'host', 'none']
+        for n in networks:
+            self.assertEqual(dig.run('true', network=n), 0)
