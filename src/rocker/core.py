@@ -162,6 +162,7 @@ class DockerImageGenerator(object):
         if kwargs.get('noexecute', False):
             print("Run this command: \n\n\n")
             print(cmd)
+            return 0
         else:
             try:
                 print("Executing command: ")
