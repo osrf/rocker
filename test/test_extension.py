@@ -95,21 +95,6 @@ class UserExtensionTest(unittest.TestCase):
         self.assertEqual(p.get_docker_args(mock_cliargs), '')
 
 
-EXPECTED_PULSE_SNIPPET = """RUN mkdir -p /etc/pulse
-RUN echo '\\n\\
-# Connect to the hosts server using the mounted UNIX socket\\n\\
-default-server = unix:/run/user/1000/pulse/native\\n\\
-\\n\\
-# Prevent a server running in the container\\n\\
-autospawn = no\\n\\
-daemon-binary = /bin/true\\n\\
-\\n\\
-# Prevent the use of shared memory\\n\\
-enable-shm = false\\n\\
-\\n'\\
-> /etc/pulse/client.conf
-"""
-
 class PulseExtensionTest(unittest.TestCase):
 
     def setUp(self):
@@ -131,8 +116,14 @@ class PulseExtensionTest(unittest.TestCase):
         p = pulse_plugin()
         
         mock_cliargs = {}
-
-        self.assertEqual(p.get_snippet(mock_cliargs), EXPECTED_PULSE_SNIPPET)
+        snippet = p.get_snippet(mock_cliargs)
+        #first line
+        self.assertIn('RUN mkdir -p /etc/pulse', snippet)
+        self.assertIn('default-server = unix:/run/user/', snippet) #skipping user id that's system dependent
+        self.assertIn('autospawn = no', snippet)
+        self.assertIn('daemon-binary = /bin/true', snippet)
+        #last line
+        self.assertIn('> /etc/pulse/client.conf', snippet)
         self.assertEqual(p.get_preamble(mock_cliargs), '')
 
 EXPECTED_DEV_HELPERS_SNIPPET = """# workspace development helpers
