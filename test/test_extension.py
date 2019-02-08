@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import argparse
 import em
 import getpass
 import os
@@ -25,11 +26,26 @@ from pathlib import Path
 from rocker.cli import list_plugins
 from rocker.extensions import name_to_argument
 
+
+def plugin_load_parser_correctly(plugin):
+    """A helper function to test that the plugins at least
+    register an option for their own name."""
+    parser = argparse.ArgumentParser(description='test_parser')
+    plugin.register_arguments(parser)
+    argument_name = name_to_argument(plugin.get_name())
+    for action in parser._actions:
+        option_strings = getattr(action, 'option_strings', [])
+        if argument_name in option_strings:
+            return True
+    return False
+
+
 class ExtensionsTest(unittest.TestCase):
     def test_name_to_argument(self):
         self.assertEqual(name_to_argument('asdf'), '--asdf')
         self.assertEqual(name_to_argument('as_df'), '--as-df')
         self.assertEqual(name_to_argument('as-df'), '--as-df')
+
 
 class HomeExtensionTest(unittest.TestCase):
 
@@ -50,6 +66,7 @@ class HomeExtensionTest(unittest.TestCase):
         self.assertEqual(home_plugin.get_name(), 'home')
 
         p = home_plugin()
+        self.assertTrue(plugin_load_parser_correctly(home_plugin))
         
         mock_cliargs = {}
         self.assertEqual(p.get_snippet(mock_cliargs), '')
@@ -77,6 +94,7 @@ class UserExtensionTest(unittest.TestCase):
         self.assertEqual(user_plugin.get_name(), 'user')
 
         p = user_plugin()
+        self.assertTrue(plugin_load_parser_correctly(user_plugin))
 
         env_subs = p.get_environment_subs()
         self.assertEqual(env_subs['user_id'], os.getuid())
@@ -114,6 +132,7 @@ class PulseExtensionTest(unittest.TestCase):
         self.assertEqual(pulse_plugin.get_name(), 'pulse')
 
         p = pulse_plugin()
+        self.assertTrue(plugin_load_parser_correctly(pulse_plugin))
         
         mock_cliargs = {}
         snippet = p.get_snippet(mock_cliargs)
@@ -157,10 +176,11 @@ class DevHelpersExtensionTest(unittest.TestCase):
 
     def test_pulse_extension(self):
         plugins = list_plugins()
-        pulse_plugin = plugins['dev_helpers']
-        self.assertEqual(pulse_plugin.get_name(), 'dev_helpers')
+        dev_helper_plugin = plugins['dev_helpers']
+        self.assertEqual(dev_helper_plugin.get_name(), 'dev_helpers')
 
-        p = pulse_plugin()
+        p = dev_helper_plugin()
+        self.assertTrue(plugin_load_parser_correctly(dev_helper_plugin))
         
         mock_cliargs = {}
 
