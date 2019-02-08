@@ -65,6 +65,39 @@ CMD glmark2 --validate
         nvidia_plugin = plugins['nvidia']
         self.assertEqual(nvidia_plugin.get_name(), 'nvidia')    
         self.assertTrue(plugin_load_parser_correctly(nvidia_plugin))
+        
+        p = nvidia_plugin()
+        mock_cliargs = {'base_image': 'ubuntu:xenial'}
+        snippet = p.get_snippet(mock_cliargs)
+
+        self.assertIn('COPY --from=glvnd /usr/local/lib/x86_64-linux-gnu /usr/local/lib/x86_64-linux-gnu', snippet)
+        self.assertIn('COPY --from=glvnd /usr/local/lib/i386-linux-gnu /usr/local/lib/i386-linux-gnu', snippet)
+        self.assertIn('ENV LD_LIBRARY_PATH /usr/local/lib/x86_64-linux-gnu:/usr/local/lib/i386-linux-gnu', snippet)
+        self.assertIn('NVIDIA_VISIBLE_DEVICES', snippet)
+        self.assertIn('NVIDIA_DRIVER_CAPABILITIES', snippet)
+
+        mock_cliargs = {'base_image': 'ubuntu:bionic'}
+        snippet = p.get_snippet(mock_cliargs)
+        self.assertIn('RUN apt-get update && apt-get install -y --no-install-recommends', snippet)
+        self.assertIn(' libglvnd0 ', snippet)
+        self.assertIn(' libgles2 ', snippet)
+        self.assertIn('COPY --from=glvnd /usr/share/glvnd/egl_vendor.d/10_nvidia.json /usr/share/glvnd/egl_vendor.d/10_nvidia.json', snippet)
+
+        self.assertIn('NVIDIA_VISIBLE_DEVICES', snippet)
+        self.assertIn('NVIDIA_DRIVER_CAPABILITIES', snippet)
+
+
+        preamble = p.get_preamble(mock_cliargs)
+        self.assertIn('FROM nvidia/opengl:1.0-glvnd-devel-', preamble)
+
+        docker_args = p.get_docker_args(mock_cliargs)
+        self.assertIn(' -e DISPLAY -e TERM', docker_args)
+        self.assertIn(' -e QT_X11_NO_MITSHM=1', docker_args)
+        self.assertIn(' -e XAUTHORITY=', docker_args)
+        self.assertIn(' -v /tmp/.X11-unix:/tmp/.X11-unix ', docker_args)
+        self.assertIn(' -v /etc/localtime:/etc/localtime:ro ', docker_args)
+        self.assertIn(' --runtime=nvidia ', docker_args)
+        self.assertIn(' --security-opt seccomp=unconfined', docker_args)
 
     
     def test_no_nvidia_glmark2(self):
