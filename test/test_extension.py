@@ -125,6 +125,14 @@ class PulseExtensionTest(unittest.TestCase):
         #last line
         self.assertIn('> /etc/pulse/client.conf', snippet)
         self.assertEqual(p.get_preamble(mock_cliargs), '')
+        docker_args = p.get_docker_args(mock_cliargs)
+        self.assertIn('-v /run/user/', docker_args)
+        self.assertIn('/pulse:/run/user/', docker_args)
+        self.assertIn('/pulse --device /dev/snd ', docker_args)
+        self.assertIn(' -e PULSE_SERVER=unix', docker_args)
+        self.assertIn('/pulse/native -v', docker_args)
+        self.assertIn('/pulse/native:', docker_args)
+        self.assertIn('/pulse/native --group-add', docker_args)
 
 EXPECTED_DEV_HELPERS_SNIPPET = """# workspace development helpers
 RUN apt-get update \\
