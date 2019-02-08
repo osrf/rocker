@@ -90,9 +90,6 @@ class PulseAudio(RockerExtension):
         ' -e PULSE_SERVER=unix:%(XDG_RUNTIME_DIR)s/pulse/native -v %(XDG_RUNTIME_DIR)s/pulse/native:%(XDG_RUNTIME_DIR)s/pulse/native --group-add %(audio_group_id)s '
         return args % self.get_environment_subs()
 
-    def precondition_environment(self, cliargs):
-        pass
-
     @staticmethod
     def register_arguments(parser):
         parser.add_argument(name_to_argument(PulseAudio.get_name()),
