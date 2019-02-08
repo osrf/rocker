@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import argparse
 import em
 import getpass
 import os
@@ -23,6 +24,27 @@ from pathlib import Path
 
 
 from rocker.cli import list_plugins
+from rocker.extensions import name_to_argument
+
+
+def plugin_load_parser_correctly(plugin):
+    """A helper function to test that the plugins at least
+    register an option for their own name."""
+    parser = argparse.ArgumentParser(description='test_parser')
+    plugin.register_arguments(parser)
+    argument_name = name_to_argument(plugin.get_name())
+    for action in parser._actions:
+        option_strings = getattr(action, 'option_strings', [])
+        if argument_name in option_strings:
+            return True
+    return False
+
+
+class ExtensionsTest(unittest.TestCase):
+    def test_name_to_argument(self):
+        self.assertEqual(name_to_argument('asdf'), '--asdf')
+        self.assertEqual(name_to_argument('as_df'), '--as-df')
+        self.assertEqual(name_to_argument('as-df'), '--as-df')
 
 
 class HomeExtensionTest(unittest.TestCase):
@@ -38,12 +60,13 @@ class HomeExtensionTest(unittest.TestCase):
         # "em.Error: interpreter stdout proxy lost"
         em.Interpreter._wasProxyInstalled = False
 
-    def test_user_extension(self):
+    def test_home_extension(self):
         plugins = list_plugins()
         home_plugin = plugins['home']
         self.assertEqual(home_plugin.get_name(), 'home')
 
         p = home_plugin()
+        self.assertTrue(plugin_load_parser_correctly(home_plugin))
         
         mock_cliargs = {}
         self.assertEqual(p.get_snippet(mock_cliargs), '')
@@ -71,6 +94,7 @@ class UserExtensionTest(unittest.TestCase):
         self.assertEqual(user_plugin.get_name(), 'user')
 
         p = user_plugin()
+        self.assertTrue(plugin_load_parser_correctly(user_plugin))
 
         env_subs = p.get_environment_subs()
         self.assertEqual(env_subs['user_id'], os.getuid())
@@ -87,3 +111,78 @@ class UserExtensionTest(unittest.TestCase):
 
         self.assertEqual(p.get_preamble(mock_cliargs), '')
         self.assertEqual(p.get_docker_args(mock_cliargs), '')
+
+
+class PulseExtensionTest(unittest.TestCase):
+
+    def setUp(self):
+        # Work around interference between empy Interpreter
+        # stdout proxy and test runner. empy installs a proxy on stdout
+        # to be able to capture the information.
+        # And the test runner creates a new stdout object for each test.
+        # This breaks empy as it assumes that the proxy has persistent
+        # between instances of the Interpreter class
+        # empy will error with the exception
+        # "em.Error: interpreter stdout proxy lost"
+        em.Interpreter._wasProxyInstalled = False
+
+    def test_pulse_extension(self):
+        plugins = list_plugins()
+        pulse_plugin = plugins['pulse']
+        self.assertEqual(pulse_plugin.get_name(), 'pulse')
+
+        p = pulse_plugin()
+        self.assertTrue(plugin_load_parser_correctly(pulse_plugin))
+        
+        mock_cliargs = {}
+        snippet = p.get_snippet(mock_cliargs)
+        #first line
+        self.assertIn('RUN mkdir -p /etc/pulse', snippet)
+        self.assertIn('default-server = unix:/run/user/', snippet) #skipping user id that's system dependent
+        self.assertIn('autospawn = no', snippet)
+        self.assertIn('daemon-binary = /bin/true', snippet)
+        #last line
+        self.assertIn('> /etc/pulse/client.conf', snippet)
+        self.assertEqual(p.get_preamble(mock_cliargs), '')
+        docker_args = p.get_docker_args(mock_cliargs)
+        self.assertIn('-v /run/user/', docker_args)
+        self.assertIn('/pulse:/run/user/', docker_args)
+        self.assertIn('/pulse --device /dev/snd ', docker_args)
+        self.assertIn(' -e PULSE_SERVER=unix', docker_args)
+        self.assertIn('/pulse/native -v', docker_args)
+        self.assertIn('/pulse/native:', docker_args)
+        self.assertIn('/pulse/native --group-add', docker_args)
+
+EXPECTED_DEV_HELPERS_SNIPPET = """# workspace development helpers
+RUN apt-get update \\
+ && apt-get install -y \\
+    byobu \\
+    emacs \\
+ && apt-get clean
+"""
+
+class DevHelpersExtensionTest(unittest.TestCase):
+
+    def setUp(self):
+        # Work around interference between empy Interpreter
+        # stdout proxy and test runner. empy installs a proxy on stdout
+        # to be able to capture the information.
+        # And the test runner creates a new stdout object for each test.
+        # This breaks empy as it assumes that the proxy has persistent
+        # between instances of the Interpreter class
+        # empy will error with the exception
+        # "em.Error: interpreter stdout proxy lost"
+        em.Interpreter._wasProxyInstalled = False
+
+    def test_pulse_extension(self):
+        plugins = list_plugins()
+        dev_helper_plugin = plugins['dev_helpers']
+        self.assertEqual(dev_helper_plugin.get_name(), 'dev_helpers')
+
+        p = dev_helper_plugin()
+        self.assertTrue(plugin_load_parser_correctly(dev_helper_plugin))
+        
+        mock_cliargs = {}
+
+        self.assertEqual(p.get_snippet(mock_cliargs), EXPECTED_DEV_HELPERS_SNIPPET)
+        self.assertEqual(p.get_preamble(mock_cliargs), '')

@@ -26,6 +26,7 @@ from io import BytesIO as StringIO
 from rocker.cli import DockerImageGenerator
 from rocker.cli import list_plugins
 from rocker.core import get_docker_client
+from test_extension import plugin_load_parser_correctly
 
 class NvidiaTest(unittest.TestCase):
     @classmethod
@@ -58,6 +59,13 @@ CMD glmark2 --validate
         # empy will error with the exception
         # "em.Error: interpreter stdout proxy lost"
         em.Interpreter._wasProxyInstalled = False
+
+    def test_nvidia_extension_basic(self):
+        plugins = list_plugins()
+        nvidia_plugin = plugins['nvidia']
+        self.assertEqual(nvidia_plugin.get_name(), 'nvidia')    
+        self.assertTrue(plugin_load_parser_correctly(nvidia_plugin))
+
     
     def test_no_nvidia_glmark2(self):
         for tag in self.dockerfile_tags:
