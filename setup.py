@@ -45,6 +45,7 @@ kwargs = {
             'pulse = rocker.extensions:PulseAudio',
             'home = rocker.extensions:HomeDir',
             'user = rocker.extensions:User',
+            'x11 = rocker.nvidia_extension:X11',
         ]
 	},
     'author': 'Tully Foote',

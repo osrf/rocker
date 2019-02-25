@@ -28,6 +28,46 @@ from .extensions import name_to_argument
 from .core import RockerExtension
 
 
+class X11(RockerExtension):
+    @staticmethod
+    def get_name():
+        return 'x11'
+
+    def __init__(self):
+        self.name = X11.get_name()
+        self._env_subs = None
+        self.xauth = '/tmp/.docker.xauth'
+
+    def get_docker_args(self, cliargs):
+        xauth = self.xauth
+        return "  -e DISPLAY -e TERM \
+  -e QT_X11_NO_MITSHM=1 \
+  -e XAUTHORITY=%(xauth)s -v %(xauth)s:%(xauth)s \
+  -v /tmp/.X11-unix:/tmp/.X11-unix \
+  -v /etc/localtime:/etc/localtime:ro " % locals()
+
+    def precondition_environment(self, cliargs):
+        xauth = self.xauth
+        display = os.getenv('DISPLAY')
+        # Make sure processes in the container can connect to the x server
+        # Necessary so gazebo can create a context for OpenGL rendering (even headless)
+        if not os.path.exists(self.xauth): #if [ ! -f $XAUTH ]
+            Path(self.xauth).touch()
+            # print("touched %s" % xauth)
+        cmd = 'xauth nlist %(display)s | sed -e \'s/^..../ffff/\' | xauth -f %(xauth)s nmerge -' % locals()
+        # print("runnning %s" % cmd)
+        try:
+            subprocess.check_call(cmd, shell=True)
+        except subprocess.CalledProcessError as ex:
+            print("Failed setting up XAuthority with command %s" % cmd)
+            raise ex
+
+    @staticmethod
+    def register_arguments(parser):
+        parser.add_argument(name_to_argument(X11.get_name()),
+            action='store_true',
+            help="Enable x11")
+
 
 class Nvidia(RockerExtension):
     @staticmethod
@@ -37,7 +77,6 @@ class Nvidia(RockerExtension):
     def __init__(self):
         self._env_subs = None
         self.name = Nvidia.get_name()
-        self.xauth = '/tmp/.docker.xauth'
         self.supported_distros = ['Ubuntu']
         self.supported_versions = ['16.04', '18.04']
 
@@ -47,7 +86,6 @@ class Nvidia(RockerExtension):
             self._env_subs = {}
             self._env_subs['user_id'] = os.getuid()
             self._env_subs['username'] = getpass.getuser()
-            self._env_subs['DISPLAY'] = os.getenv('DISPLAY')
         
         # non static elements test every time
         build_detector_image()
@@ -73,32 +111,8 @@ class Nvidia(RockerExtension):
         return em.expand(snippet, self.get_environment_subs(cliargs))
 
     def get_docker_args(self, cliargs):
-        xauth = self.xauth
-        return "  -e DISPLAY -e TERM \
-  -e QT_X11_NO_MITSHM=1 \
-  -e XAUTHORITY=%(xauth)s -v %(xauth)s:%(xauth)s \
-  -v /tmp/.X11-unix:/tmp/.X11-unix \
-  -v /etc/localtime:/etc/localtime:ro \
-  --runtime=nvidia \
+        return "  --runtime=nvidia \
   --security-opt seccomp=unconfined" % locals()
-
-    def precondition_environment(self, cliargs):
-        xauth = self.xauth
-        display = os.getenv('DISPLAY')
-        # Make sure processes in the container can connect to the x server
-        # Necessary so gazebo can create a context for OpenGL rendering (even headless)
-        if not os.path.exists(self.xauth): #if [ ! -f $XAUTH ]
-            Path(self.xauth).touch()
-            # print("touched %s" % xauth)
-        cmd = 'xauth nlist %(display)s | sed -e \'s/^..../ffff/\' | xauth -f %(xauth)s nmerge -' % locals()
-        # print("runnning %s" % cmd)
-        try:
-            subprocess.check_call(cmd, shell=True)
-        except subprocess.CalledProcessError as ex:
-            print("Failed setting up XAuthority with command %s" % cmd)
-            raise ex
-        # import stat
-        # Path(xauth).chmod(stat.S_IROTH) 
 
     @staticmethod
     def register_arguments(parser):
