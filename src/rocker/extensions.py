@@ -16,6 +16,7 @@ import grp
 import os
 import em
 import getpass
+import pwd
 import pkgutil
 from pathlib import Path
 import subprocess
@@ -122,9 +123,10 @@ class User(RockerExtension):
 
     def get_environment_subs(self):
         if not self._env_subs:
-            self._env_subs = {}
-            self._env_subs['user_id'] = os.getuid()
-            self._env_subs['username'] = getpass.getuser()
+            userinfo = pwd.getpwuid(os.getuid())
+            self._env_subs = {
+                k: getattr(userinfo, 'pw_' + k)
+                for k in "name uid gid gecos dir shell".split() }
         return self._env_subs
 
     def __init__(self):

@@ -5,7 +5,7 @@ RUN apt-get update \
  && apt-get clean
 
 @[if username != 'root']@
-RUN useradd -U --uid @(user_id) -ms /bin/bash @(username) \
+RUN useradd -U --uid @(uid) -ms @(shell) @(name) -c @(gecos) -g @(gid) -d @(dir) \
  && echo "@(username):@(username)" | chpasswd \
  && adduser @(username) sudo \
  && echo "@(username) ALL=NOPASSWD: ALL" >> /etc/sudoers.d/@(username)
