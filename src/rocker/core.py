@@ -132,6 +132,9 @@ class DockerImageGenerator(object):
                 return 1
 
     def _write_run_docker_script(self, cmd, run_docker_script_path=None, **kwargs):
+        if run_docker_script_path is None:
+            return
+
         with self._get_docker_dir(**kwargs) as td:
             rf = os.path.join(td, run_docker_script_path)
             print("Writing run docker script to '%s'" % rf)
