@@ -21,6 +21,7 @@ import getpass
 import os
 import unittest
 from pathlib import Path
+import pwd
 
 
 from rocker.cli import list_plugins
@@ -97,8 +98,12 @@ class UserExtensionTest(unittest.TestCase):
         self.assertTrue(plugin_load_parser_correctly(user_plugin))
 
         env_subs = p.get_environment_subs()
+        self.assertEqual(env_subs['gid'], os.getgid())
         self.assertEqual(env_subs['uid'], os.getuid())
         self.assertEqual(env_subs['name'],  getpass.getuser())
+        self.assertEqual(env_subs['dir'],  str(Path.home()))
+        self.assertEqual(env_subs['gecos'],  pwd.getpwuid(os.getuid()).pw_gecos)
+        self.assertEqual(env_subs['shell'],  pwd.getpwuid(os.getuid()).pw_shell)
 
         mock_cliargs = {}
         snippet = p.get_snippet(mock_cliargs).splitlines()
