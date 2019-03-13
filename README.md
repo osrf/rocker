@@ -23,6 +23,14 @@ It's also been tested on Ubuntu 18.04 with the 390 Nvidia driver.
 
 Install nvidia-docker 2: https://github.com/nvidia/nvidia-docker/wiki/Installation-(version-2.0)
 
+## Intel integrated graphics support
+
+For intel integrated graphics support you will need to mount through a specific device
+
+```
+--devices /dev/dri/card0
+```
+
 
 # Installation
 
