@@ -123,10 +123,11 @@ class User(RockerExtension):
 
     def get_environment_subs(self):
         if not self._env_subs:
+            user_vars = ['name', 'uid', 'gid', 'gecos','dir', 'shell']
             userinfo = pwd.getpwuid(os.getuid())
             self._env_subs = {
                 k: getattr(userinfo, 'pw_' + k)
-                for k in "name uid gid gecos dir shell".split() }
+                for k in user_vars }
         return self._env_subs
 
     def __init__(self):
