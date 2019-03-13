@@ -22,6 +22,13 @@ import pkg_resources
 import pkgutil
 import subprocess
 import tempfile
+try:
+    from contextlib import nullcontext
+except ImportError:
+    from contextlib import contextmanager
+    @contextmanager
+    def nullcontext(enter_result=None):
+        yield enter_result
 
 import em
 
@@ -80,9 +87,13 @@ class DockerImageGenerator(object):
         if self.active_extensions:
             self.image_name += "_%s" % '_'.join([e.name for e in active_extensions])
 
-    
+    def _get_docker_dir(self, docker_dir=None, **kw):
+        return (tempfile.TemporaryDirectory()
+                if docker_dir is None
+                else nullcontext(docker_dir))
+
     def build(self, **kwargs):
-        with tempfile.TemporaryDirectory() as td:
+        with self._get_docker_dir(**kwargs) as td:
             df = os.path.join(td, 'Dockerfile')
             print("Writing dockerfile to %s" % df)
             with open(df, 'w') as fh:
@@ -120,6 +131,14 @@ class DockerImageGenerator(object):
                 print(ex.output)
                 return 1
 
+    def _write_run_docker_script(self, cmd, run_docker_script_path=None, **kwargs):
+        with self._get_docker_dir(**kwargs) as td:
+            rf = os.path.join(td, run_docker_script_path)
+            print("Writing run docker script to '%s'" % rf)
+            with open(rf, 'w') as fh:
+                fh.write(cmd)
+
+
     def run(self, command='', **kwargs):
         if not self.built:
             print("Cannot run if build has not passed.")
@@ -155,6 +174,8 @@ class DockerImageGenerator(object):
   --rm \
   %(docker_args)s \
   %(image)s %(command)s" % locals()
+
+        self._write_run_docker_script(cmd, **kwargs)
 #   $DOCKER_OPTS \
         if kwargs.get('noexecute', False):
             print("Run this command: \n\n\n")

@@ -36,6 +36,8 @@ def main():
     parser.add_argument('--pull', action='store_true')
     parser.add_argument('--network', choices=['bridge', 'host', 'overlay', 'none'])
     parser.add_argument('--devices', nargs='*')
+    parser.add_argument('--docker-dir')
+    parser.add_argument('--run_docker_script_path', default="run-docker.sh")
 
     plugins = list_plugins()
     print("Plugins found: %s" % [p.get_name() for p in plugins.values()])
