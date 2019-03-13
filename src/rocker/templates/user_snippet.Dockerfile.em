@@ -5,8 +5,8 @@ RUN apt-get update \
  && apt-get clean
 
 @[if name != 'root']@
-RUN groupadd -g @(gid) @name \
- && useradd --uid @(uid) -s @(shell) @(name) -c @(gecos) -g @(gid) -d @(dir) \
+RUN groupadd -g "@(gid)" "@name" \
+ && useradd --uid "@(uid)" -s "@(shell)" -c "@(gecos)" -g "@(gid)" -d "@(dir)" "@(name)" \
  && echo "@(name):@(name)" | chpasswd \
  && adduser @(name) sudo \
  && echo "@(name) ALL=NOPASSWD: ALL" >> /etc/sudoers.d/@(name)
