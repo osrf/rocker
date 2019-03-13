@@ -4,13 +4,14 @@ RUN apt-get update \
     sudo \
  && apt-get clean
 
-@[if username != 'root']@
-RUN useradd -U --uid @(user_id) -ms /bin/bash @(username) \
- && echo "@(username):@(username)" | chpasswd \
- && adduser @(username) sudo \
- && echo "@(username) ALL=NOPASSWD: ALL" >> /etc/sudoers.d/@(username)
+@[if name != 'root']@
+RUN groupadd -g "@(gid)" "@name" \
+ && useradd --uid "@(uid)" -s "@(shell)" -c "@(gecos)" -g "@(gid)" -d "@(dir)" "@(name)" \
+ && echo "@(name):@(name)" | chpasswd \
+ && adduser @(name) sudo \
+ && echo "@(name) ALL=NOPASSWD: ALL" >> /etc/sudoers.d/@(name)
 # Commands below run as the developer user
-USER @(username)
+USER @(name)
 @[else]@
 # Detected user is root, which already exists so not creating new user.
 @[end if]@
