@@ -97,8 +97,8 @@ class UserExtensionTest(unittest.TestCase):
         self.assertTrue(plugin_load_parser_correctly(user_plugin))
 
         env_subs = p.get_environment_subs()
-        self.assertEqual(env_subs['user_id'], os.getuid())
-        self.assertEqual(env_subs['username'],  getpass.getuser())
+        self.assertEqual(env_subs['uid'], os.getuid())
+        self.assertEqual(env_subs['name'],  getpass.getuser())
 
         mock_cliargs = {}
         snippet = p.get_snippet(mock_cliargs).splitlines()
