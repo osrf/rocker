@@ -121,3 +121,11 @@ On Xenial
 On Bionic
 
     rocker --nvidia osrf/ros:melodic-desktop-full gazebo
+
+## Mount volumes
+
+`--mount` adds paths as docker volumes.
+The path used inside the container is the same as the path outside.
+The last path must be terminated with two slashes `--`.
+
+    rocker --mount ~/.vimrc ~/.bashrc -- ubuntu:18.04
