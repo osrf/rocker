@@ -139,3 +139,19 @@ On Xenial
 On Bionic
 
     rocker --nvidia --x11 osrf/ros:melodic-desktop-full gazebo
+
+## Volume mount
+
+`--volume` adds paths as docker volumes. The last path must be terminated with two dashes `--`.
+
+    rocker --volume ~/.vimrc ~/.bashrc -- ubuntu:18.04
+
+The above example of the volume option will be expanded in `docker run` as
+
+    --volume ~/.vimrc:~/.vimrc --volume ~/.bashrc:~/.bashrc  
+
+Same as `docker`'s `--volume` option, `rocker --volume` takes 3 fields.
+- 1st field: the path to the file or directory on the host machine.
+- 2nd field: (optional) the path where the file or directory is mounted in the container.
+   - If only the 1st field is supplied, same value as the 1st field will be populated as the 2nd field.
+- 3rd field: (optional) bind propagation as `ro`, `z`, and `Z`. See [docs.docker.com](https://docs.docker.com/storage/bind-mounts/) for further detail.
