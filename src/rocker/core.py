@@ -20,6 +20,7 @@ import sys
 
 import pkg_resources
 import pkgutil
+import requests.exceptions
 import subprocess
 import tempfile
 
@@ -114,7 +115,11 @@ class DockerImageGenerator(object):
                 else:
                     print("no more output and success not detected")
                     return 2
- 
+            except requests.exceptions.ConnectionError as ex:
+                print("Docker build failed\n", ex)
+                print(ex)
+                print('Do you have permissions to run docker such as being in the docker group?')
+                return 1
             except docker.errors.APIError as ex:
                 print("Docker build failed\n", ex)
                 print(ex.output)
@@ -204,6 +209,10 @@ def pull_image(image_name):
         for line in docker_client.pull(image_name, stream=True):
             print(line)
         return True
+    except requests.exceptions.ConnectionError as ex:
+        print('Pull of %s failed: %s' % (image_name, ex))
+        print('Do you have permissions to run docker such as being in the docker group?')
+        return False
     except docker.errors.APIError as ex:
         print('Pull of %s failed: %s' % (image_name, ex))
         return False
