@@ -16,9 +16,11 @@
 
 import argparse
 import os
+import requests.exceptions
 import sys
 
 from .core import DockerImageGenerator
+from .core import get_docker_client
 from .core import list_plugins
 from .core import pull_image
 
@@ -36,6 +38,16 @@ def main():
     parser.add_argument('--pull', action='store_true')
     parser.add_argument('--network', choices=['bridge', 'host', 'overlay', 'none'])
     parser.add_argument('--devices', nargs='*')
+
+    # Check for docker access
+    client = get_docker_client()
+    try:
+        client.containers()
+    except requests.exceptions.ConnectionError as ex:
+        print('Aborting: Could not talk to the docker daemon.')
+        print(ex)
+        print('Do you have permissions to run docker such as being in the docker group?')
+        return 1
 
     plugins = list_plugins()
     print("Plugins found: %s" % [p.get_name() for p in plugins.values()])
