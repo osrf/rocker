@@ -126,6 +126,6 @@ On Bionic
 
 `--mount` adds paths as docker volumes.
 The path used inside the container is the same as the path outside.
-The last path must be terminated with two slashes `--`.
+The last path must be terminated with two dashes `--`.
 
     rocker --mount ~/.vimrc ~/.bashrc -- ubuntu:18.04
