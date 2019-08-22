@@ -21,7 +21,7 @@ from .core import get_docker_client
 
 
 DETECTOR_DOCKERFILE="""
-FROM python:3
+FROM python:3-stretch
 
 RUN mkdir -p /tmp/distrovenv
 RUN python3 -m venv /tmp/distrovenv
@@ -38,7 +38,8 @@ FROM rocker__detector as detector
 FROM %(image_name)s
 
 COPY --from=detector /dist/detect_os /tmp/detect_os
-CMD /tmp/detect_os
+ENTRYPOINT [ "/tmp/detect_os" ]
+CMD [ "" ]
 """
 
 
