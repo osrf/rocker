@@ -19,6 +19,7 @@ import getpass
 import pwd
 import pkgutil
 from pathlib import Path
+from shlex import quote
 import subprocess
 import sys
 
@@ -143,3 +144,28 @@ class User(RockerExtension):
             help="mount the users home directory")
 
 
+class Environment(RockerExtension):
+    @staticmethod
+    def get_name():
+        return 'env'
+
+    def __init__(self):
+        self.name = Environment.get_name()
+
+    def get_snippet(self, cli_args):
+        return ''
+
+    def get_docker_args(self, cli_args):
+        args = ['']
+        for env in cli_args['env']:
+            args.append('-e {0}'.format(quote(env)))
+
+        return ' '.join(args)
+
+    @staticmethod
+    def register_arguments(parser):
+        parser.add_argument('--env',
+            metavar='NAME[=VALUE]',
+            type=str,
+            nargs='+',
+            help='set environment variables')
