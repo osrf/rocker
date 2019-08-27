@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from argparse import ArgumentTypeError
 import os
 from rocker.extensions import RockerExtension
 
@@ -39,14 +40,26 @@ class Mount(RockerExtension):
     def get_docker_args(self, cli_args):
         args = ['']
         for mount in cli_args['mount']:
-            mount = os.path.abspath(mount)
-            args.append('-v {0}:{0}'.format(mount))
+            elems = mount.split(':')
+            host_dir = os.path.abspath(elems[0])
+            if len(elems) == 1:
+                args.append('-v {0}:{0}'.format(host_dir))
+            elif len(elems) == 2:
+                container_dir = elems[1]
+                args.append('-v {0}:{1}'.format(host_dir, container_dir))
+            elif len(elems) == 3:
+                container_dir = elems[1]
+                options = elems[2]
+                args.append('-v {0}:{1}:{2}'.format(host_dir, container_dir, options))
+            else:
+                raise ArgumentTypeError('--mount expects arguments in format HOST-DIR[:CONTAINER-DIR[:OPTIONS]]')
+
         return ' '.join(args)
 
     @staticmethod
     def register_arguments(parser):
         parser.add_argument('--mount',
-            metavar='PATH',
+            metavar='HOST-DIR[:CONTAINER-DIR[:OPTIONS]]',
             type=str,
             nargs='+',
             help='mount volumes in container')
