@@ -18,6 +18,7 @@ from ast import literal_eval
 from io import BytesIO as StringIO
 
 from .core import get_docker_client
+from .utils import tag_image_name
 
 
 DETECTOR_DOCKERFILE="""
@@ -67,7 +68,7 @@ def build_detector_image(verbose=False):
 
 def detect_os(image_name):
     client = get_docker_client()
-    dockerfile_tag = 'rocker__detection_%s' % image_name
+    dockerfile_tag = tag_image_name(image_name, prefix='rocker--detection-')
     iof = StringIO((DETECTION_TEMPLATE % locals()).encode())
     im = client.build(fileobj = iof, tag=dockerfile_tag)
     for l in im:

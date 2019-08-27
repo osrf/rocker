@@ -28,6 +28,8 @@ import em
 import docker
 import pexpect
 
+from .utils import tag_image_name
+
 class RockerExtension(object):
     """The base class for Rocker extension points"""
 
@@ -76,11 +78,10 @@ class DockerImageGenerator(object):
 
         self.dockerfile = generate_dockerfile(active_extensions, self.cliargs, base_image)
         # print(df)
-        self.image_name = "rocker_" + base_image
+        self.image_name = tag_image_name(base_image, prefix="rocker-")
         if self.active_extensions:
-            self.image_name += "_%s" % '_'.join([e.name for e in active_extensions])
+            self.image_name += "-%s" % '-'.join([e.name for e in active_extensions])
 
-    
     def build(self, **kwargs):
         with tempfile.TemporaryDirectory() as td:
             df = os.path.join(td, 'Dockerfile')
