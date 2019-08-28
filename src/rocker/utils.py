@@ -18,7 +18,7 @@ from argparse import ArgumentTypeError
 def tag_image_name(image_name, prefix=None, suffix=None):
     # from https://github.com/docker/distribution/blob/master/reference/reference.go, with some simplifications:
     parsed_image_name = re.fullmatch(
-        r'((?P<hostname>([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]))+)(:(?P<port>[0-9]+))?/)?'
+        r'((?P<hostname>([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]))*)(:(?P<port>[0-9]+))?/)?'
         r'(?P<components>[a-zA-Z0-9_\.-]+(/[a-zA-Z0-9_\.-]+)*)'
         r'(:(?P<tag>[a-zA-Z0-9\.-]+))?',
         image_name)
