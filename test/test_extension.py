@@ -191,3 +191,31 @@ class DevHelpersExtensionTest(unittest.TestCase):
 
         self.assertEqual(p.get_snippet(mock_cliargs), EXPECTED_DEV_HELPERS_SNIPPET)
         self.assertEqual(p.get_preamble(mock_cliargs), '')
+
+
+class EnvExtensionTest(unittest.TestCase):
+
+    def setUp(self):
+        # Work around interference between empy Interpreter
+        # stdout proxy and test runner. empy installs a proxy on stdout
+        # to be able to capture the information.
+        # And the test runner creates a new stdout object for each test.
+        # This breaks empy as it assumes that the proxy has persistent
+        # between instances of the Interpreter class
+        # empy will error with the exception
+        # "em.Error: interpreter stdout proxy lost"
+        em.Interpreter._wasProxyInstalled = False
+
+    def test_env_extension(self):
+        plugins = list_plugins()
+        env_plugin = plugins['env']
+        self.assertEqual(env_plugin.get_name(), 'env')
+
+        p = env_plugin()
+        self.assertTrue(plugin_load_parser_correctly(env_plugin))
+        
+        mock_cliargs = {'env': ['ENVVARNAME=envvar_value', 'ENV2=val2']}
+
+        self.assertEqual(p.get_snippet(mock_cliargs), '')
+        self.assertEqual(p.get_preamble(mock_cliargs), '')
+        self.assertEqual(p.get_docker_args(mock_cliargs), ' -e ENVVARNAME=envvar_value -e ENV2=val2')
