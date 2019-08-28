@@ -71,7 +71,9 @@ def detect_image_os():
 
     args = parser.parse_args()    
 
-    build_detector_image()
+    if not build_detector_image():
+        print("Failed to build detector.")
+        return 1
     results = detect_os(args.image)
     print(results)
     if results:
