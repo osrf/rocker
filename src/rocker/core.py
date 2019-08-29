@@ -16,6 +16,7 @@
 
 from collections import OrderedDict
 import os
+import shlex
 import sys
 
 import pkg_resources
@@ -26,7 +27,6 @@ import tempfile
 import em
 
 import docker
-import pexpect
 
 class RockerExtension(object):
     """The base class for Rocker extension points"""
@@ -164,11 +164,8 @@ class DockerImageGenerator(object):
             try:
                 print("Executing command: ")
                 print(cmd)
-                p = pexpect.spawn(cmd)
-                p.interact()
-                p.terminate()
-                return p.exitstatus
-            except pexpect.ExceptionPexpect as ex:
+                os.execlp('docker', *shlex.split(cmd))
+            except OSError as ex:
                 print("Docker run failed\n", ex)
                 return 1
 
