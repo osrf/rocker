@@ -39,7 +39,11 @@ class Mount(RockerExtension):
 
     def get_docker_args(self, cli_args):
         args = ['']
-        for mount in cli_args['mount']:
+
+        # flatten cli_args['mount']
+        mounts = [ x for sublist in cli_args['mount'] for x in sublist]
+
+        for mount in mounts:
             elems = mount.split(':')
             host_dir = os.path.abspath(elems[0])
             if len(elems) == 1:
@@ -62,4 +66,5 @@ class Mount(RockerExtension):
             metavar='HOST-DIR[:CONTAINER-DIR[:OPTIONS]]',
             type=str,
             nargs='+',
+            action='append',
             help='mount volumes in container')
