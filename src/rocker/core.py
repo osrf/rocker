@@ -24,10 +24,16 @@ import pkgutil
 import subprocess
 import tempfile
 
-import em
-
 import docker
 import pexpect
+
+import fcntl
+import signal
+import struct
+import termios
+
+SYS_STDOUT = sys.stdout
+
 
 class RockerExtension(object):
     """The base class for Rocker extension points"""
@@ -176,6 +182,13 @@ class DockerImageGenerator(object):
                 print("Executing command: ")
                 print(cmd)
                 p = pexpect.spawn(cmd)
+                def sigwinch_passthrough (sig, data):
+                    s = struct.pack("HHHH", 0, 0, 0, 0)
+                    a = struct.unpack('hhhh', fcntl.ioctl(SYS_STDOUT.fileno(),
+                        termios.TIOCGWINSZ , s))
+                    if not p.closed:
+                        p.setwinsize(a[0],a[1])
+                signal.signal(signal.SIGWINCH, sigwinch_passthrough)
                 p.interact()
                 p.terminate()
                 return p.exitstatus
