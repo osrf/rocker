@@ -5,12 +5,17 @@ RUN apt-get update \
  && apt-get clean
 
 @[if name != 'root']@
-RUN (getent group "@(gid)" >/dev/null || groupadd -g "@(gid)" "@name") \
- && (getent passwd "@(uid)" >/dev/null || \
-       useradd --no-log-init --uid "@(uid)" -s "@(shell)" -c "@(gecos)" -g "@(gid)" -d "@(dir)" "@(name)" -m \
-       && echo "@(name):@(name)" | chpasswd \
-       && adduser @(name) sudo) \
- && echo "@(name) ALL=NOPASSWD: ALL" >> /etc/sudoers.d/@(name)
+RUN existing_user_by_uid=`getent passwd "@(uid)" | cut -f1 -d: || true` && \
+    if [ -n "${existing_user_by_uid}" ]; then userdel -r "${existing_user_by_uid}"; fi && \
+    existing_user_by_name=`getent passwd "@(name)" | cut -f1 -d: || true` && \
+    if [ -n "${existing_user_by_name}" ]; then userdel -r "${existing_user_by_name}"; fi && \
+    existing_group_by_gid=`getent group "@(gid)" | cut -f1 -d: || true` && \
+    if [ -z "${existing_group_by_gid}" ]; then \
+      groupadd -g "@(gid)" "@name"; \
+    fi && \
+    useradd --no-log-init --uid "@(uid)" -s "@(shell)" -c "@(gecos)" -g "@(gid)" -d "@(dir)" "@(name)" -m && \
+    echo "@(name) ALL=NOPASSWD: ALL" >> /etc/sudoers.d/rocker
+
 # Commands below run as the developer user
 USER @(name)
 @[else]@
