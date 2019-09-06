@@ -46,7 +46,7 @@ def main():
     args_dict = vars(args)
     
     active_extensions = [e() for e in plugins.values() if args_dict.get(e.get_name())]
-    # Force user to end if present otherwise it will 
+    # Force user to end if present otherwise it will break other extensions
     active_extensions.sort(key=lambda e:e.get_name().startswith('user'))
     print("Active extensions %s" % [e.get_name() for e in active_extensions])
 

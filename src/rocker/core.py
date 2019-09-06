@@ -180,9 +180,6 @@ def generate_dockerfile(extensions, args_dict, base_image):
         dockerfile_str += el.get_preamble(args_dict) + '\n'
     dockerfile_str += '\nFROM %s\n' % base_image
     dockerfile_str += 'USER root\n'
-    if 'user' in extensions:
-        extensions.remove('user')
-        extensions.append('user')
     for el in extensions:
         dockerfile_str += '# Snippet from extension [%s]\n' % el.name
         dockerfile_str += el.get_snippet(args_dict) + '\n'
