@@ -19,14 +19,9 @@ import docker
 import unittest
 
 
-from rocker.os_detector import build_detector_image
 from rocker.os_detector import detect_os
 
 class RockerOSDetectorTest(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        build_detector_image()
 
     def test_ubuntu(self):
         result = detect_os("ubuntu:xenial")

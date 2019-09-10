@@ -21,7 +21,6 @@ from pathlib import Path
 import subprocess
 import sys
 
-from .os_detector import build_detector_image
 from .os_detector import detect_os
 
 from .extensions import name_to_argument
@@ -88,9 +87,6 @@ class Nvidia(RockerExtension):
             self._env_subs['username'] = getpass.getuser()
         
         # non static elements test every time
-        if not build_detector_image():
-            print("ERROR: Failed to build image detector")
-            sys.exit(1)
         dist, ver, codename = detect_os(cliargs['base_image'])
         self._env_subs['image_distro_id'] = dist
         if self._env_subs['image_distro_id'] not in self.supported_distros:
