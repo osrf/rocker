@@ -157,15 +157,18 @@ class Environment(RockerExtension):
 
     def get_docker_args(self, cli_args):
         args = ['']
-        for env in cli_args['env']:
+
+        envs = [ x for sublist in cli_args['env'] for x in sublist]
+        for env in envs:
             args.append('-e {0}'.format(quote(env)))
 
         return ' '.join(args)
 
     @staticmethod
     def register_arguments(parser):
-        parser.add_argument('--env',
+        parser.add_argument('--env', '-e',
             metavar='NAME[=VALUE]',
             type=str,
             nargs='+',
+            action='append',
             help='set environment variables')

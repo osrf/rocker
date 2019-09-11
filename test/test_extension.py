@@ -214,8 +214,8 @@ class EnvExtensionTest(unittest.TestCase):
         p = env_plugin()
         self.assertTrue(plugin_load_parser_correctly(env_plugin))
         
-        mock_cliargs = {'env': ['ENVVARNAME=envvar_value', 'ENV2=val2']}
+        mock_cliargs = {'env': [['ENVVARNAME=envvar_value', 'ENV2=val2'], ['ENV3=val3']]}
 
         self.assertEqual(p.get_snippet(mock_cliargs), '')
         self.assertEqual(p.get_preamble(mock_cliargs), '')
-        self.assertEqual(p.get_docker_args(mock_cliargs), ' -e ENVVARNAME=envvar_value -e ENV2=val2')
+        self.assertEqual(p.get_docker_args(mock_cliargs), ' -e ENVVARNAME=envvar_value -e ENV2=val2 -e ENV3=val3')
