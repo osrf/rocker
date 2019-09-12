@@ -115,7 +115,9 @@ class Nvidia(RockerExtension):
         return em.expand(snippet, self.get_environment_subs(cliargs))
 
     def get_docker_args(self, cliargs):
-        docker_version = Version(get_docker_client().version()['Version'])
+        docker_version_raw = get_docker_client().version()['Version']
+        # Fix for version 17.09.0-ce
+        docker_version = Version(docker_version_raw.split('-')[0])
         if docker_version >= Version("19.03"):
             return "  --gpus all"
         return "  --runtime=nvidia"
