@@ -16,6 +16,7 @@ import grp
 import os
 import em
 import getpass
+from packaging.version import Version
 import pkgutil
 from pathlib import Path
 import subprocess
@@ -25,6 +26,7 @@ from .os_detector import build_detector_image
 from .os_detector import detect_os
 
 from .extensions import name_to_argument
+from .core import get_docker_client
 from .core import RockerExtension
 
 
@@ -113,8 +115,10 @@ class Nvidia(RockerExtension):
         return em.expand(snippet, self.get_environment_subs(cliargs))
 
     def get_docker_args(self, cliargs):
-        return "  --runtime=nvidia \
-  --security-opt seccomp=unconfined" % locals()
+        docker_version = Version(get_docker_client().version()['Version'])
+        if docker_version >= Version("19.03"):
+            return "  --gpus all"
+        return "  --runtime=nvidia"
 
     @staticmethod
     def register_arguments(parser):
