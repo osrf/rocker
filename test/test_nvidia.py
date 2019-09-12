@@ -162,8 +162,7 @@ CMD glmark2 --validate
         #TODO(tfoote) restore with #37 self.assertIn(' -e XAUTHORITY=', docker_args)
         #TODO(tfoote) restore with #37 self.assertIn(' -v /tmp/.X11-unix:/tmp/.X11-unix ', docker_args)
         #TODO(tfoote) restore with #37 self.assertIn(' -v /etc/localtime:/etc/localtime:ro ', docker_args)
-        self.assertIn(' --runtime=nvidia ', docker_args)
-        self.assertIn(' --security-opt seccomp=unconfined', docker_args)
+        self.assertIn(' --runtime=nvidia', docker_args)
 
 
     def test_no_nvidia_glmark2(self):
