@@ -16,6 +16,7 @@
 
 from collections import OrderedDict
 import os
+import re
 import sys
 
 import pkg_resources
@@ -67,6 +68,30 @@ def get_docker_client():
         docker_client = docker.Client()
     return docker_client
 
+def docker_build(docker_client = None, output_callback = None, **kwargs):
+    image_id = None
+
+    if not docker_client:
+        docker_client = get_docker_client()
+    kwargs['decode'] = True
+    for line in docker_client.build(**kwargs):
+        output = line.get('stream', '').rstrip()
+        if not output:
+            # print("non stream data", line)
+            continue
+        if output_callback is not None:
+            output_callback(output)
+
+        match = re.match(r'Successfully built ([a-z0-9]{12})', output)
+        if match:
+            image_id = match.group(1)
+
+    if image_id:
+        return image_id
+    else:
+        print("no more output and success not detected")
+        return None
+
 class DockerImageGenerator(object):
     def __init__(self, active_extensions, cliargs, base_image):
         self.built = False
@@ -75,12 +100,8 @@ class DockerImageGenerator(object):
         self.active_extensions = active_extensions
 
         self.dockerfile = generate_dockerfile(active_extensions, self.cliargs, base_image)
-        # print(df)
-        self.image_name = "rocker_" + base_image
-        if self.active_extensions:
-            self.image_name += "_%s" % '_'.join([e.name for e in active_extensions])
+        self.image_id = None
 
-    
     def build(self, **kwargs):
         with tempfile.TemporaryDirectory() as td:
             df = os.path.join(td, 'Dockerfile')
@@ -93,31 +114,21 @@ class DockerImageGenerator(object):
             arguments = {}
             arguments['path'] = td
             arguments['rm'] = True
-            arguments['decode'] = True
             arguments['nocache'] = kwargs.get('nocache', False)
-            arguments['tag'] = self.image_name
             print("Building docker file with arguments: ", arguments)
             try:
-                docker_client = get_docker_client()
-                success_detected = False
-                for line in docker_client.build(**arguments):
-                    output = line.get('stream', '').rstrip()
-                    if not output:
-                        # print("non stream data", line)
-                        continue
-                    print("building > %s" % output)
-                    if output.startswith("Successfully tagged") and self.image_name in output:
-                        success_detected = True
-                if success_detected:
-                        self.built = True
-                        return 0
+                self.image_id = docker_build(
+                    **arguments,
+                    output_callback=lambda output: print("building > %s" % output)
+                )
+                if self.image_id:
+                    self.built = True
+                    return 0
                 else:
-                    print("no more output and success not detected")
                     return 2
- 
+
             except docker.errors.APIError as ex:
                 print("Docker build failed\n", ex)
-                print(ex.output)
                 return 1
 
     def run(self, command='', **kwargs):
@@ -150,7 +161,7 @@ class DockerImageGenerator(object):
         for e in self.active_extensions:
             docker_args += e.get_docker_args(self.cliargs)
 
-        image = self.image_name
+        image = self.image_id
         cmd="docker run -it \
   --rm \
   %(docker_args)s \

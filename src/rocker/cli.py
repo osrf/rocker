@@ -22,7 +22,6 @@ from .core import DockerImageGenerator
 from .core import list_plugins
 from .core import pull_image
 
-from .os_detector import build_detector_image
 from .os_detector import detect_os
 
 
@@ -71,9 +70,6 @@ def detect_image_os():
 
     args = parser.parse_args()    
 
-    if not build_detector_image():
-        print("Failed to build detector.")
-        return 1
     results = detect_os(args.image)
     print(results)
     if results:
