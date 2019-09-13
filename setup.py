@@ -6,6 +6,7 @@ from setuptools import setup
 install_requires = [
     'empy',
     'pexpect',
+    'packaging',
 ]
 
 # docker API used to be in a package called `docker-py` before the 2.0 release
