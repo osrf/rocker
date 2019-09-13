@@ -84,7 +84,7 @@ def docker_build(docker_client = None, output_callback = None, **kwargs):
 
         match = re.match(r'Successfully built ([a-z0-9]{12})', output)
         if match:
-            image_id = match[1]
+            image_id = match.group(1)
 
     if image_id:
         return image_id
