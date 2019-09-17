@@ -19,6 +19,7 @@ import os
 import sys
 
 from .core import DockerImageGenerator
+from .core import get_rocker_version
 from .core import list_plugins
 from .core import pull_image
 
@@ -35,6 +36,8 @@ def main():
     parser.add_argument('--pull', action='store_true')
     parser.add_argument('--network', choices=['bridge', 'host', 'overlay', 'none'])
     parser.add_argument('--devices', nargs='*')
+    parser.add_argument('-v', '--version', action='version',
+        version='%(prog)s ' + get_rocker_version())
 
     plugins = list_plugins()
     print("Plugins found: %s" % [p.get_name() for p in plugins.values()])

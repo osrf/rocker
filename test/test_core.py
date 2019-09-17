@@ -24,6 +24,7 @@ from itertools import chain
 from rocker.cli import DockerImageGenerator, list_plugins
 from rocker.core import pull_image
 from rocker.core import get_docker_client
+from rocker.core import get_rocker_version
 
 class RockerCoreTest(unittest.TestCase):
 
@@ -45,6 +46,14 @@ class RockerCoreTest(unittest.TestCase):
         self.assertTrue('pulse' in plugin_names )
         self.assertTrue('user' in plugin_names )
         self.assertTrue('home' in plugin_names )
+
+    def test_get_rocker_version(self):
+        v = get_rocker_version()
+        parts = v.split('.')
+        self.assertEqual(len(parts), 3)
+        for p in parts:
+            # Check that it can be cast to an int
+            i = int(p)
 
     def test_pull_image(self):
         TEST_IMAGE='alpine:latest'
