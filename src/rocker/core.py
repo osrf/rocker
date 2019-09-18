@@ -33,6 +33,7 @@ import signal
 import struct
 import termios
 
+SYS_STDOUT = sys.stdout
 
 class RockerExtension(object):
     """The base class for Rocker extension points"""
@@ -106,7 +107,7 @@ class SIGWINCHPassthrough(object):
     def set_window_size(self):
         s = struct.pack("HHHH", 0, 0, 0, 0)
         try:
-            a = struct.unpack('hhhh', fcntl.ioctl(sys.stdout.fileno(),
+            a = struct.unpack('hhhh', fcntl.ioctl(SYS_STDOUT.fileno(),
                 termios.TIOCGWINSZ , s))
         except (io.UnsupportedOperation, AttributeError) as ex:
             # We're not interacting with a real stdout, don't do the resize
