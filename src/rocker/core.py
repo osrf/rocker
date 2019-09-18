@@ -262,3 +262,7 @@ def pull_image(image_name):
     except docker.errors.APIError as ex:
         print('Pull of %s failed: %s' % (image_name, ex))
         return False
+
+
+def get_rocker_version():
+    return pkg_resources.require('rocker')[0].version
