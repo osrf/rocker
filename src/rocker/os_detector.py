@@ -21,7 +21,11 @@ from .core import docker_build
 
 
 DETECTION_TEMPLATE="""
-FROM python:3 as detector
+FROM python:3-stretch as detector
+# Force the older version of debian for detector.
+# GLIBC is forwards compatible but not necessarily backwards compatible for pyinstaller
+# https://github.com/pyinstaller/pyinstaller/wiki/FAQ#gnulinux
+# StaticX is supposed to take care of this but there appears to be an issue when using subprocess
 
 RUN mkdir -p /tmp/distrovenv
 RUN python3 -m venv /tmp/distrovenv
