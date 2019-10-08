@@ -70,10 +70,12 @@ def main():
 def detect_image_os():
     parser = argparse.ArgumentParser(description='Detect the os in an image')
     parser.add_argument('image')
+    parser.add_argument('--verbose', action='store_true',
+        help='Display verbose output of the process')
 
     args = parser.parse_args()    
 
-    results = detect_os(args.image)
+    results = detect_os(args.image, print if args.verbose else None)
     print(results)
     if results:
         return 0
