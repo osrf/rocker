@@ -3,7 +3,6 @@ python:
   - "3.5"
   - "3.6"
 
-
 services:
   - docker
   - xvfb
@@ -16,6 +15,6 @@ install:
 
 # Nvidia not available on travis
 script:
-  - xvfb-run nosetests -v --with-coverage --cover-package rocker --exclude test_nvidia_glmark2
+  - nosetests -v --with-coverage --cover-package rocker --exclude test_nvidia_glmark2
 after_success:
   - codecov
