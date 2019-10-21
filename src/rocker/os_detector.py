@@ -44,8 +44,13 @@ ENTRYPOINT [ "/tmp/detect_os" ]
 CMD [ "" ]
 """
 
+_detect_os_cache = dict()
 
 def detect_os(image_name, output_callback=None):
+    # Do not rerun OS detection if there is already a cached result for the given image
+    if image_name in _detect_os_cache:
+        return _detect_os_cache[image_name]
+
     iof = StringIO((DETECTION_TEMPLATE % locals()).encode())
     image_id = docker_build(fileobj = iof, output_callback=output_callback)
     if not image_id:
@@ -61,7 +66,8 @@ def detect_os(image_name, output_callback=None):
         output_callback("output: ", output)
     p.terminate()
     if p.exitstatus == 0:
-        return literal_eval(output.strip())
+        _detect_os_cache[image_name] = literal_eval(output.strip())
+        return _detect_os_cache[image_name]
     else:
         if output_callback:
             output_callback("/tmp/detect_os failed:")
