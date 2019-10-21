@@ -9,7 +9,7 @@ RUN groupadd -g "@(gid)" "@name" \
  && useradd --uid "@(uid)" -s "@(shell)" -c "@(gecos)" -g "@(gid)" -d "@(dir)" "@(name)" \
  && echo "@(name):@(name)" | chpasswd \
  && adduser @(name) sudo \
- && echo "@(name) ALL=NOPASSWD: ALL" >> /etc/sudoers.d/@(name)
+ && echo "@(name) ALL=NOPASSWD: ALL" >> /etc/sudoers.d/rocker
 # Commands below run as the developer user
 USER @(name)
 @[else]@

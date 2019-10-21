@@ -22,10 +22,12 @@ import pexpect
 
 
 from io import BytesIO as StringIO
+from packaging.version import Version
 
 from rocker.cli import DockerImageGenerator
 from rocker.cli import list_plugins
 from rocker.core import get_docker_client
+from rocker.nvidia_extension import get_docker_version
 from test_extension import plugin_load_parser_correctly
 
 
@@ -162,8 +164,10 @@ CMD glmark2 --validate
         #TODO(tfoote) restore with #37 self.assertIn(' -e XAUTHORITY=', docker_args)
         #TODO(tfoote) restore with #37 self.assertIn(' -v /tmp/.X11-unix:/tmp/.X11-unix ', docker_args)
         #TODO(tfoote) restore with #37 self.assertIn(' -v /etc/localtime:/etc/localtime:ro ', docker_args)
-        self.assertIn(' --runtime=nvidia ', docker_args)
-        self.assertIn(' --security-opt seccomp=unconfined', docker_args)
+        if get_docker_version() >= Version("19.03"):
+            self.assertIn(' --gpus all', docker_args)
+        else:
+            self.assertIn(' --runtime=nvidia', docker_args)
 
 
     def test_no_nvidia_glmark2(self):

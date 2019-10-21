@@ -16,17 +16,22 @@ import grp
 import os
 import em
 import getpass
+from packaging.version import Version
 import pkgutil
 from pathlib import Path
 import subprocess
 import sys
 
-from .os_detector import build_detector_image
 from .os_detector import detect_os
 
 from .extensions import name_to_argument
+from .core import get_docker_client
 from .core import RockerExtension
 
+def get_docker_version():
+    docker_version_raw = get_docker_client().version()['Version']
+    # Fix for version 17.09.0-ce
+    return Version(docker_version_raw.split('-')[0])
 
 class X11(RockerExtension):
     @staticmethod
@@ -87,9 +92,6 @@ class Nvidia(RockerExtension):
             self._env_subs['user_id'] = os.getuid()
             self._env_subs['username'] = getpass.getuser()
         
-            if not build_detector_image():
-                print("ERROR: Failed to build image detector")
-                sys.exit(1)
             dist, ver, codename = detect_os(cliargs['base_image'])
             self._env_subs['image_distro_id'] = dist
             if self._env_subs['image_distro_id'] not in self.supported_distros:
@@ -112,8 +114,9 @@ class Nvidia(RockerExtension):
         return em.expand(snippet, self.get_environment_subs(cliargs))
 
     def get_docker_args(self, cliargs):
-        return "  --runtime=nvidia \
-  --security-opt seccomp=unconfined" % locals()
+        if get_docker_version() >= Version("19.03"):
+            return "  --gpus all"
+        return "  --runtime=nvidia"
 
     @staticmethod
     def register_arguments(parser):
