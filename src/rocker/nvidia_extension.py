@@ -92,16 +92,17 @@ class Nvidia(RockerExtension):
             self._env_subs['user_id'] = os.getuid()
             self._env_subs['username'] = getpass.getuser()
         
-            dist, ver, codename = detect_os(cliargs['base_image'])
-            self._env_subs['image_distro_id'] = dist
-            if self._env_subs['image_distro_id'] not in self.supported_distros:
-                print("WARNING distro id %s not supported by Nvidia supported " % self._env_subs['image_distro_id'], self.supported_distros)
-                sys.exit(1)
-            self._env_subs['image_distro_version'] = ver
-            if self._env_subs['image_distro_version'] not in self.supported_versions:
-                print("WARNING distro version %s not in supported list by Nvidia supported versions" % self._env_subs['image_distro_version'], self.supported_versions)
-                sys.exit(1)
-                # TODO(tfoote) add a standard mechanism for checking preconditions and disabling plugins
+        # non static elements test every time
+        dist, ver, codename = detect_os(cliargs['base_image'])
+        self._env_subs['image_distro_id'] = dist
+        if self._env_subs['image_distro_id'] not in self.supported_distros:
+            print("WARNING distro id %s not supported by Nvidia supported " % self._env_subs['image_distro_id'], self.supported_distros)
+            sys.exit(1)
+        self._env_subs['image_distro_version'] = ver
+        if self._env_subs['image_distro_version'] not in self.supported_versions:
+            print("WARNING distro version %s not in supported list by Nvidia supported versions" % self._env_subs['image_distro_version'], self.supported_versions)
+            sys.exit(1)
+            # TODO(tfoote) add a standard mechanism for checking preconditions and disabling plugins
 
         return self._env_subs
 
