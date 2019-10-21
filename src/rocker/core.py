@@ -15,7 +15,9 @@
 # limitations under the License.
 
 from collections import OrderedDict
+import io
 import os
+import re
 import sys
 
 import pkg_resources
@@ -23,10 +25,15 @@ import pkgutil
 import subprocess
 import tempfile
 
-import em
-
 import docker
 import pexpect
+
+import fcntl
+import signal
+import struct
+import termios
+
+SYS_STDOUT = sys.stdout
 
 class RockerExtension(object):
     """The base class for Rocker extension points"""
@@ -67,6 +74,67 @@ def get_docker_client():
         docker_client = docker.Client()
     return docker_client
 
+
+def docker_build(docker_client = None, output_callback = None, **kwargs):
+    image_id = None
+
+    if not docker_client:
+        docker_client = get_docker_client()
+    kwargs['decode'] = True
+    for line in docker_client.build(**kwargs):
+        output = line.get('stream', '').rstrip()
+        if not output:
+            # print("non stream data", line)
+            continue
+        if output_callback is not None:
+            output_callback(output)
+
+        match = re.match(r'Successfully built ([a-z0-9]{12})', output)
+        if match:
+            image_id = match.group(1)
+
+    if image_id:
+        return image_id
+    else:
+        print("no more output and success not detected")
+        return None
+
+
+class SIGWINCHPassthrough(object):
+    def __init__ (self, process):
+        self.process = process
+
+    def set_window_size(self):
+        s = struct.pack("HHHH", 0, 0, 0, 0)
+        try:
+            a = struct.unpack('hhhh', fcntl.ioctl(SYS_STDOUT.fileno(),
+                termios.TIOCGWINSZ , s))
+        except (io.UnsupportedOperation, AttributeError) as ex:
+            # We're not interacting with a real stdout, don't do the resize
+            # This happens when we're in something like unit tests.
+            return
+        if not self.process.closed:
+            self.process.setwinsize(a[0],a[1])
+
+
+    def __enter__(self):
+        # Expected function prototype for signal handling
+        # ignoring unused arguments
+        def sigwinch_passthrough (sig, data):
+            self.set_window_size()
+    
+        signal.signal(signal.SIGWINCH, sigwinch_passthrough)
+ 
+        # Initially set the window size since it may not be default sized
+        self.set_window_size()
+        return self
+
+    # Clean up signal handler before returning.
+    def __exit__(self, exc_type, exc_value, traceback):
+        # This was causing hangs and resolved as referenced 
+        # here: https://github.com/pexpect/pexpect/issues/465
+        signal.signal(signal.SIGWINCH, signal.SIG_DFL)
+
 class DockerImageGenerator(object):
     def __init__(self, active_extensions, cliargs, base_image):
         self.built = False
@@ -75,12 +143,8 @@ class DockerImageGenerator(object):
         self.active_extensions = active_extensions
 
         self.dockerfile = generate_dockerfile(active_extensions, self.cliargs, base_image)
-        # print(df)
-        self.image_name = "rocker_" + base_image
-        if self.active_extensions:
-            self.image_name += "_%s" % '_'.join([e.name for e in active_extensions])
+        self.image_id = None
 
-    
     def build(self, **kwargs):
         with tempfile.TemporaryDirectory() as td:
             df = os.path.join(td, 'Dockerfile')
@@ -93,31 +157,21 @@ class DockerImageGenerator(object):
             arguments = {}
             arguments['path'] = td
             arguments['rm'] = True
-            arguments['decode'] = True
             arguments['nocache'] = kwargs.get('nocache', False)
-            arguments['tag'] = self.image_name
             print("Building docker file with arguments: ", arguments)
             try:
-                docker_client = get_docker_client()
-                success_detected = False
-                for line in docker_client.build(**arguments):
-                    output = line.get('stream', '').rstrip()
-                    if not output:
-                        # print("non stream data", line)
-                        continue
-                    print("building > %s" % output)
-                    if output.startswith("Successfully tagged") and self.image_name in output:
-                        success_detected = True
-                if success_detected:
-                        self.built = True
-                        return 0
+                self.image_id = docker_build(
+                    **arguments,
+                    output_callback=lambda output: print("building > %s" % output)
+                )
+                if self.image_id:
+                    self.built = True
+                    return 0
                 else:
-                    print("no more output and success not detected")
                     return 2
- 
+
             except docker.errors.APIError as ex:
                 print("Docker build failed\n", ex)
-                print(ex.output)
                 return 1
 
     def run(self, command='', **kwargs):
@@ -150,7 +204,7 @@ class DockerImageGenerator(object):
         for e in self.active_extensions:
             docker_args += e.get_docker_args(self.cliargs)
 
-        image = self.image_name
+        image = self.image_id
         cmd="docker run -it \
   --rm \
   %(docker_args)s \
@@ -165,8 +219,9 @@ class DockerImageGenerator(object):
                 print("Executing command: ")
                 print(cmd)
                 p = pexpect.spawn(cmd)
-                p.interact()
-                p.terminate()
+                with SIGWINCHPassthrough(p):
+                    p.interact()
+                p.close(force=True)
                 return p.exitstatus
             except pexpect.ExceptionPexpect as ex:
                 print("Docker run failed\n", ex)
@@ -208,3 +263,7 @@ def pull_image(image_name):
     except docker.errors.APIError as ex:
         print('Pull of %s failed: %s' % (image_name, ex))
         return False
+
+
+def get_rocker_version():
+    return pkg_resources.require('rocker')[0].version

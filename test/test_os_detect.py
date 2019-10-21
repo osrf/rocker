@@ -19,14 +19,9 @@ import docker
 import unittest
 
 
-from rocker.os_detector import build_detector_image
 from rocker.os_detector import detect_os
 
 class RockerOSDetectorTest(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        build_detector_image()
 
     def test_ubuntu(self):
         result = detect_os("ubuntu:xenial")
@@ -34,6 +29,11 @@ class RockerOSDetectorTest(unittest.TestCase):
         self.assertEqual(result[1], '16.04')
 
         result = detect_os("ubuntu:bionic")
+        self.assertEqual(result[0], 'Ubuntu')
+        self.assertEqual(result[1], '18.04')
+
+        # Cover verbose codepath
+        result = detect_os("ubuntu:bionic", output_callback=print)
         self.assertEqual(result[0], 'Ubuntu')
         self.assertEqual(result[1], '18.04')
 

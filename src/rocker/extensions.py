@@ -19,11 +19,10 @@ import getpass
 import pwd
 import pkgutil
 from pathlib import Path
+from shlex import quote
 import subprocess
 import sys
 
-from .os_detector import build_detector_image
-from .os_detector import detect_os
 
 def name_to_argument(name):
     return '--%s' % name.replace('_', '-')
@@ -145,3 +144,31 @@ class User(RockerExtension):
             help="run the container with the uid/gid of the host user")
 
 
+class Environment(RockerExtension):
+    @staticmethod
+    def get_name():
+        return 'env'
+
+    def __init__(self):
+        self.name = Environment.get_name()
+
+    def get_snippet(self, cli_args):
+        return ''
+
+    def get_docker_args(self, cli_args):
+        args = ['']
+
+        envs = [ x for sublist in cli_args['env'] for x in sublist]
+        for env in envs:
+            args.append('-e {0}'.format(quote(env)))
+
+        return ' '.join(args)
+
+    @staticmethod
+    def register_arguments(parser):
+        parser.add_argument('--env', '-e',
+            metavar='NAME[=VALUE]',
+            type=str,
+            nargs='+',
+            action='append',
+            help='set environment variables')

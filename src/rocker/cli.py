@@ -19,10 +19,10 @@ import os
 import sys
 
 from .core import DockerImageGenerator
+from .core import get_rocker_version
 from .core import list_plugins
 from .core import pull_image
 
-from .os_detector import build_detector_image
 from .os_detector import detect_os
 
 
@@ -36,6 +36,8 @@ def main():
     parser.add_argument('--pull', action='store_true')
     parser.add_argument('--network', choices=['bridge', 'host', 'overlay', 'none'])
     parser.add_argument('--devices', nargs='*')
+    parser.add_argument('-v', '--version', action='version',
+        version='%(prog)s ' + get_rocker_version())
 
     plugins = list_plugins()
     print("Plugins found: %s" % [p.get_name() for p in plugins.values()])
@@ -68,11 +70,12 @@ def main():
 def detect_image_os():
     parser = argparse.ArgumentParser(description='Detect the os in an image')
     parser.add_argument('image')
+    parser.add_argument('--verbose', action='store_true',
+        help='Display verbose output of the process')
 
     args = parser.parse_args()    
 
-    build_detector_image()
-    results = detect_os(args.image)
+    results = detect_os(args.image, print if args.verbose else None)
     print(results)
     if results:
         return 0

@@ -17,57 +17,54 @@ import pexpect
 from ast import literal_eval 
 from io import BytesIO as StringIO
 
-from .core import get_docker_client
+from .core import docker_build
 
 
-DETECTOR_DOCKERFILE="""
-FROM python:3
+DETECTION_TEMPLATE="""
+FROM python:3-stretch as detector
+# Force the older version of debian for detector.
+# GLIBC is forwards compatible but not necessarily backwards compatible for pyinstaller
+# https://github.com/pyinstaller/pyinstaller/wiki/FAQ#gnulinux
+# StaticX is supposed to take care of this but there appears to be an issue when using subprocess
 
 RUN mkdir -p /tmp/distrovenv
 RUN python3 -m venv /tmp/distrovenv
-RUN . /tmp/distrovenv/bin/activate && pip install distro pyinstaller
+RUN . /tmp/distrovenv/bin/activate && pip install distro pyinstaller staticx
+RUN apt-get update && apt-get install patchelf #needed for staticx
 
 RUN echo 'import distro; print(distro.linux_distribution())' > /tmp/distrovenv/detect_os.py
 RUN . /tmp/distrovenv/bin/activate && pyinstaller --onefile /tmp/distrovenv/detect_os.py
 
-"""
-
-DETECTION_TEMPLATE="""
-FROM rocker__detector as detector
+RUN . /tmp/distrovenv/bin/activate && staticx /dist/detect_os /dist/detect_os_static
 
 FROM %(image_name)s
 
-COPY --from=detector /dist/detect_os /tmp/detect_os
-CMD /tmp/detect_os
+COPY --from=detector /dist/detect_os_static /tmp/detect_os
+ENTRYPOINT [ "/tmp/detect_os" ]
+CMD [ "" ]
 """
 
 
-def build_detector_image():
-    client = get_docker_client()
-    """Build the image to use to detect the OS"""
-    dockerfile_tag = 'rocker__detector'
-    iof = StringIO(DETECTOR_DOCKERFILE.encode())
-    im = client.build(fileobj = iof, tag=dockerfile_tag)
-    for l in im:
-        pass
-        #print(l)
-
-
-def detect_os(image_name):
-    client = get_docker_client()
-    dockerfile_tag = 'rocker__detection_%s' % image_name
+def detect_os(image_name, output_callback=None):
     iof = StringIO((DETECTION_TEMPLATE % locals()).encode())
-    im = client.build(fileobj = iof, tag=dockerfile_tag)
-    for l in im:
-        pass
-        #print(l)
-    
+    image_id = docker_build(fileobj = iof, output_callback=output_callback)
+    if not image_id:
+        print('Failed to build detector image')
+        return None
 
-    cmd="docker run -it --rm %s" % dockerfile_tag
+    cmd="docker run -it --rm %s" % image_id
+    if output_callback:
+        output_callback("running, ", cmd)
     p = pexpect.spawn(cmd)
-    output = p.read()
+    output = p.read().decode()
+    if output_callback:
+        output_callback("output: ", output)
     p.terminate()
     if p.exitstatus == 0:
-        return literal_eval(output.decode().strip())
+        return literal_eval(output.strip())
     else:
+        if output_callback:
+            output_callback("/tmp/detect_os failed:")
+            for l in output.splitlines():
+                output_callback("> %s" % l)
         return None
