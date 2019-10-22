@@ -24,8 +24,8 @@ import pexpect
 from io import BytesIO as StringIO
 from packaging.version import Version
 
-from rocker.cli import DockerImageGenerator
-from rocker.cli import list_plugins
+from rocker.core import DockerImageGenerator
+from rocker.core import list_plugins
 from rocker.core import get_docker_client
 from rocker.nvidia_extension import get_docker_version
 from test_extension import plugin_load_parser_correctly
