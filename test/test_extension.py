@@ -117,6 +117,11 @@ class UserExtensionTest(unittest.TestCase):
         self.assertEqual(p.get_preamble(mock_cliargs), '')
         self.assertEqual(p.get_docker_args(mock_cliargs), '')
 
+        self.assertTrue('mkhomedir_helper' in p.get_snippet(mock_cliargs))
+        home_active_cliargs = mock_cliargs
+        home_active_cliargs['home'] = True
+        self.assertFalse('mkhomedir_helper' in p.get_snippet(home_active_cliargs))
+
 
 class PulseExtensionTest(unittest.TestCase):
 

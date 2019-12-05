@@ -135,7 +135,9 @@ class User(RockerExtension):
 
     def get_snippet(self, cliargs):
         snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
-        return em.expand(snippet, self.get_environment_subs())
+        substitutions = self.get_environment_subs()
+        substitutions['home_extension_active'] = True if 'home' in cliargs and cliargs['home'] else False
+        return em.expand(snippet, substitutions)
 
     @staticmethod
     def register_arguments(parser):
