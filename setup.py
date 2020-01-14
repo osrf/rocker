@@ -39,11 +39,13 @@ kwargs = {
         'console_scripts': [
             'rocker = rocker.cli:main',
             'detect_docker_image_os = rocker.cli:detect_image_os',
+            'ghrocker = rocker.ghrocker:main',
 	    ],
         'rocker.extensions': [
             'devices = rocker.extensions:Devices',
             'dev_helpers = rocker.extensions:DevHelpers',
             'env = rocker.extensions:Environment',
+            'ghpages = rocker.ghpages_extension:GHPages',
             'git = rocker.git_extension:Git',
             'home = rocker.extensions:HomeDir',
             'network = rocker.extensions:Network',
