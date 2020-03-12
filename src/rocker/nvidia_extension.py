@@ -93,7 +93,12 @@ class Nvidia(RockerExtension):
             self._env_subs['username'] = getpass.getuser()
         
         # non static elements test every time
-        dist, ver, codename = detect_os(cliargs['base_image'])
+        detected_os = detect_os(cliargs['base_image'], print)
+        if detected_os is None:
+            print("WARNING unable to detect os for base image '%s', maybe the base image does not exist" % cliargs['base_image'])
+            sys.exit(1)
+        dist, ver, codename = detected_os
+
         self._env_subs['image_distro_id'] = dist
         if self._env_subs['image_distro_id'] not in self.supported_distros:
             print("WARNING distro id %s not supported by Nvidia supported " % self._env_subs['image_distro_id'], self.supported_distros)

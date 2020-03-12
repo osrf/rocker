@@ -54,7 +54,8 @@ def detect_os(image_name, output_callback=None):
     iof = StringIO((DETECTION_TEMPLATE % locals()).encode())
     image_id = docker_build(fileobj = iof, output_callback=output_callback)
     if not image_id:
-        print('Failed to build detector image')
+        if output_callback:
+            output_callback('Failed to build detector image')
         return None
 
     cmd="docker run -it --rm %s" % image_id
