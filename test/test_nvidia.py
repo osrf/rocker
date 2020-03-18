@@ -198,7 +198,7 @@ CMD glmark2 --validate
         self.assertEqual(cm.exception.code, 1)
 
         # unsupported version
-        mock_cliargs = {'base_image': 'ubuntu:17:04'}
+        mock_cliargs = {'base_image': 'ubuntu:17.04'}
         with self.assertRaises(SystemExit) as cm:
             p.get_environment_subs(mock_cliargs)
         self.assertEqual(cm.exception.code, 1)
