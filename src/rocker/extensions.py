@@ -54,9 +54,10 @@ class DevHelpers(RockerExtension):
         return em.expand(snippet, self.get_environment_subs())
 
     @staticmethod
-    def register_arguments(parser):
+    def register_arguments(parser, defaults={}):
         parser.add_argument(name_to_argument(DevHelpers.get_name()),
             action='store_true',
+            default=defaults.get('dev_helpers', None),
             help="add development tools emacs and byobu to your environment")
 
 
@@ -140,9 +141,10 @@ class User(RockerExtension):
         return em.expand(snippet, substitutions)
 
     @staticmethod
-    def register_arguments(parser):
+    def register_arguments(parser, defaults={}):
         parser.add_argument(name_to_argument(User.get_name()),
             action='store_true',
+            default=defaults.get('user', None),
             help="mount the users home directory")
 
 
