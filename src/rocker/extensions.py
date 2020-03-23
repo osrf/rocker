@@ -14,6 +14,7 @@
 
 import grp
 import os
+import docker
 import em
 import getpass
 import pwd
@@ -42,8 +43,6 @@ class DevHelpers(RockerExtension):
     def get_environment_subs(self):
         if not self._env_subs:
             self._env_subs = {}
-            self._env_subs['user_id'] = os.getuid()
-            self._env_subs['username'] = getpass.getuser()
         return self._env_subs
 
     def get_preamble(self, cliargs):
@@ -60,6 +59,29 @@ class DevHelpers(RockerExtension):
             default=defaults.get('dev_helpers', None),
             help="add development tools emacs and byobu to your environment")
 
+class Network(RockerExtension):
+    @staticmethod
+    def get_name():
+        return 'network'
+
+    def __init__(self):
+        self.name = Network.get_name()
+
+    def get_preamble(self, cliargs):
+        return ''
+
+    def get_docker_args(self, cliargs):
+        args = ''
+        network = cliargs.get('network', None)
+        args += ' --network %s ' % network
+        return args
+
+    @staticmethod
+    def register_arguments(parser, defaults={}):
+        client = docker.APIClient()
+        parser.add_argument('--network', choices=[n['Name'] for n in client.networks()],
+            default=defaults.get('network', None),
+            help="What network configuration to use.")
 
 class PulseAudio(RockerExtension):
     @staticmethod

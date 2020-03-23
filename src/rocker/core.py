@@ -217,10 +217,6 @@ class DockerImageGenerator(object):
 
         docker_args = ''
 
-        network = kwargs.get('network', False)
-        if network:
-            docker_args += ' --network %s ' % network
-
         devices = kwargs.get('devices', None)
         if devices:
             for device in devices:
