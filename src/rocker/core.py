@@ -55,15 +55,42 @@ class RockerExtension(object):
         return ''
 
     @staticmethod
-    def get_name(self):
+    def get_name():
         raise NotImplementedError
-    
+
     def get_docker_args(self, cliargs):
         return ''
 
+    @classmethod
+    def check_args_for_activation(cls, cli_args):
+        """ Returns true if the arguments indicate that this extension should be activated otherwise false.
+        The default implementation looks for the extension name has any value.
+        It is recommended to override this unless it's just a flag to enable the plugin."""
+        return True if cli_args.get(cls.get_name()) else False
+
     @staticmethod
-    def register_arguments(parser):
+    def register_arguments(parser, defaults={}):
         raise NotImplementedError
+
+
+class RockerExtensionManager:
+    def __init__(self):
+        self.available_plugins = list_plugins()
+    
+    def extend_cli_parser(self, parser, default_args={}):
+        for p in self.available_plugins.values():
+            try:
+                p.register_arguments(parser, default_args)
+            except TypeError as ex:
+                print("Extension %s doesn't support default arguemnts. Please extend it." % p.get_name())
+                p.register_arguments(parser)
+
+
+    def get_active_extensions(self, cli_args):
+        active_extensions = [e() for e in self.available_plugins.values() if e.check_args_for_activation(cli_args)]
+        print(cli_args)
+        active_extensions.sort(key=lambda e:e.get_name().startswith('user'))
+        return active_extensions
 
 
 def get_docker_client():
