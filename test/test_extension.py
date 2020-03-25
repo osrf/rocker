@@ -24,7 +24,7 @@ from pathlib import Path
 import pwd
 
 
-from rocker.cli import list_plugins
+from rocker.core import list_plugins
 from rocker.extensions import name_to_argument
 
 

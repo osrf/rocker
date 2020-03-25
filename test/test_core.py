@@ -21,7 +21,8 @@ import unittest
 
 from itertools import chain
 
-from rocker.cli import DockerImageGenerator, list_plugins
+from rocker.core import DockerImageGenerator
+from rocker.core import list_plugins
 from rocker.core import pull_image
 from rocker.core import get_docker_client
 from rocker.core import get_rocker_version
