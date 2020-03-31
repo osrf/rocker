@@ -22,6 +22,7 @@ import sys
 
 import pkg_resources
 import pkgutil
+import shlex
 import subprocess
 import tempfile
 
@@ -34,6 +35,11 @@ import struct
 import termios
 
 SYS_STDOUT = sys.stdout
+
+OPERATIONS_DRY_RUN = 'dry-run'
+OPERATIONS_NON_INTERACTIVE = 'non-interactive'
+OPERATIONS_INTERACTIVE = 'interactive'
+OPERATION_MODES = [OPERATIONS_INTERACTIVE, OPERATIONS_NON_INTERACTIVE , OPERATIONS_DRY_RUN]
 
 class RockerExtension(object):
     """The base class for Rocker extension points"""
@@ -84,6 +90,9 @@ class RockerExtensionManager:
             except TypeError as ex:
                 print("Extension %s doesn't support default arguemnts. Please extend it." % p.get_name())
                 p.register_arguments(parser)
+        parser.add_argument('--mode', choices=OPERATION_MODES,
+            default=OPERATIONS_INTERACTIVE,
+            help="Choose mode of operation for rocker")
 
 
     def get_active_extensions(self, cli_args):
@@ -229,15 +238,28 @@ class DockerImageGenerator(object):
             docker_args += e.get_docker_args(self.cliargs)
 
         image = self.image_id
-        cmd="docker run -it \
+        operating_mode = kwargs.get('mode')
+        cmd="docker run"
+        if operating_mode != OPERATIONS_NON_INTERACTIVE:
+            # only disable for OPERATIONS_NON_INTERACTIVE
+            cmd += " -it"
+        cmd += " \
   --rm \
   %(docker_args)s \
   %(image)s %(command)s" % locals()
 #   $DOCKER_OPTS \
-        if kwargs.get('noexecute', False):
+        if operating_mode == OPERATIONS_DRY_RUN:
             print("Run this command: \n\n\n")
             print(cmd)
             return 0
+        elif operating_mode == OPERATIONS_NON_INTERACTIVE:
+            try:
+                print("Executing command: ")
+                print(cmd)
+                subprocess.run(shlex.split(cmd), check=True, stderr=subprocess.STDOUT)
+            except subprocess.CalledProcessError as ex:
+                print("Non-interactive Docker run failed\n", ex)
+                return ex.returncode
         else:
             try:
                 print("Executing command: ")
@@ -249,7 +271,7 @@ class DockerImageGenerator(object):
                 return p.exitstatus
             except pexpect.ExceptionPexpect as ex:
                 print("Docker run failed\n", ex)
-                return 1
+                return ex.returncode
 
 
 def generate_dockerfile(extensions, args_dict, base_image):
