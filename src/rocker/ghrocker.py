@@ -39,7 +39,6 @@ def main():
     if args.build_only and args.baseurl:
         parser.error("build and baseurl options are incompatible")
 
-
     if args.build_only:
         args_dict['command'] = 'jekyll build -V --trace'
         del args_dict['network']

@@ -33,7 +33,7 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('image')
     parser.add_argument('command', nargs='*', default='')
-    parser.add_argument('--noexecute', action='store_true')
+    parser.add_argument('--noexecute', action='store_true', help='Deprecated')
     parser.add_argument('--nocache', action='store_true')
     parser.add_argument('--pull', action='store_true')
     parser.add_argument('-v', '--version', action='version',
@@ -45,6 +45,11 @@ def main():
 
     args = parser.parse_args()
     args_dict = vars(args)
+
+    if args.noexecute:
+        from .core import OPERATIONS_DRY_RUN
+        args_dict['mode'] = OPERATIONS_DRY_RUN
+        print('DEPRECATION Warning: --noexecute is deprecated for --mode dry-run please switch your usage by June 2020')
     
     active_extensions = extension_manager.get_active_extensions(args_dict)
     # Force user to end if present otherwise it will 
