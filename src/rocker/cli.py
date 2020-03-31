@@ -36,7 +36,6 @@ def main():
     parser.add_argument('--noexecute', action='store_true')
     parser.add_argument('--nocache', action='store_true')
     parser.add_argument('--pull', action='store_true')
-    parser.add_argument('--devices', nargs='*')
     parser.add_argument('-v', '--version', action='version',
         version='%(prog)s ' + get_rocker_version())
 

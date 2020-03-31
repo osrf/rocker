@@ -30,6 +30,35 @@ def name_to_argument(name):
 
 from .core import RockerExtension
 
+class Devices(RockerExtension):
+    @staticmethod
+    def get_name():
+        return 'devices'
+
+    def __init__(self):
+        self.name = Devices.get_name()
+
+    def get_preamble(self, cliargs):
+        return ''
+
+    def get_docker_args(self, cliargs):
+        args = ''
+        devices = cliargs.get('devices', None)
+        for device in devices:
+            if not os.path.exists(device):
+                print("ERROR device %s doesn't exist. Skipping" % device)
+                continue
+            args += ' --device %s ' % device
+        return args
+
+    @staticmethod
+    def register_arguments(parser, defaults={}):
+        parser.add_argument('--devices',
+            default=defaults.get('devices', None),
+            nargs='*',
+            help="Mount devices into the container.")
+
+
 class DevHelpers(RockerExtension):
     @staticmethod
     def get_name():

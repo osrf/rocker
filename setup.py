@@ -41,6 +41,7 @@ kwargs = {
             'detect_docker_image_os = rocker.cli:detect_image_os',
 	    ],
         'rocker.extensions': [
+            'devices = rocker.extensions:Devices',
             'dev_helpers = rocker.extensions:DevHelpers',
             'env = rocker.extensions:Environment',
             'git = rocker.git_extension:Git',
