@@ -42,6 +42,7 @@ def main():
 
     if args.build_only:
         args_dict['command'] = 'jekyll build -V --trace'
+        del args_dict['network']
     else:
         args_dict['command'] = 'jekyll serve -w'
         if args.baseurl is not None:
