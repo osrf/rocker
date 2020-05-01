@@ -54,11 +54,16 @@ class RockerExtension(object):
     def get_snippet(self, cliargs):
         return ''
 
-    def get_name(self, cliargs):
+    @staticmethod
+    def get_name():
         raise NotImplementedError
     
     def get_docker_args(self, cliargs):
         return ''
+
+    @classmethod
+    def is_active(self, cliargs):
+        return bool(cliargs.get(self.get_name()))
 
     @staticmethod
     def register_arguments(parser):
