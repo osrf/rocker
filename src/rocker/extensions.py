@@ -143,7 +143,7 @@ class User(RockerExtension):
     def register_arguments(parser):
         parser.add_argument(name_to_argument(User.get_name()),
             action='store_true',
-            help="mount the users home directory")
+            help="mount the current user's id and run as that user")
 
 
 class Environment(RockerExtension):
