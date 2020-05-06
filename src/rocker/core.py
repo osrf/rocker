@@ -88,7 +88,7 @@ class RockerExtensionManager:
             try:
                 p.register_arguments(parser, default_args)
             except TypeError as ex:
-                print("Extension %s doesn't support default arguemnts. Please extend it." % p.get_name())
+                print("Extension %s doesn't support default arguements. Please extend it." % p.get_name())
                 p.register_arguments(parser)
         parser.add_argument('--mode', choices=OPERATION_MODES,
             default=OPERATIONS_INTERACTIVE,

@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import argparse
 import docker
 import em
 import unittest
@@ -26,6 +27,7 @@ from rocker.core import list_plugins
 from rocker.core import pull_image
 from rocker.core import get_docker_client
 from rocker.core import get_rocker_version
+from rocker.core import RockerExtensionManager
 
 class RockerCoreTest(unittest.TestCase):
 
@@ -121,3 +123,18 @@ class RockerCoreTest(unittest.TestCase):
         networks = ['bridge', 'host', 'none']
         for n in networks:
             self.assertEqual(dig.run('true', network=n), 0)
+
+    def test_extension_manager(self):
+        parser = argparse.ArgumentParser()
+        extension_manager = RockerExtensionManager()
+        default_args = {}
+        extension_manager.extend_cli_parser(parser, default_args)
+        help_str = parser.format_help()
+        self.assertIn('--mode', help_str)
+        self.assertIn('dry-run', help_str)
+        self.assertIn('non-interactive', help_str)
+        self.assertIn('--extension-blacklist', help_str)
+
+        active_extensions = active_extensions = extension_manager.get_active_extensions({'user': True, 'ssh': True, 'extension_blacklist': ['ssh']})
+        self.assertEqual(len(active_extensions), 1)
+        self.assertEqual(active_extensions[0].get_name(), 'user')
