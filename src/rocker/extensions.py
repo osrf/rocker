@@ -24,6 +24,8 @@ from shlex import quote
 import subprocess
 import sys
 
+from .core import get_docker_client
+
 
 def name_to_argument(name):
     return '--%s' % name.replace('_', '-')
@@ -107,7 +109,7 @@ class Network(RockerExtension):
 
     @staticmethod
     def register_arguments(parser, defaults={}):
-        client = docker.APIClient()
+        client = get_docker_client()
         parser.add_argument('--network', choices=[n['Name'] for n in client.networks()],
             default=defaults.get('network', None),
             help="What network configuration to use.")

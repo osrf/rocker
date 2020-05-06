@@ -16,7 +16,6 @@
 # under the License.
 
 import argparse
-import docker
 import em
 import unittest
 
