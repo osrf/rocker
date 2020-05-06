@@ -97,6 +97,18 @@ class RockerCoreTest(unittest.TestCase):
         self.assertEqual(dig.build(), 0)
         self.assertEqual(dig.run('true', noexecute=True), 0)
 
+    def test_dry_run(self):
+        dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
+        self.assertEqual(dig.build(), 0)
+        self.assertEqual(dig.run('true', mode='dry-run'), 0)
+        self.assertEqual(dig.run('false', mode='dry-run'), 0)
+
+    def test_non_interactive(self):
+        dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
+        self.assertEqual(dig.build(), 0)
+        self.assertEqual(dig.run('true', mode='non-interactive'), 0)
+        self.assertEqual(dig.run('false', mode='non-interactive'), 1)
+
     def test_device(self):
         dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
         self.assertEqual(dig.build(), 0)

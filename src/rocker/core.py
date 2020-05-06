@@ -258,7 +258,8 @@ class DockerImageGenerator(object):
             try:
                 print("Executing command: ")
                 print(cmd)
-                subprocess.run(shlex.split(cmd), check=True, stderr=subprocess.STDOUT)
+                p = subprocess.run(shlex.split(cmd), check=True, stderr=subprocess.STDOUT)
+                return p.returncode
             except subprocess.CalledProcessError as ex:
                 print("Non-interactive Docker run failed\n", ex)
                 return ex.returncode
