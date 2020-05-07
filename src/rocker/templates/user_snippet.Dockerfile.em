@@ -1,8 +1,9 @@
 # make sure sudo is installed to be able to give user sudo access in docker
-RUN apt-get update \
- && apt-get install -y \
-    sudo \
- && apt-get clean
+RUN if ! command -v sudo >/dev/null; then \
+      apt-get update \
+      && apt-get install -y sudo \
+      && apt-get clean; \
+    fi
 
 @[if name != 'root']@
 RUN groupadd -g "@(gid)" "@name" \
