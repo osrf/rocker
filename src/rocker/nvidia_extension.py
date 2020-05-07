@@ -83,7 +83,7 @@ class Nvidia(RockerExtension):
         self._env_subs = None
         self.name = Nvidia.get_name()
         self.supported_distros = ['Ubuntu']
-        self.supported_versions = ['16.04', '18.04']
+        self.supported_versions = ['16.04', '18.04', '20.04']
 
 
     def get_environment_subs(self, cliargs={}):
@@ -91,7 +91,7 @@ class Nvidia(RockerExtension):
             self._env_subs = {}
             self._env_subs['user_id'] = os.getuid()
             self._env_subs['username'] = getpass.getuser()
-        
+
         # non static elements test every time
         detected_os = detect_os(cliargs['base_image'], print)
         if detected_os is None:
@@ -103,11 +103,16 @@ class Nvidia(RockerExtension):
         if self._env_subs['image_distro_id'] not in self.supported_distros:
             print("WARNING distro id %s not supported by Nvidia supported " % self._env_subs['image_distro_id'], self.supported_distros)
             sys.exit(1)
-        self._env_subs['image_distro_version'] = ver
-        if self._env_subs['image_distro_version'] not in self.supported_versions:
-            print("WARNING distro version %s not in supported list by Nvidia supported versions" % self._env_subs['image_distro_version'], self.supported_versions)
+        if ver not in self.supported_versions:
+            print("WARNING distro version %s not in supported list by Nvidia supported versions" % ver, self.supported_versions)
             sys.exit(1)
             # TODO(tfoote) add a standard mechanism for checking preconditions and disabling plugins
+        # NOTE(emersonknapp) - nvidia has not released 20.04-specific base opengl images yet,
+        # but the 18.04 image works perfectly well on 20.04 as of this writing
+        if ver == '20.04':
+            print("WARNING known running on Ubuntu 20.04, which has no known dedicated Nvidia images yet. Falling back to 18.04 images, which are known to work.")
+            ver = '18.04'
+        self._env_subs['image_distro_version'] = ver
 
         return self._env_subs
 
@@ -129,5 +134,3 @@ class Nvidia(RockerExtension):
         parser.add_argument(name_to_argument(Nvidia.get_name()),
             action='store_true',
             help="Enable nvidia")
-
-
