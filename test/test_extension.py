@@ -75,6 +75,13 @@ class DevicesExtensionTest(unittest.TestCase):
         args = p.get_docker_args(mock_cliargs)
         self.assertTrue('--device /dev/random' in args)
 
+        # Check case for invalid device
+        mock_cliargs = {'devices': ['/dev/does_not_exist']}
+        self.assertEqual(p.get_snippet(mock_cliargs), '')
+        self.assertEqual(p.get_preamble(mock_cliargs), '')
+        args = p.get_docker_args(mock_cliargs)
+        self.assertFalse('--device' in args)
+
 
 class HomeExtensionTest(unittest.TestCase):
 
