@@ -289,3 +289,17 @@ class EnvExtensionTest(unittest.TestCase):
         self.assertEqual(p.get_snippet(mock_cliargs), '')
         self.assertEqual(p.get_preamble(mock_cliargs), '')
         self.assertEqual(p.get_docker_args(mock_cliargs), ' -e ENVVARNAME=envvar_value -e ENV2=val2 -e ENV3=val3')
+
+    def test_env_file_extension(self):
+        plugins = list_plugins()
+        env_plugin = plugins['env']
+        self.assertEqual(env_plugin.get_name(), 'env')
+
+        p = env_plugin()
+        self.assertTrue(plugin_load_parser_correctly(env_plugin))
+        
+        mock_cliargs = {'env_file': [['foo'], ['bar']]}
+
+        self.assertEqual(p.get_snippet(mock_cliargs), '')
+        self.assertEqual(p.get_preamble(mock_cliargs), '')
+        self.assertEqual(p.get_docker_args(mock_cliargs), ' --env-file foo --env-file bar')
