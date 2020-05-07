@@ -41,10 +41,12 @@ kwargs = {
             'detect_docker_image_os = rocker.cli:detect_image_os',
 	    ],
         'rocker.extensions': [
+            'devices = rocker.extensions:Devices',
             'dev_helpers = rocker.extensions:DevHelpers',
             'env = rocker.extensions:Environment',
             'git = rocker.git_extension:Git',
             'home = rocker.extensions:HomeDir',
+            'network = rocker.extensions:Network',
             'nvidia = rocker.nvidia_extension:Nvidia',
             'pulse = rocker.extensions:PulseAudio',
             'ssh = rocker.ssh_extension:Ssh',

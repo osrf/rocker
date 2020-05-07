@@ -48,6 +48,41 @@ class ExtensionsTest(unittest.TestCase):
         self.assertEqual(name_to_argument('as-df'), '--as-df')
 
 
+class DevicesExtensionTest(unittest.TestCase):
+
+    def setUp(self):
+        # Work around interference between empy Interpreter
+        # stdout proxy and test runner. empy installs a proxy on stdout
+        # to be able to capture the information.
+        # And the test runner creates a new stdout object for each test.
+        # This breaks empy as it assumes that the proxy has persistent
+        # between instances of the Interpreter class
+        # empy will error with the exception
+        # "em.Error: interpreter stdout proxy lost"
+        em.Interpreter._wasProxyInstalled = False
+
+    def test_devices_extension(self):
+        plugins = list_plugins()
+        devices_plugin = plugins['devices']
+        self.assertEqual(devices_plugin.get_name(), 'devices')
+
+        p = devices_plugin()
+        self.assertTrue(plugin_load_parser_correctly(devices_plugin))
+        
+        mock_cliargs = {'devices': ['/dev/random']}
+        self.assertEqual(p.get_snippet(mock_cliargs), '')
+        self.assertEqual(p.get_preamble(mock_cliargs), '')
+        args = p.get_docker_args(mock_cliargs)
+        self.assertTrue('--device /dev/random' in args)
+
+        # Check case for invalid device
+        mock_cliargs = {'devices': ['/dev/does_not_exist']}
+        self.assertEqual(p.get_snippet(mock_cliargs), '')
+        self.assertEqual(p.get_preamble(mock_cliargs), '')
+        args = p.get_docker_args(mock_cliargs)
+        self.assertFalse('--device' in args)
+
+
 class HomeExtensionTest(unittest.TestCase):
 
     def setUp(self):
@@ -75,6 +110,36 @@ class HomeExtensionTest(unittest.TestCase):
         args = p.get_docker_args(mock_cliargs)
         self.assertTrue('-v %s:%s' % (Path.home(), Path.home()) in args)
 
+class NetworkExtensionTest(unittest.TestCase):
+
+    def setUp(self):
+        # Work around interference between empy Interpreter
+        # stdout proxy and test runner. empy installs a proxy on stdout
+        # to be able to capture the information.
+        # And the test runner creates a new stdout object for each test.
+        # This breaks empy as it assumes that the proxy has persistent
+        # between instances of the Interpreter class
+        # empy will error with the exception
+        # "em.Error: interpreter stdout proxy lost"
+        em.Interpreter._wasProxyInstalled = False
+
+    def test_network_extension(self):
+        plugins = list_plugins()
+        network_plugin = plugins['network']
+        self.assertEqual(network_plugin.get_name(), 'network')
+
+        p = network_plugin()
+        self.assertTrue(plugin_load_parser_correctly(network_plugin))
+        
+        mock_cliargs = {'network': 'none'}
+        self.assertEqual(p.get_snippet(mock_cliargs), '')
+        self.assertEqual(p.get_preamble(mock_cliargs), '')
+        args = p.get_docker_args(mock_cliargs)
+        self.assertTrue('--network none' in args)
+
+        mock_cliargs = {'network': 'host'}
+        args = p.get_docker_args(mock_cliargs)
+        self.assertTrue('--network host' in args)
 
 class UserExtensionTest(unittest.TestCase):
 
