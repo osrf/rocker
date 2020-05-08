@@ -36,9 +36,9 @@ class X11Test(unittest.TestCase):
     def setUpClass(self):
         client = get_docker_client()
         self.dockerfile_tags = []
-        for distro_version in ['xenial', 'bionic']:
+        for distro, distro_version in [('ubuntu', 'xenial'), ('ubuntu', 'bionic'), ('ubuntu', 'focal'), ('debian', 'buster')]:
             dockerfile = """
-FROM ubuntu:%(distro_version)s
+FROM %(distro)s:%(distro_version)s
 
 RUN apt-get update && apt-get install x11-utils -y && apt-get clean
 
@@ -204,7 +204,7 @@ CMD glmark2 --validate
         self.assertEqual(cm.exception.code, 1)
 
         # unsupported os
-        mock_cliargs = {'base_image': 'debian'}
+        mock_cliargs = {'base_image': 'fedora'}
         with self.assertRaises(SystemExit) as cm:
             p.get_environment_subs(mock_cliargs)
         self.assertEqual(cm.exception.code, 1)
