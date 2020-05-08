@@ -68,9 +68,10 @@ class X11(RockerExtension):
             raise ex
 
     @staticmethod
-    def register_arguments(parser):
+    def register_arguments(parser, defaults={}):
         parser.add_argument(name_to_argument(X11.get_name()),
             action='store_true',
+            default=defaults.get(X11.get_name(), None),
             help="Enable x11")
 
 
@@ -125,9 +126,10 @@ class Nvidia(RockerExtension):
         return "  --runtime=nvidia"
 
     @staticmethod
-    def register_arguments(parser):
+    def register_arguments(parser, defaults={}):
         parser.add_argument(name_to_argument(Nvidia.get_name()),
             action='store_true',
+            default=defaults.get(Nvidia.get_name(), None),
             help="Enable nvidia")
 
 
