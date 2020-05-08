@@ -215,9 +215,15 @@ class Environment(RockerExtension):
     def get_docker_args(self, cli_args):
         args = ['']
 
-        envs = [ x for sublist in cli_args['env'] for x in sublist]
-        for env in envs:
-            args.append('-e {0}'.format(quote(env)))
+        if cli_args.get('env'):
+            envs = [ x for sublist in cli_args['env'] for x in sublist]
+            for env in envs:
+                args.append('-e {0}'.format(quote(env)))
+
+        if cli_args.get('env_file'):
+            env_files = [ x for sublist in cli_args['env_file'] for x in sublist]
+            for env_file in env_files:
+                args.append('--env-file {0}'.format(quote(env_file)))
 
         return ' '.join(args)
 
@@ -229,3 +235,13 @@ class Environment(RockerExtension):
             nargs='+',
             action='append',
             help='set environment variables')
+        parser.add_argument('--env-file',
+            type=str,
+            nargs=1,
+            action='append',
+            help='set environment variable via env-file')
+
+    @classmethod
+    def check_args_for_activation(cls, cli_args):
+        """ Returns true if the arguments indicate that this extension should be activated otherwise false."""
+        return True if cli_args.get('env') or cli_args.get('env_file') else False
