@@ -145,9 +145,10 @@ class PulseAudio(RockerExtension):
         return args % self.get_environment_subs()
 
     @staticmethod
-    def register_arguments(parser):
+    def register_arguments(parser, defaults={}):
         parser.add_argument(name_to_argument(PulseAudio.get_name()),
             action='store_true',
+            default=defaults.get(PulseAudio.get_name(), None),
             help="mount pulse audio devices")
 
 
@@ -163,9 +164,10 @@ class HomeDir(RockerExtension):
         return ' -v %s:%s ' % (Path.home(), Path.home())
 
     @staticmethod
-    def register_arguments(parser):
+    def register_arguments(parser, defaults={}):
         parser.add_argument(name_to_argument(HomeDir.get_name()),
             action='store_true',
+            default=defaults.get(HomeDir.get_name(), None),
             help="mount the users home directory")
 
 
@@ -228,12 +230,13 @@ class Environment(RockerExtension):
         return ' '.join(args)
 
     @staticmethod
-    def register_arguments(parser):
+    def register_arguments(parser, defaults={}):
         parser.add_argument('--env', '-e',
             metavar='NAME[=VALUE]',
             type=str,
             nargs='+',
             action='append',
+            default=defaults.get(Environment.get_name(), []),
             help='set environment variables')
         parser.add_argument('--env-file',
             type=str,

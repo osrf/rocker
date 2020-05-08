@@ -46,7 +46,8 @@ class Ssh(RockerExtension):
         return args
 
     @staticmethod
-    def register_arguments(parser):
+    def register_arguments(parser, defaults={}):
         parser.add_argument('--ssh',
             action='store_true',
+            default=defaults.get(Ssh.get_name(), None),
             help="Forward SSH agent into the container")
