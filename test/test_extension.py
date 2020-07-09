@@ -141,6 +141,39 @@ class NetworkExtensionTest(unittest.TestCase):
         args = p.get_docker_args(mock_cliargs)
         self.assertTrue('--network host' in args)
 
+
+class NameExtensionTest(unittest.TestCase):
+
+    def setUp(self):
+        # Work around interference between empy Interpreter
+        # stdout proxy and test runner. empy installs a proxy on stdout
+        # to be able to capture the information.
+        # And the test runner creates a new stdout object for each test.
+        # This breaks empy as it assumes that the proxy has persistent
+        # between instances of the Interpreter class
+        # empy will error with the exception
+        # "em.Error: interpreter stdout proxy lost"
+        em.Interpreter._wasProxyInstalled = False
+
+    def test_name_extension(self):
+        plugins = list_plugins()
+        name_plugin = plugins['name']
+        self.assertEqual(name_plugin.get_name(), 'name')
+
+        p = name_plugin()
+        self.assertTrue(plugin_load_parser_correctly(name_plugin))
+
+        mock_cliargs = {'name': 'none'}
+        self.assertEqual(p.get_snippet(mock_cliargs), '')
+        self.assertEqual(p.get_preamble(mock_cliargs), '')
+        args = p.get_docker_args(mock_cliargs)
+        self.assertTrue('--name none' in args)
+
+        mock_cliargs = {'name': 'docker_name'}
+        args = p.get_docker_args(mock_cliargs)
+        self.assertTrue('--name docker_name' in args)
+
+
 class UserExtensionTest(unittest.TestCase):
 
     def setUp(self):

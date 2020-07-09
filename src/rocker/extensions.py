@@ -90,6 +90,31 @@ class DevHelpers(RockerExtension):
             default=defaults.get('dev_helpers', None),
             help="add development tools emacs and byobu to your environment")
 
+
+class Name(RockerExtension):
+    @staticmethod
+    def get_name():
+        return 'name'
+
+    def __init__(self):
+        self.name = Name.get_name()
+
+    def get_preamble(self, cliargs):
+        return ''
+
+    def get_docker_args(self, cliargs):
+        args = ''
+        name = cliargs.get('name', None)
+        if name:
+            args += ' --name %s ' % name
+        return args
+
+    @staticmethod
+    def register_arguments(parser, defaults={}):
+        parser.add_argument('--name', default='',
+                            help='Name of the container.')
+
+
 class Network(RockerExtension):
     @staticmethod
     def get_name():
