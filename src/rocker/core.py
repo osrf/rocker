@@ -22,6 +22,7 @@ import sys
 
 import pkg_resources
 import pkgutil
+from requests.exceptions import ConnectionError
 import shlex
 import subprocess
 import tempfile
@@ -40,6 +41,11 @@ OPERATIONS_DRY_RUN = 'dry-run'
 OPERATIONS_NON_INTERACTIVE = 'non-interactive'
 OPERATIONS_INTERACTIVE = 'interactive'
 OPERATION_MODES = [OPERATIONS_INTERACTIVE, OPERATIONS_NON_INTERACTIVE , OPERATIONS_DRY_RUN]
+
+
+class DependencyMissing(RuntimeError):
+    pass
+
 
 class RockerExtension(object):
     """The base class for Rocker extension points"""
@@ -107,11 +113,19 @@ class RockerExtensionManager:
 def get_docker_client():
     """Simple helper function for pre 2.0 imports"""
     try:
-        docker_client = docker.APIClient()
-    except AttributeError:
-        # docker-py pre 2.0
-        docker_client = docker.Client()
-    return docker_client
+        try:
+            docker_client = docker.APIClient()
+        except AttributeError:
+            # docker-py pre 2.0
+            docker_client = docker.Client()
+        # Validate that the server is available
+        docker_client.ping()
+        return docker_client
+    except (docker.errors.APIError, ConnectionError) as ex:
+        raise DependencyMissing('Docker Client failed to connect to docker daemon.'
+            ' Please verify that docker is installed and running.'
+            ' As well as that you have permission to access the docker daemon.'
+            ' This is usually by being a member of the docker group.')
 
 
 def docker_build(docker_client = None, output_callback = None, **kwargs):
