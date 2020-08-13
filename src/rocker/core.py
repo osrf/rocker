@@ -122,7 +122,7 @@ def get_docker_client():
         docker_client.ping()
         return docker_client
     except (docker.errors.APIError, ConnectionError) as ex:
-        raise DependencyMissing('Docker Client failed to connect to docker deamon.'
+        raise DependencyMissing('Docker Client failed to connect to docker daemon.'
             ' Please verify that docker is installed and running.'
             ' As well as that you have permission to access the docker daemon.'
             ' This is usually by being a member of the docker group.')
