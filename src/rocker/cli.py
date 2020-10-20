@@ -20,7 +20,6 @@ import sys
 
 from .core import DockerImageGenerator
 from .core import get_rocker_version
-from .core import pull_image
 from .core import RockerExtensionManager
 
 from .os_detector import detect_os
@@ -57,9 +56,6 @@ def main():
     print("Active extensions %s" % [e.get_name() for e in active_extensions])
 
     base_image = args.image
-
-    if args.pull:
-        pull_image(base_image)
 
     dig = DockerImageGenerator(active_extensions, args_dict, base_image)
     exit_code = dig.build(**vars(args))

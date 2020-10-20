@@ -23,7 +23,6 @@ from itertools import chain
 
 from rocker.core import DockerImageGenerator
 from rocker.core import list_plugins
-from rocker.core import pull_image
 from rocker.core import get_docker_client
 from rocker.core import get_rocker_version
 from rocker.core import RockerExtensionManager
@@ -56,21 +55,6 @@ class RockerCoreTest(unittest.TestCase):
         for p in parts:
             # Check that it can be cast to an int
             i = int(p)
-
-    def test_pull_image(self):
-        TEST_IMAGE='alpine:latest'
-        docker_client = get_docker_client()
-
-        l = docker_client.images()
-        tags = set(chain.from_iterable([i['RepoTags'] for i in l if i['RepoTags']]))
-        print(tags)
-        if TEST_IMAGE in tags:
-            docker_client.remove_image(TEST_IMAGE)
-            print('removed image %s' % TEST_IMAGE)
-        self.assertTrue(pull_image(TEST_IMAGE))
-
-    def test_failed_pull_image(self):
-        self.assertFalse(pull_image("osrf/ros:does_not_exist"))
 
     def test_run_before_build(self):
         dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
