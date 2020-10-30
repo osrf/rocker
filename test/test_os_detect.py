@@ -45,3 +45,8 @@ class RockerOSDetectorTest(unittest.TestCase):
     def test_does_not_exist(self):
         result = detect_os("osrf/ros:does_not_exist")
         self.assertEqual(result, None)
+
+    def test_cannot_detect_os(self):
+        # Test with output callback too get coverage of error reporting
+        result = detect_os("scratch", output_callback=print)
+        self.assertEqual(result, None)

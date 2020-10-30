@@ -20,34 +20,43 @@ import sys
 
 from .core import DockerImageGenerator
 from .core import get_rocker_version
-from .core import list_plugins
 from .core import pull_image
+from .core import RockerExtensionManager
+from .core import DependencyMissing
 
 from .os_detector import detect_os
 
 
 def main():
 
-    parser = argparse.ArgumentParser(description='A tool for running docker with extra options')
+    parser = argparse.ArgumentParser(
+        description='A tool for running docker with extra options',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('image')
     parser.add_argument('command', nargs='*', default='')
-    parser.add_argument('--noexecute', action='store_true')
+    parser.add_argument('--noexecute', action='store_true', help='Deprecated')
     parser.add_argument('--nocache', action='store_true')
     parser.add_argument('--pull', action='store_true')
-    parser.add_argument('--network', choices=['bridge', 'host', 'overlay', 'none'])
-    parser.add_argument('--devices', nargs='*')
     parser.add_argument('-v', '--version', action='version',
         version='%(prog)s ' + get_rocker_version())
 
-    plugins = list_plugins()
-    print("Plugins found: %s" % [p.get_name() for p in plugins.values()])
-    for p in plugins.values():
-        p.register_arguments(parser)
+    try:
+        extension_manager = RockerExtensionManager()
+        default_args = {}
+        extension_manager.extend_cli_parser(parser, default_args)
+    except DependencyMissing as ex:
+        # Catch errors if docker is missing or inaccessible.
+        parser.error("DependencyMissing encountered: %s" % ex)
 
     args = parser.parse_args()
     args_dict = vars(args)
+
+    if args.noexecute:
+        from .core import OPERATIONS_DRY_RUN
+        args_dict['mode'] = OPERATIONS_DRY_RUN
+        print('DEPRECATION Warning: --noexecute is deprecated for --mode dry-run please switch your usage by December 2020')
     
-    active_extensions = [e() for e in plugins.values() if args_dict.get(e.get_name())]
+    active_extensions = extension_manager.get_active_extensions(args_dict)
     # Force user to end if present otherwise it will break other extensions
     active_extensions.sort(key=lambda e:e.get_name().startswith('user'))
     print("Active extensions %s" % [e.get_name() for e in active_extensions])

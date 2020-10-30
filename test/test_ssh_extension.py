@@ -25,7 +25,7 @@ import pwd
 import shlex
 
 
-from rocker.cli import list_plugins
+from rocker.core import list_plugins
 from rocker.extensions import name_to_argument
 
 from test_extension import plugin_load_parser_correctly

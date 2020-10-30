@@ -32,7 +32,7 @@ RUN python3 -m venv /tmp/distrovenv
 RUN . /tmp/distrovenv/bin/activate && pip install distro pyinstaller staticx
 RUN apt-get update && apt-get install patchelf #needed for staticx
 
-RUN echo 'import distro; print(distro.linux_distribution())' > /tmp/distrovenv/detect_os.py
+RUN echo 'import distro; import sys; output = distro.linux_distribution(); print(output) if output[0] else sys.exit(1)' > /tmp/distrovenv/detect_os.py
 RUN . /tmp/distrovenv/bin/activate && pyinstaller --onefile /tmp/distrovenv/detect_os.py
 
 RUN . /tmp/distrovenv/bin/activate && staticx /dist/detect_os /dist/detect_os_static
@@ -44,12 +44,18 @@ ENTRYPOINT [ "/tmp/detect_os" ]
 CMD [ "" ]
 """
 
+_detect_os_cache = dict()
 
 def detect_os(image_name, output_callback=None):
+    # Do not rerun OS detection if there is already a cached result for the given image
+    if image_name in _detect_os_cache:
+        return _detect_os_cache[image_name]
+
     iof = StringIO((DETECTION_TEMPLATE % locals()).encode())
     image_id = docker_build(fileobj = iof, output_callback=output_callback)
     if not image_id:
-        print('Failed to build detector image')
+        if output_callback:
+            output_callback('Failed to build detector image')
         return None
 
     cmd="docker run -it --rm %s" % image_id
@@ -61,7 +67,8 @@ def detect_os(image_name, output_callback=None):
         output_callback("output: ", output)
     p.terminate()
     if p.exitstatus == 0:
-        return literal_eval(output.strip())
+        _detect_os_cache[image_name] = literal_eval(output.strip())
+        return _detect_os_cache[image_name]
     else:
         if output_callback:
             output_callback("/tmp/detect_os failed:")

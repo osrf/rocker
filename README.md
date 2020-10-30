@@ -34,12 +34,14 @@ For intel integrated graphics support you will need to mount through a specific 
 
 # Installation
 
-## Debians
+## Debians (Recommended)
 Debian packages are available from the ROS repositories. You can set them up in step one [here](http://wiki.ros.org/kinetic/Installation/Ubuntu) then come back.
 
 Then you can `sudo apt-get install python3-rocker`
 
 ## PIP
+
+If you're not on a Ubuntu or Debian platform.
 
 Rocker is available via pip you can install it via pip using
 

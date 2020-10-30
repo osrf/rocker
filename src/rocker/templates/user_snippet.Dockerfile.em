@@ -1,8 +1,9 @@
 # make sure sudo is installed to be able to give user sudo access in docker
-RUN apt-get update \
- && apt-get install -y \
-    sudo \
- && apt-get clean
+RUN if ! command -v sudo >/dev/null; then \
+      apt-get update \
+      && apt-get install -y sudo \
+      && apt-get clean; \
+    fi
 
 @[if name != 'root']@
 RUN existing_user_by_uid=`getent passwd "@(uid)" | cut -f1 -d: || true` && \
@@ -13,9 +14,13 @@ RUN existing_user_by_uid=`getent passwd "@(uid)" | cut -f1 -d: || true` && \
     if [ -z "${existing_group_by_gid}" ]; then \
       groupadd -g "@(gid)" "@name"; \
     fi && \
-    useradd --no-log-init --uid "@(uid)" -s "@(shell)" -c "@(gecos)" -g "@(gid)" -d "@(dir)" "@(name)" -m && \
+    useradd --no-log-init --no-create-home --uid "@(uid)" -s "@(shell)" -c "@(gecos)" -g "@(gid)" -d "@(dir)" "@(name)" && \
     echo "@(name) ALL=NOPASSWD: ALL" >> /etc/sudoers.d/rocker
 
+@[if not home_extension_active ]@
+# Making sure a home directory exists if we haven't mounted the user's home directory explicitly
+RUN mkhomedir_helper @(name)
+@[end if]@
 # Commands below run as the developer user
 USER @(name)
 @[else]@

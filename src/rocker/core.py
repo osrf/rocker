@@ -22,6 +22,8 @@ import sys
 
 import pkg_resources
 import pkgutil
+from requests.exceptions import ConnectionError
+import shlex
 import subprocess
 import tempfile
 
@@ -34,6 +36,16 @@ import struct
 import termios
 
 SYS_STDOUT = sys.stdout
+
+OPERATIONS_DRY_RUN = 'dry-run'
+OPERATIONS_NON_INTERACTIVE = 'non-interactive'
+OPERATIONS_INTERACTIVE = 'interactive'
+OPERATION_MODES = [OPERATIONS_INTERACTIVE, OPERATIONS_NON_INTERACTIVE , OPERATIONS_DRY_RUN]
+
+
+class DependencyMissing(RuntimeError):
+    pass
+
 
 class RockerExtension(object):
     """The base class for Rocker extension points"""
@@ -54,25 +66,66 @@ class RockerExtension(object):
     def get_snippet(self, cliargs):
         return ''
 
-    def get_name(self, cliargs):
+    @staticmethod
+    def get_name():
         raise NotImplementedError
-    
+
     def get_docker_args(self, cliargs):
         return ''
 
+    @classmethod
+    def check_args_for_activation(cls, cli_args):
+        """ Returns true if the arguments indicate that this extension should be activated otherwise false.
+        The default implementation looks for the extension name has any value.
+        It is recommended to override this unless it's just a flag to enable the plugin."""
+        return True if cli_args.get(cls.get_name()) else False
+
     @staticmethod
-    def register_arguments(parser):
+    def register_arguments(parser, defaults={}):
         raise NotImplementedError
+
+
+class RockerExtensionManager:
+    def __init__(self):
+        self.available_plugins = list_plugins()
+    
+    def extend_cli_parser(self, parser, default_args={}):
+        for p in self.available_plugins.values():
+            try:
+                p.register_arguments(parser, default_args)
+            except TypeError as ex:
+                print("Extension %s doesn't support default arguments. Please extend it." % p.get_name())
+                p.register_arguments(parser)
+        parser.add_argument('--mode', choices=OPERATION_MODES,
+            default=OPERATIONS_INTERACTIVE,
+            help="Choose mode of operation for rocker")
+        parser.add_argument('--extension-blacklist', nargs='*',
+            default=[],
+            help='Prevent any of these extensions from being loaded.')
+
+
+    def get_active_extensions(self, cli_args):
+        active_extensions = [e() for e in self.available_plugins.values() if e.check_args_for_activation(cli_args) and e.get_name() not in cli_args['extension_blacklist']]
+        active_extensions.sort(key=lambda e:e.get_name().startswith('user'))
+        return active_extensions
 
 
 def get_docker_client():
     """Simple helper function for pre 2.0 imports"""
     try:
-        docker_client = docker.APIClient()
-    except AttributeError:
-        # docker-py pre 2.0
-        docker_client = docker.Client()
-    return docker_client
+        try:
+            docker_client = docker.APIClient()
+        except AttributeError:
+            # docker-py pre 2.0
+            docker_client = docker.Client()
+        # Validate that the server is available
+        docker_client.ping()
+        return docker_client
+    except (docker.errors.APIError, ConnectionError) as ex:
+        raise DependencyMissing('Docker Client failed to connect to docker daemon.'
+            ' Please verify that docker is installed and running.'
+            ' As well as that you have permission to access the docker daemon.'
+            ' This is usually by being a member of the docker group.')
 
 
 def docker_build(docker_client = None, output_callback = None, **kwargs):
@@ -189,10 +242,6 @@ class DockerImageGenerator(object):
 
         docker_args = ''
 
-        network = kwargs.get('network', False)
-        if network:
-            docker_args += ' --network %s ' % network
-
         devices = kwargs.get('devices', None)
         if devices:
             for device in devices:
@@ -205,15 +254,29 @@ class DockerImageGenerator(object):
             docker_args += e.get_docker_args(self.cliargs)
 
         image = self.image_id
-        cmd="docker run -it \
+        operating_mode = kwargs.get('mode')
+        cmd="docker run"
+        if operating_mode != OPERATIONS_NON_INTERACTIVE:
+            # only disable for OPERATIONS_NON_INTERACTIVE
+            cmd += " -it"
+        cmd += " \
   --rm \
   %(docker_args)s \
   %(image)s %(command)s" % locals()
 #   $DOCKER_OPTS \
-        if kwargs.get('noexecute', False):
+        if operating_mode == OPERATIONS_DRY_RUN:
             print("Run this command: \n\n\n")
             print(cmd)
             return 0
+        elif operating_mode == OPERATIONS_NON_INTERACTIVE:
+            try:
+                print("Executing command: ")
+                print(cmd)
+                p = subprocess.run(shlex.split(cmd), check=True, stderr=subprocess.STDOUT)
+                return p.returncode
+            except subprocess.CalledProcessError as ex:
+                print("Non-interactive Docker run failed\n", ex)
+                return ex.returncode
         else:
             try:
                 print("Executing command: ")
@@ -225,7 +288,7 @@ class DockerImageGenerator(object):
                 return p.exitstatus
             except pexpect.ExceptionPexpect as ex:
                 print("Docker run failed\n", ex)
-                return 1
+                return ex.returncode
 
 
 def generate_dockerfile(extensions, args_dict, base_image):

@@ -24,8 +24,8 @@ import pexpect
 from io import BytesIO as StringIO
 from packaging.version import Version
 
-from rocker.cli import DockerImageGenerator
-from rocker.cli import list_plugins
+from rocker.core import DockerImageGenerator
+from rocker.core import list_plugins
 from rocker.core import get_docker_client
 from rocker.nvidia_extension import get_docker_version
 from test_extension import plugin_load_parser_correctly
@@ -36,9 +36,9 @@ class X11Test(unittest.TestCase):
     def setUpClass(self):
         client = get_docker_client()
         self.dockerfile_tags = []
-        for distro_version in ['xenial', 'bionic']:
+        for distro, distro_version in [('ubuntu', 'xenial'), ('ubuntu', 'bionic'), ('ubuntu', 'focal'), ('debian', 'buster')]:
             dockerfile = """
-FROM ubuntu:%(distro_version)s
+FROM %(distro)s:%(distro_version)s
 
 RUN apt-get update && apt-get install x11-utils -y && apt-get clean
 
@@ -184,3 +184,27 @@ CMD glmark2 --validate
             dig = DockerImageGenerator(active_extensions, {}, tag)
             self.assertEqual(dig.build(), 0)
             self.assertEqual(dig.run(), 0)
+
+    def test_nvidia_env_subs(self):
+        plugins = list_plugins()
+        nvidia_plugin = plugins['nvidia']
+
+        p = nvidia_plugin()
+
+        # base image doesn't exist
+        mock_cliargs = {'base_image': 'ros:does-not-exist'}
+        with self.assertRaises(SystemExit) as cm:
+            p.get_environment_subs(mock_cliargs)
+        self.assertEqual(cm.exception.code, 1)
+
+        # unsupported version
+        mock_cliargs = {'base_image': 'ubuntu:17.04'}
+        with self.assertRaises(SystemExit) as cm:
+            p.get_environment_subs(mock_cliargs)
+        self.assertEqual(cm.exception.code, 1)
+
+        # unsupported os
+        mock_cliargs = {'base_image': 'fedora'}
+        with self.assertRaises(SystemExit) as cm:
+            p.get_environment_subs(mock_cliargs)
+        self.assertEqual(cm.exception.code, 1)
