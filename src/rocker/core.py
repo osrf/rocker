@@ -211,6 +211,7 @@ class DockerImageGenerator(object):
             arguments['path'] = td
             arguments['rm'] = True
             arguments['nocache'] = kwargs.get('nocache', False)
+            arguments['pull'] = kwargs.get('pull', False)
             print("Building docker file with arguments: ", arguments)
             try:
                 self.image_id = docker_build(
@@ -313,18 +314,6 @@ def list_plugins(extension_point='rocker.extensions'):
     plugin_names = list(unordered_plugins.keys())
     plugin_names.sort()
     return OrderedDict([(k, unordered_plugins[k]) for k in plugin_names])
-
-
-def pull_image(image_name):
-    docker_client = get_docker_client()
-    try:
-        print("Pulling image %s" % image_name)
-        for line in docker_client.pull(image_name, stream=True):
-            print(line)
-        return True
-    except docker.errors.APIError as ex:
-        print('Pull of %s failed: %s' % (image_name, ex))
-        return False
 
 
 def get_rocker_version():
