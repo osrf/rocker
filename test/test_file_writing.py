@@ -50,6 +50,7 @@ class TestFileInjection(RockerExtension):
         all_files = {}
         all_files['test_file.txt'] = """The quick brown fox jumped over the lazy dog.
 %s""" % cliargs
+        all_files['/absolute.txt'] = """Absolute file path should be skipped"""
         return all_files
 
 
@@ -84,8 +85,8 @@ class FileInjectionExtensionTest(unittest.TestCase):
 
             with open(os.path.join(td, 'test_file.txt'), 'r') as fh:
                 content = fh.read()
-        
-        self.assertIn('quick brown', content)
-        self.assertIn('test_key', content)
-        self.assertIn('test_value', content)
-        
+                self.assertIn('quick brown', content)
+                self.assertIn('test_key', content)
+                self.assertIn('test_value', content)
+
+            self.assertFalse(os.path.exists('/absolute.txt'))
