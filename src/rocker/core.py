@@ -66,6 +66,10 @@ class RockerExtension(object):
     def get_snippet(self, cliargs):
         return ''
 
+    def get_files(self, cliargs):
+        """Get a dict of local filenames and content to write into them"""
+        return {}
+
     @staticmethod
     def get_name():
         raise NotImplementedError
@@ -207,6 +211,7 @@ class DockerImageGenerator(object):
             print('vvvvvv')
             print(self.dockerfile)
             print('^^^^^^')
+            write_files(self.active_extensions, self.cliargs, td)
             arguments = {}
             arguments['path'] = td
             arguments['rm'] = True
@@ -290,6 +295,21 @@ class DockerImageGenerator(object):
             except pexpect.ExceptionPexpect as ex:
                 print("Docker run failed\n", ex)
                 return ex.returncode
+
+
+def write_files(extensions, args_dict, target_directory):
+    all_files = {}
+    for active_extension in extensions:
+        for file_name, contents in active_extension.get_files(args_dict).items():
+            if os.path.isabs(file_name):
+                print('WARNING!! Path %s from extension %s is absolute'
+                      'and cannot be written out, skipping' % (file_name, active_extension.get_name()))
+                continue
+            full_path = os.path.join(target_directory, file_name)
+            with open(full_path, 'w') as fh:
+                print('Writing to file %s' % full_path)
+                fh.write(contents)
+    return all_files
 
 
 def generate_dockerfile(extensions, args_dict, base_image):
