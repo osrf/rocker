@@ -206,9 +206,6 @@ class UserExtensionTest(unittest.TestCase):
         mock_cliargs = {}
         snippet = p.get_snippet(mock_cliargs).splitlines()
 
-        passwd_line = [l for l in snippet if 'chpasswd' in l][0]
-        self.assertTrue(getpass.getuser() in passwd_line)
-
         uid_line = [l for l in snippet if '--uid' in l][0]
         self.assertTrue(str(os.getuid()) in uid_line)
 
