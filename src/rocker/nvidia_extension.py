@@ -27,6 +27,7 @@ from .os_detector import detect_os
 from .extensions import name_to_argument
 from .core import get_docker_client
 from .core import RockerExtension
+from .core import PrerequisiteCheckError
 
 def get_docker_version():
     docker_version_raw = get_docker_client().version()['Version']
@@ -124,6 +125,24 @@ class Nvidia(RockerExtension):
         if get_docker_version() >= Version("19.03"):
             return "  --gpus all"
         return "  --runtime=nvidia"
+
+    def check_run_prerequisites(self, cliargs):
+        nvidia_flag = ''    
+        if get_docker_version() >= Version("19.03"):
+            nvidia_flag = "  --gpus all"
+        else:
+            nvidia_flag = "  --runtime=nvidia"
+
+        cmd = 'docker run --rm %s nvidia/cuda:11.0-base nvidia-smi' % nvidia_flag
+        try:
+            subprocess.check_call(cmd.split())
+        except:
+            errstr = 'Failed to detect nvidia hardware.'
+            if get_docker_version() >= Version("19.03"):
+                errstr += ' Is nvidia-container-toolkit installed?'
+            else:
+                errstr += 'Is nvidia-docker2 installed?'
+            raise PrerequisiteCheckError(errstr)
 
     @staticmethod
     def register_arguments(parser, defaults={}):
