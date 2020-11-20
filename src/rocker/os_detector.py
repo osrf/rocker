@@ -29,7 +29,7 @@ FROM python:3-stretch as detector
 
 RUN mkdir -p /tmp/distrovenv
 RUN python3 -m venv /tmp/distrovenv
-RUN . /tmp/distrovenv/bin/activate && pip install distro pyinstaller staticx
+RUN . /tmp/distrovenv/bin/activate && pip install distro pyinstaller==4.0 staticx
 RUN apt-get update && apt-get install patchelf #needed for staticx
 
 RUN echo 'import distro; import sys; output = distro.linux_distribution(); print(output) if output[0] else sys.exit(1)' > /tmp/distrovenv/detect_os.py
@@ -46,13 +46,13 @@ CMD [ "" ]
 
 _detect_os_cache = dict()
 
-def detect_os(image_name, output_callback=None):
+def detect_os(image_name, output_callback=None, nocache=False):
     # Do not rerun OS detection if there is already a cached result for the given image
     if image_name in _detect_os_cache:
         return _detect_os_cache[image_name]
 
     iof = StringIO((DETECTION_TEMPLATE % locals()).encode())
-    image_id = docker_build(fileobj = iof, output_callback=output_callback)
+    image_id = docker_build(fileobj = iof, output_callback=output_callback, nocache=nocache)
     if not image_id:
         if output_callback:
             output_callback('Failed to build detector image')

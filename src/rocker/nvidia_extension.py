@@ -94,7 +94,7 @@ class Nvidia(RockerExtension):
             self._env_subs['username'] = getpass.getuser()
         
         # non static elements test every time
-        detected_os = detect_os(cliargs['base_image'], print)
+        detected_os = detect_os(cliargs['base_image'], print, nocache=cliargs.get('nocache', False))
         if detected_os is None:
             print("WARNING unable to detect os for base image '%s', maybe the base image does not exist" % cliargs['base_image'])
             sys.exit(1)
