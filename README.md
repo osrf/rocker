@@ -111,15 +111,15 @@ In QGroundControl go ahead and make a mission, upload it, and then start the mis
 
 ## ROS 2 rviz
 
-    rocker --nvidia osrf/ros:crystal-desktop rviz2
+    rocker --nvidia --x11 osrf/ros:crystal-desktop rviz2
 
 
 ## Generic gazebo
 
 On Xenial
 
-    rocker --nvidia osrf/ros:kinetic-desktop-full gazebo
+    rocker --nvidia --x11 osrf/ros:kinetic-desktop-full gazebo
 
 On Bionic
 
-    rocker --nvidia osrf/ros:melodic-desktop-full gazebo
+    rocker --nvidia --x11 osrf/ros:melodic-desktop-full gazebo
