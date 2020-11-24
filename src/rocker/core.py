@@ -160,6 +160,7 @@ def docker_build(docker_client = None, output_callback = None, **kwargs):
 class SIGWINCHPassthrough(object):
     def __init__ (self, process):
         self.process = process
+        self.active = os.isatty(sys.__stdout__.fileno())
 
     def set_window_size(self):
         s = struct.pack("HHHH", 0, 0, 0, 0)
@@ -175,6 +176,9 @@ class SIGWINCHPassthrough(object):
 
 
     def __enter__(self):
+        # Short circuit if not a tty
+        if not self.active:
+            return self
         # Expected function prototype for signal handling
         # ignoring unused arguments
         def sigwinch_passthrough (sig, data):
@@ -188,6 +192,8 @@ class SIGWINCHPassthrough(object):
 
     # Clean up signal handler before returning.
     def __exit__(self, exc_type, exc_value, traceback):
+        if not self.active:
+            return
         # This was causing hangs and resolved as referenced 
         # here: https://github.com/pexpect/pexpect/issues/465
         signal.signal(signal.SIGWINCH, signal.SIG_DFL)
@@ -242,10 +248,8 @@ class DockerImageGenerator(object):
             try:
                 e.precondition_environment(self.cliargs)
             except subprocess.CalledProcessError as ex:
-                print("Failed to precondition for extension [%s] with error: %s\ndeactivating" % (e.get_name(), ex))
-                # TODO(tfoote) remove the extension from the list
-
-
+                print("ERROR! Failed to precondition for extension [%s] with error: %s\ndeactivating" % (e.get_name(), ex))
+                return 1
         docker_args = ''
 
         devices = kwargs.get('devices', None)
@@ -261,6 +265,12 @@ class DockerImageGenerator(object):
 
         image = self.image_id
         operating_mode = kwargs.get('mode')
+        # Default to non-interactive if unset
+        if operating_mode not in OPERATION_MODES:
+            operating_mode = OPERATIONS_NON_INTERACTIVE
+        if operating_mode == OPERATIONS_INTERACTIVE and not os.isatty(sys.__stdin__.fileno()):
+            operating_mode = OPERATIONS_NON_INTERACTIVE
+            print("No tty detected for stdin forcing non-interactive")
         cmd="docker run"
         if operating_mode != OPERATIONS_NON_INTERACTIVE:
             # only disable for OPERATIONS_NON_INTERACTIVE
