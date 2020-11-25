@@ -47,6 +47,10 @@ class DependencyMissing(RuntimeError):
     pass
 
 
+class PrerequisiteCheckError(RuntimeError):
+    pass
+
+
 class RockerExtension(object):
     """The base class for Rocker extension points"""
 
@@ -54,10 +58,20 @@ class RockerExtension(object):
         """Modify the local environment such as setup tempfiles"""
         pass
 
-    def validate_environment(self, cliargs):
-        """ Check that the environment is something that can be used.
+    def check_build_prerequisites(self, cliargs):
+        """ Check that the environment is something that can be used for the build.
         This will check that we're on the right base OS and that the 
-        necessary resources are available, like hardware."""
+        necessary resources are available, like hardware.
+        Raises PrerequisiteCheckError on failure
+        """
+        pass
+
+    def check_run_prerequisites(self, cliargs):
+        """ Check that the environment is something that can be used for running the container.
+        This will check that we're on the right base OS and that the 
+        necessary resources are available, like hardware.
+        Raises PrerequisiteCheckError on failure
+        """
         pass
 
     def get_preamble(self, cliargs):
@@ -203,6 +217,14 @@ class DockerImageGenerator(object):
         self.image_id = None
 
     def build(self, **kwargs):
+        # Check prerequisites 
+        for e in self.active_extensions:
+            try:
+                e.check_build_prerequisites(self.cliargs)
+            except PrerequisiteCheckError as ex:
+                print("Failed to validate prerequisites to build for extension [%s] with error: %s\nNot executing run." % (e.get_name(), ex))
+                return 1
+
         with tempfile.TemporaryDirectory() as td:
             df = os.path.join(td, 'Dockerfile')
             print("Writing dockerfile to %s" % df)
@@ -240,10 +262,14 @@ class DockerImageGenerator(object):
 
         for e in self.active_extensions:
             try:
+                e.check_run_prerequisites(self.cliargs)
                 e.precondition_environment(self.cliargs)
+            except PrerequisiteCheckError as ex:
+                print("Failed to validate prerequisites to run for extension [%s] with error: %s\nNot executing run." % (e.get_name(), ex))
+                return 1
             except subprocess.CalledProcessError as ex:
-                print("Failed to precondition for extension [%s] with error: %s\ndeactivating" % (e.get_name(), ex))
-                # TODO(tfoote) remove the extension from the list
+                print("Failed to precondition environment for extension [%s] with error: %s\nNot executing run." % (e.get_name(), ex))
+                return 1
 
 
         docker_args = ''
