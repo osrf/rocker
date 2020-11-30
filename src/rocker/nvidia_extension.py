@@ -16,6 +16,7 @@ import grp
 import os
 import em
 import getpass
+import tempfile
 from packaging.version import Version
 import pkgutil
 from pathlib import Path
@@ -41,7 +42,10 @@ class X11(RockerExtension):
     def __init__(self):
         self.name = X11.get_name()
         self._env_subs = None
-        self.xauth = '/tmp/.docker.xauth'
+        _, self.xauth = tempfile.mkstemp(prefix='.docker', suffix='.xauth')
+
+    def __del__(self):
+        os.unlink(self.xauth)
 
     def get_docker_args(self, cliargs):
         xauth = self.xauth
