@@ -118,7 +118,7 @@ def get_docker_client():
     """Simple helper function for pre 2.0 imports"""
     try:
         try:
-            docker_client = docker.APIClient()
+            docker_client = docker.from_env().api
         except AttributeError:
             # docker-py pre 2.0
             docker_client = docker.Client()
