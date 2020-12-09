@@ -26,6 +26,8 @@ import sys
 
 from .core import get_docker_client
 
+from sre_yield import AllStrings
+
 
 def name_to_argument(name):
     return '--%s' % name.replace('_', '-')
@@ -46,6 +48,8 @@ class Devices(RockerExtension):
     def get_docker_args(self, cliargs):
         args = ''
         devices = cliargs.get('devices', None)
+        if devices:
+            devices = [device for device_re in devices for device in AllStrings(device_re)]
         for device in devices:
             if not os.path.exists(device):
                 print("ERROR device %s doesn't exist. Skipping" % device)

@@ -82,6 +82,13 @@ class DevicesExtensionTest(unittest.TestCase):
         args = p.get_docker_args(mock_cliargs)
         self.assertFalse('--device' in args)
 
+        # Check case for regular expression device
+        mock_cliargs = {'devices': ['/dev/(random|null)']}
+        self.assertEqual(p.get_snippet(mock_cliargs), '')
+        self.assertEqual(p.get_preamble(mock_cliargs), '')
+        args = p.get_docker_args(mock_cliargs)
+        self.assertTrue('--device /dev/random' in args and '--device /dev/null' in args)
+
 
 class HomeExtensionTest(unittest.TestCase):
 

@@ -7,6 +7,7 @@ install_requires = [
     'empy',
     'pexpect',
     'packaging',
+    'sre_yield',
 ]
 
 # docker API used to be in a package called `docker-py` before the 2.0 release
