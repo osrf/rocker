@@ -37,6 +37,8 @@ RUN . /tmp/distrovenv/bin/activate && pyinstaller --onefile /tmp/distrovenv/dete
 
 RUN . /tmp/distrovenv/bin/activate && staticx /dist/detect_os /dist/detect_os_static
 
+RUN chmod go+xr /dist/detect_os_static
+
 FROM %(image_name)s
 
 COPY --from=detector /dist/detect_os_static /tmp/detect_os
