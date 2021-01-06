@@ -42,13 +42,10 @@ class X11(RockerExtension):
     def __init__(self):
         self.name = X11.get_name()
         self._env_subs = None
-        _, self.xauth = tempfile.mkstemp(prefix='.docker', suffix='.xauth')
-
-    def __del__(self):
-        os.unlink(self.xauth)
+        self._xauth = tempfile.NamedTemporaryFile(prefix='.docker', suffix='.xauth')
 
     def get_docker_args(self, cliargs):
-        xauth = self.xauth
+        xauth = self._xauth.name
         return "  -e DISPLAY -e TERM \
   -e QT_X11_NO_MITSHM=1 \
   -e XAUTHORITY=%(xauth)s -v %(xauth)s:%(xauth)s \
@@ -56,12 +53,12 @@ class X11(RockerExtension):
   -v /etc/localtime:/etc/localtime:ro " % locals()
 
     def precondition_environment(self, cliargs):
-        xauth = self.xauth
+        xauth = self._xauth.name
         display = os.getenv('DISPLAY')
         # Make sure processes in the container can connect to the x server
         # Necessary so gazebo can create a context for OpenGL rendering (even headless)
-        if not os.path.exists(self.xauth): #if [ ! -f $XAUTH ]
-            Path(self.xauth).touch()
+        if not os.path.exists(xauth): #if [ ! -f $XAUTH ]
+            Path(xauth).touch()
             # print("touched %s" % xauth)
         cmd = 'xauth nlist %(display)s | sed -e \'s/^..../ffff/\' | xauth -f %(xauth)s nmerge -' % locals()
         # print("runnning %s" % cmd)
