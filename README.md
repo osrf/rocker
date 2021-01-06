@@ -21,7 +21,7 @@ It did not work using the nvidia 340 driver.
 
 It's also been tested on Ubuntu 18.04 with the 390 Nvidia driver.
 
-Install nvidia-docker 2: https://github.com/nvidia/nvidia-docker/wiki/Installation-(version-2.0)
+Install nvidia-docker 2: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#setting-up-nvidia-container-toolkit
 
 ## Intel integrated graphics support
 
