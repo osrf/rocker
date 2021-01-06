@@ -252,14 +252,6 @@ class DockerImageGenerator(object):
                 return 1
         docker_args = ''
 
-        devices = kwargs.get('devices', None)
-        if devices:
-            for device in devices:
-                if not os.path.exists(device):
-                    print("ERROR device %s doesn't exist. Skipping" % device)
-                    continue
-                docker_args += ' --device %s ' % device
-
         for e in self.active_extensions:
             docker_args += e.get_docker_args(self.cliargs)
 
