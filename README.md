@@ -34,8 +34,7 @@ Currently, [cgroups are not supported in rootless mode](https://github.com/moby/
 no-cgroups = true
 ```
 
-Note, that changing this setting will lead to a `Failed to initialize NVML: Unknown Error` if a container Dock is executed as root (noted [here](https://github.com/NVIDIA/nvidia-container-runtime/issues/85)).
-
+Note, that changing this setting will lead to a `Failed to initialize NVML: Unknown Error` if Docker is executed as root (noted [here](https://github.com/NVIDIA/nvidia-container-runtime/issues/85)).
 
 ## Intel integrated graphics support
 
