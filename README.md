@@ -23,6 +23,20 @@ It's also been tested on Ubuntu 18.04 with the 390 Nvidia driver.
 
 Install nvidia-docker 2: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker
 
+### Additional Configuration for rootless mode
+For executing Docker as a non-root user, separate installation instructions are provided here: https://docs.docker.com/engine/security/rootless/
+
+After installing Rootless Docker, the nvidia-docker2 package can be installed as usual from the website above.
+Currently, [cgroups are not supported in rootless mode](https://github.com/moby/moby/issues/38729) so we need to change `no-cgroups` in */etc/nvidia-container-runtime/config.toml*
+
+```shell
+[nvidia-container-cli]
+no-cgroups = true
+```
+
+Note, that changing this setting will lead to a `Failed to initialize NVML: Unknown Error` if a container Dock is executed as root (noted [here](https://github.com/NVIDIA/nvidia-container-runtime/issues/85)).
+
+
 ## Intel integrated graphics support
 
 For intel integrated graphics support you will need to mount through a specific device
