@@ -1,0 +1,27 @@
+name: Basic CI
+on: [push, pull_request]
+
+jobs:
+  basic_ci:
+    name: Basic CI
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        python-version: [3.8]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install Dependencies And Self
+      run: |
+        python -m pip install --upgrade pip setuptools wheel
+        pip install codecov coverage nose
+        pip install .
+    - name: Run headless tests
+      uses: GabrielBB/xvfb-action@v1
+      with:
+        run: nosetests -s -v --with-coverage --cover-package rocker --exclude test_nvidia_glmark2
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
