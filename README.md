@@ -16,10 +16,13 @@ Docker installation instructions: https://docs.docker.com/install/
 
 ## NVIDIA settings
 
-For the NVIDIA option this has been demonstrated using Ubuntu 16.04.5 running Kernel 4.15 and nvidia docker2 and the nvidia 384 driver.
-It did not work using the nvidia 340 driver.
+For the NVIDIA option this has been tested on the following systems using nvidia docker2:
 
-It's also been tested on Ubuntu 18.04 with the 390 Nvidia driver.
+| Ubuntu distribution  | Linux Kernel |       Nvidia drivers      |
+| -------------------- | ------------ | ------------------------- |
+|         16.04        |     4.15     | nvidia-384 (works) <br> nvidia-340 (doesn't work)  |
+|         18.04        |              |     nvidia-390 (works)    |
+|         20.04        |    5.4.0     | nvidia-driver-460 (works) |
 
 Install nvidia-docker 2: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#setting-up-nvidia-container-toolkit
 
