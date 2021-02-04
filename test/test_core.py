@@ -126,9 +126,15 @@ class RockerCoreTest(unittest.TestCase):
         dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
 
         self.assertNotIn('-it', dig.generate_docker_cmd(mode=''))
-        self.assertNotIn('-it', dig.generate_docker_cmd(mode='non-interactive'))
         self.assertIn('-it', dig.generate_docker_cmd(mode='dry-run'))
-        self.assertIn('-it', dig.generate_docker_cmd(mode='interactive'))
+
+        # TODO(tfoote) mock this appropriately
+        # google actions tests don't have a tty, local tests do
+        import os, sys
+        if os.isatty(sys.__stdin__.fileno()):
+            self.assertIn('-it', dig.generate_docker_cmd(mode='interactive'))
+        else:
+            self.assertNotIn('-it', dig.generate_docker_cmd(mode='interactive'))
 
         self.assertNotIn('-it', dig.generate_docker_cmd(mode='non-interactive'))
 
