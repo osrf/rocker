@@ -239,6 +239,36 @@ class DockerImageGenerator(object):
                 print("Docker build failed\n", ex)
                 return 1
 
+    def get_operating_mode(self, args):
+        operating_mode = args.get('mode')
+        # Default to non-interactive if unset
+        if operating_mode not in OPERATION_MODES:
+            operating_mode = OPERATIONS_NON_INTERACTIVE
+        if operating_mode == OPERATIONS_INTERACTIVE and not os.isatty(sys.__stdin__.fileno()):
+            operating_mode = OPERATIONS_NON_INTERACTIVE
+            print("No tty detected for stdin forcing non-interactive")
+        return operating_mode
+
+
+    def generate_docker_cmd(self, command='', **kwargs):
+        docker_args = ''
+
+        for e in self.active_extensions:
+            docker_args += e.get_docker_args(self.cliargs)
+
+        image = self.image_id
+        cmd = "docker run"
+        if(not kwargs.get('nocleanup')):
+            # remove container only if --nocleanup is not present
+            cmd += " --rm"
+
+        operating_mode = self.get_operating_mode(kwargs)
+        if operating_mode != OPERATIONS_NON_INTERACTIVE:
+            # only disable for OPERATIONS_NON_INTERACTIVE
+            cmd += " -it"
+        cmd += "%(docker_args)s %(image)s %(command)s" % locals()
+        return cmd
+
     def run(self, command='', **kwargs):
         if not self.built:
             print("Cannot run if build has not passed.")
@@ -250,28 +280,11 @@ class DockerImageGenerator(object):
             except subprocess.CalledProcessError as ex:
                 print("ERROR! Failed to precondition for extension [%s] with error: %s\ndeactivating" % (e.get_name(), ex))
                 return 1
-        docker_args = ''
 
-        for e in self.active_extensions:
-            docker_args += e.get_docker_args(self.cliargs)
+        cmd = self.generate_docker_cmd(command, **kwargs)
+        operating_mode = self.get_operating_mode(kwargs)
 
-        image = self.image_id
-        operating_mode = kwargs.get('mode')
-        # Default to non-interactive if unset
-        if operating_mode not in OPERATION_MODES:
-            operating_mode = OPERATIONS_NON_INTERACTIVE
-        if operating_mode == OPERATIONS_INTERACTIVE and not os.isatty(sys.__stdin__.fileno()):
-            operating_mode = OPERATIONS_NON_INTERACTIVE
-            print("No tty detected for stdin forcing non-interactive")
-        cmd="docker run"
-        if operating_mode != OPERATIONS_NON_INTERACTIVE:
-            # only disable for OPERATIONS_NON_INTERACTIVE
-            cmd += " -it"
-        cmd += " \
-  --rm \
-  %(docker_args)s \
-  %(image)s %(command)s" % locals()
-#   $DOCKER_OPTS \
+        #   $DOCKER_OPTS \
         if operating_mode == OPERATIONS_DRY_RUN:
             print("Run this command: \n\n\n")
             print(cmd)

@@ -121,3 +121,29 @@ class RockerCoreTest(unittest.TestCase):
         active_extensions = active_extensions = extension_manager.get_active_extensions({'user': True, 'ssh': True, 'extension_blacklist': ['ssh']})
         self.assertEqual(len(active_extensions), 1)
         self.assertEqual(active_extensions[0].get_name(), 'user')
+
+    def test_docker_cmd_interactive(self):
+        dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
+
+        self.assertNotIn('-it', dig.generate_docker_cmd(mode=''))
+        self.assertIn('-it', dig.generate_docker_cmd(mode='dry-run'))
+
+        # TODO(tfoote) mock this appropriately
+        # google actions tests don't have a tty, local tests do
+        import os, sys
+        if os.isatty(sys.__stdin__.fileno()):
+            self.assertIn('-it', dig.generate_docker_cmd(mode='interactive'))
+        else:
+            self.assertNotIn('-it', dig.generate_docker_cmd(mode='interactive'))
+
+        self.assertNotIn('-it', dig.generate_docker_cmd(mode='non-interactive'))
+
+
+    def test_docker_cmd_nocleanup(self):
+        dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
+
+        self.assertIn('--rm', dig.generate_docker_cmd())
+        self.assertIn('--rm', dig.generate_docker_cmd(mode='dry-run'))
+        self.assertIn('--rm', dig.generate_docker_cmd(nocleanup=''))
+
+        self.assertNotIn('--rm', dig.generate_docker_cmd(nocleanup='true'))
