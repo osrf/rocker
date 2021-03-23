@@ -110,6 +110,12 @@ class RockerExtensionManager:
 
     def get_active_extensions(self, cli_args):
         active_extensions = [e() for e in self.available_plugins.values() if e.check_args_for_activation(cli_args) and e.get_name() not in cli_args['extension_blacklist']]
+        # Force the 'env' extension temporary to the end so that user-set
+        # environment variables override environment variables possibly set by
+        # extensions.
+        active_extensions.sort(key=lambda e:e.get_name() == 'env')
+        # Force the 'user' extension to the end otherwise it will break other
+        # extensions.
         active_extensions.sort(key=lambda e:e.get_name().startswith('user'))
         return active_extensions
 

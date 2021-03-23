@@ -57,8 +57,6 @@ def main():
         print('DEPRECATION Warning: --noexecute is deprecated for --mode dry-run please switch your usage by December 2020')
     
     active_extensions = extension_manager.get_active_extensions(args_dict)
-    # Force user to end if present otherwise it will break other extensions
-    active_extensions.sort(key=lambda e:e.get_name().startswith('user'))
     print("Active extensions %s" % [e.get_name() for e in active_extensions])
 
     base_image = args.image
