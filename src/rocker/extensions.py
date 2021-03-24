@@ -273,3 +273,26 @@ class Environment(RockerExtension):
     def check_args_for_activation(cls, cli_args):
         """ Returns true if the arguments indicate that this extension should be activated otherwise false."""
         return True if cli_args.get('env') or cli_args.get('env_file') else False
+
+
+class Privileged(RockerExtension):
+    """Add the --privileged option to docker arguments."""
+    @staticmethod
+    def get_name():
+        return 'privileged'
+
+    def __init__(self):
+        self.name = Privileged.get_name()
+
+    def get_snippet(self, cli_args):
+        return ''
+
+    def get_docker_args(self, cli_args):
+        return '--privileged'
+
+    @staticmethod
+    def register_arguments(parser, defaults={}):
+        parser.add_argument(name_to_argument(Privileged.get_name()),
+                            action='store_true',
+                            default=defaults.get(Privileged.get_name(), None),
+                            help="give extended privileges to the container")
