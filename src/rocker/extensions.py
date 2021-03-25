@@ -276,7 +276,7 @@ class Environment(RockerExtension):
 
 
 class Privileged(RockerExtension):
-    """Add the --privileged option to docker arguments."""
+    """Add --privileged to docker arguments."""
     @staticmethod
     def get_name():
         return 'privileged'
@@ -288,7 +288,7 @@ class Privileged(RockerExtension):
         return ''
 
     def get_docker_args(self, cli_args):
-        return '--privileged'
+        return ' --privileged'
 
     @staticmethod
     def register_arguments(parser, defaults={}):
