@@ -39,7 +39,7 @@ kwargs = {
         'console_scripts': [
             'rocker = rocker.cli:main',
             'detect_docker_image_os = rocker.cli:detect_image_os',
-        ],
+	    ],
         'rocker.extensions': [
             'devices = rocker.extensions:Devices',
             'dev_helpers = rocker.extensions:DevHelpers',
@@ -54,7 +54,7 @@ kwargs = {
             'user = rocker.extensions:User',
             'x11 = rocker.nvidia_extension:X11',
         ]
-    },
+	},
     'author': 'Tully Foote',
     'author_email': 'tfoote@osrfoundation.org',
     'keywords': ['Docker'],
