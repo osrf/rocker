@@ -23,6 +23,7 @@ RUN mkdir -p "$(dirname "@(dir)")" && mkhomedir_helper @(name)
 @[end if]@
 # Commands below run as the developer user
 USER @(name)
+WORKDIR @(dir)
 @[else]@
 # Detected user is root, which already exists so not creating new user.
 @[end if]@
