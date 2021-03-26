@@ -111,7 +111,7 @@ class Name(RockerExtension):
 
     @staticmethod
     def register_arguments(parser, defaults={}):
-        parser.add_argument('--name', default='',
+        parser.add_argument('--name', default=defaults.get('name', ''),
                             help='Name of the container.')
 
 
