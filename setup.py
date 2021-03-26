@@ -31,7 +31,7 @@ install_requires.append(docker_package)
 
 kwargs = {
     'name': 'rocker',
-    'version': '0.2.5',
+    'version': '0.2.3',
     'packages': ['rocker'],
     'package_dir': {'': 'src'},
     'package_data': {'rocker': ['templates/*.em']},
@@ -41,8 +41,8 @@ kwargs = {
             'detect_docker_image_os = rocker.cli:detect_image_os',
 	    ],
         'rocker.extensions': [
-            'dev_helpers = rocker.extensions:DevHelpers',
             'devices = rocker.extensions:Devices',
+            'dev_helpers = rocker.extensions:DevHelpers',
             'env = rocker.extensions:Environment',
             'git = rocker.git_extension:Git',
             'home = rocker.extensions:HomeDir',
