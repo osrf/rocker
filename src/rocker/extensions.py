@@ -217,7 +217,7 @@ class User(RockerExtension):
     def get_snippet(self, cliargs):
         snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
         substitutions = self.get_environment_subs()
-        if cliargs['user_override_name']:
+        if 'user_override_name' in cliargs and cliargs['user_override_name']:
             substitutions['name'] = cliargs['user_override_name']
             substitutions['dir'] = os.path.join('/home/', cliargs['user_override_name'])
         substitutions['home_extension_active'] = True if 'home' in cliargs and cliargs['home'] else False

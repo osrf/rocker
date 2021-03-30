@@ -246,6 +246,13 @@ class UserExtensionTest(unittest.TestCase):
         home_active_cliargs['home'] = True
         self.assertFalse('mkhomedir_helper' in p.get_snippet(home_active_cliargs))
 
+        user_override_active_cliargs = mock_cliargs
+        user_override_active_cliargs['user_override_name'] = 'testusername'
+        print(p.get_snippet(user_override_active_cliargs))
+        snippet_result = p.get_snippet(user_override_active_cliargs)
+        self.assertTrue('USER testusername' in snippet_result)
+        self.assertTrue('WORKDIR /home/testusername' in snippet_result)
+
 
 class PulseExtensionTest(unittest.TestCase):
 
