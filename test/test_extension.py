@@ -174,6 +174,35 @@ class NameExtensionTest(unittest.TestCase):
         self.assertTrue('--name docker_name' in args)
 
 
+class PrivilegedExtensionTest(unittest.TestCase):
+
+    def setUp(self):
+        # Work around interference between empy Interpreter
+        # stdout proxy and test runner. empy installs a proxy on stdout
+        # to be able to capture the information.
+        # And the test runner creates a new stdout object for each test.
+        # This breaks empy as it assumes that the proxy has persistent
+        # between instances of the Interpreter class
+        # empy will error with the exception
+        # "em.Error: interpreter stdout proxy lost"
+        em.Interpreter._wasProxyInstalled = False
+
+    def test_privileged_extension(self):
+        plugins = list_plugins()
+        print(plugins)
+        privileged_plugin = plugins['privileged']
+        self.assertEqual(privileged_plugin.get_name(), 'privileged')
+
+        p = privileged_plugin()
+        self.assertTrue(plugin_load_parser_correctly(privileged_plugin))
+
+        mock_cliargs = {'privileged': True}
+        self.assertEqual(p.get_snippet(mock_cliargs), '')
+        self.assertEqual(p.get_preamble(mock_cliargs), '')
+        args = p.get_docker_args(mock_cliargs)
+        self.assertTrue('--privileged' in args)
+
+
 class UserExtensionTest(unittest.TestCase):
 
     def setUp(self):
