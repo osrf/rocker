@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from argparse import ArgumentTypeError
+import getpass
 import os
 from rocker.extensions import RockerExtension
 
@@ -25,27 +26,19 @@ class Git(RockerExtension):
     def get_name(cls):
         return cls.name
 
-    def precondition_environment(self, cli_args):
-        pass
-
-    def validate_environment(self, cli_args):
-        pass
-
-    def get_preamble(self, cli_args):
-        return ''
-
-    def get_snippet(self, cli_args):
-        return ''
 
     def get_docker_args(self, cli_args):
         args = ''
-        system_gitconfig = '/etc/gitconfig'
-        user_gitconfig = os.path.expanduser('~/.gitconfig')
+        # only parameterized for testing
+        system_gitconfig = cli_args.get('git_config_path_system', '/etc/gitconfig')
+        system_gitconfig_target = '/etc/gitconfig'
+        user_gitconfig = cli_args.get('git_config_path', os.path.expanduser('~/.gitconfig'))
         user_gitconfig_target = '/root/.gitconfig'
         if 'user' in cli_args and cli_args['user']:
-            user_gitconfig_target = user_gitconfig
+            username = cli_args.get('user_override_name', getpass.getuser())
+            user_gitconfig_target = '/home/%(username)s/.gitconfig' % locals()
         if os.path.exists(system_gitconfig):
-            args += ' -v {system_gitconfig}:{system_gitconfig}:ro'.format(**locals())
+            args += ' -v {system_gitconfig}:{system_gitconfig_target}:ro'.format(**locals())
         if os.path.exists(user_gitconfig):
             args += ' -v {user_gitconfig}:{user_gitconfig_target}:ro'.format(**locals())
         return args
@@ -56,3 +49,7 @@ class Git(RockerExtension):
             action='store_true',
             default=defaults.get(Git.get_name(), None),
             help="Use the global Git settings from the host (/etc/gitconfig and ~/.gitconfig)")
+        parser.add_argument('--git-config-path',
+            action='store',
+            default=defaults.get('git_config_path', os.path.expanduser('~/.gitconfig')),
+            help="Override the path to the git config default: %s" % defaults.get('git_config_path', os.path.expanduser('~/.gitconfig')))
