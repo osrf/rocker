@@ -22,6 +22,7 @@ import os
 import unittest
 from pathlib import Path
 import pwd
+import tempfile
 
 
 from rocker.core import list_plugins
@@ -59,21 +60,33 @@ class GitExtensionTest(unittest.TestCase):
         
 
         mock_cliargs = {}
-        self.assertEqual(p.get_snippet(mock_cliargs), '')
-        self.assertEqual(p.get_preamble(mock_cliargs), '')
+        mock_config_file = tempfile.NamedTemporaryFile()
+        mock_system_config_file = tempfile.NamedTemporaryFile()
+        mock_cliargs['git_config_path'] = mock_config_file.name
+        mock_cliargs['git_config_path_system'] = mock_system_config_file.name
         args = p.get_docker_args(mock_cliargs)
-        # self.assertFalse(args)
-        system_gitconfig = '/etc/gitconfig'
-        user_gitconfig = os.path.expanduser('~/.gitconfig')
+        system_gitconfig = mock_system_config_file.name
+        system_gitconfig_target = '/etc/gitconfig'
+        user_gitconfig = mock_config_file.name
         user_gitconfig_target = '/root/.gitconfig'
-        if os.path.exists(system_gitconfig):
-            # TODO(tfoote) This isn't exercised on most systems, it would need to be mocked
-            self.assertIn('-v %s:%s' % (system_gitconfig, system_gitconfig), args)
-        if os.path.exists(user_gitconfig):
-            self.assertIn('-v %s:%s' % (user_gitconfig, user_gitconfig_target), args)
+        self.assertIn('-v %s:%s' % (system_gitconfig, system_gitconfig_target), args)
+        self.assertIn('-v %s:%s' % (user_gitconfig, user_gitconfig_target), args)
 
         # Test with user "enabled"
         mock_cliargs = {'user': True}
+        mock_cliargs['git_config_path'] = mock_config_file.name
         user_args = p.get_docker_args(mock_cliargs)
-        if os.path.exists(user_gitconfig):
-            self.assertIn('-v %s:%s' % (user_gitconfig, user_gitconfig), user_args)
+        user_gitconfig_target = os.path.expanduser('~/.gitconfig')
+        self.assertIn('-v %s:%s' % (user_gitconfig, user_gitconfig_target), user_args)
+
+        # Test with overridden user
+        mock_cliargs['user_override_name'] = 'testusername'
+        user_args = p.get_docker_args(mock_cliargs)
+        user_gitconfig_target = '/home/testusername/.gitconfig'
+        self.assertIn('-v %s:%s' % (user_gitconfig, user_gitconfig_target), user_args)
+
+        # Test non-extant files no generation
+        mock_cliargs['git_config_path'] = '/path-does-not-exist'
+        mock_cliargs['git_config_path_system'] = '/path-does-not-exist-either'
+        user_args = p.get_docker_args(mock_cliargs)
+        self.assertNotIn('-v', user_args)
