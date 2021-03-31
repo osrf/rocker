@@ -87,6 +87,6 @@ class GitExtensionTest(unittest.TestCase):
 
         # Test non-extant files no generation
         mock_cliargs['git_config_path'] = '/path-does-not-exist'
-        mock_cliargs['git_system_config_path'] = '/path-does-not-exist-either'
+        mock_cliargs['git_config_path_system'] = '/path-does-not-exist-either'
         user_args = p.get_docker_args(mock_cliargs)
         self.assertNotIn('-v', user_args)
