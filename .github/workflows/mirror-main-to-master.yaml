@@ -1,0 +1,13 @@
+name: Mirror main to master
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  mirror-to-master:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: zofrex/mirror-branch@v1
+      with:
+        target-branch: master
