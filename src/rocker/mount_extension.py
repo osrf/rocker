@@ -19,50 +19,50 @@ from rocker.extensions import RockerExtension
 
 class Mount(RockerExtension):
 
+    ARG_DOCKER_VOLUME = "-v"
+    ARG_ROCKER_VOLUME = "--mount"
     name = 'mount'
 
     @classmethod
     def get_name(cls):
         return cls.name
 
-    def precondition_environment(self, cli_args):
-        pass
-
-    def validate_environment(self, cli_args):
-        pass
-
-    def get_preamble(self, cli_args):
-        return ''
-
-    def get_snippet(self, cli_args):
-        return ''
-
     def get_docker_args(self, cli_args):
+        """
+        @param cli_args: {'mount': [[%arg%]]}
+            - 'mount' is fixed.
+            - %arg% can be:
+               - %path_host%: a path on the host. Same path will be populated in
+                   the container.
+               - %path_host%:%path_cont%
+               - %path_host%:%path_cont%:%option%
+        """
         args = ['']
 
         # flatten cli_args['mount']
-        mounts = [ x for sublist in cli_args['mount'] for x in sublist]
+        mounts = [ x for sublist in cli_args[self.name] for x in sublist]
 
         for mount in mounts:
             elems = mount.split(':')
             host_dir = os.path.abspath(elems[0])
             if len(elems) == 1:
-                args.append('-v {0}:{0}'.format(host_dir))
+                args.append('{0} {1}:{1}'.format(self.ARG_DOCKER_VOLUME, host_dir))
             elif len(elems) == 2:
                 container_dir = elems[1]
-                args.append('-v {0}:{1}'.format(host_dir, container_dir))
+                args.append('{0} {1}:{2}'.format(self.ARG_DOCKER_VOLUME, host_dir, container_dir))
             elif len(elems) == 3:
                 container_dir = elems[1]
                 options = elems[2]
-                args.append('-v {0}:{1}:{2}'.format(host_dir, container_dir, options))
+                args.append('{0} {1}:{2}:{3}'.format(self.ARG_DOCKER_VOLUME, host_dir, container_dir, options))
             else:
-                raise ArgumentTypeError('--mount expects arguments in format HOST-DIR[:CONTAINER-DIR[:OPTIONS]]')
+                raise ArgumentTypeError(
+                    '{} expects arguments in format HOST-DIR[:CONTAINER-DIR[:OPTIONS]]'.format(self.ARG_ROCKER_VOLUME))
 
         return ' '.join(args)
 
     @staticmethod
     def register_arguments(parser):
-        parser.add_argument('--mount',
+        parser.add_argument(Mount.ARG_ROCKER_VOLUME,
             metavar='HOST-DIR[:CONTAINER-DIR[:OPTIONS]]',
             type=str,
             nargs='+',
