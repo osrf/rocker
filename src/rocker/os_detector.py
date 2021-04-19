@@ -57,7 +57,7 @@ def detect_os(image_name, output_callback=None, nocache=False):
         output_callback=output_callback,
         nocache=nocache,
         forcerm=True,  # Remove intermediate containers from RUN commands in DETECTION_TEMPLATE
-        tag="rocker:" + f"os_detect_{image_name}".replace(':', '_').replace('/', '_')
+        tag="rocker:" + "os_detect_{}".format(image_name).replace(':', '_').replace('/', '_')
     )
     if not image_id:
         if output_callback:
