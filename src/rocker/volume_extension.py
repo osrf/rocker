@@ -17,11 +17,11 @@ import os
 from rocker.extensions import RockerExtension
 
 
-class Mount(RockerExtension):
+class Volume(RockerExtension):
 
     ARG_DOCKER_VOLUME = "-v"
-    ARG_ROCKER_VOLUME = "--mount"
-    name = 'mount'
+    ARG_ROCKER_VOLUME = "--volume"
+    name = 'volume'
 
     @classmethod
     def get_name(cls):
@@ -29,8 +29,8 @@ class Mount(RockerExtension):
 
     def get_docker_args(self, cli_args):
         """
-        @param cli_args: {'mount': [[%arg%]]}
-            - 'mount' is fixed.
+        @param cli_args: {'volume': [[%arg%]]}
+            - 'volume' is fixed.
             - %arg% can be:
                - %path_host%: a path on the host. Same path will be populated in
                    the container.
@@ -39,11 +39,11 @@ class Mount(RockerExtension):
         """
         args = ['']
 
-        # flatten cli_args['mount']
-        mounts = [ x for sublist in cli_args[self.name] for x in sublist]
+        # flatten cli_args['volume']
+        volumes = [ x for sublist in cli_args[self.name] for x in sublist]
 
-        for mount in mounts:
-            elems = mount.split(':')
+        for volume in volumes:
+            elems = volume.split(':')
             host_dir = os.path.abspath(elems[0])
             if len(elems) == 1:
                 args.append('{0} {1}:{1}'.format(self.ARG_DOCKER_VOLUME, host_dir))
@@ -62,9 +62,9 @@ class Mount(RockerExtension):
 
     @staticmethod
     def register_arguments(parser):
-        parser.add_argument(Mount.ARG_ROCKER_VOLUME,
+        parser.add_argument(Volume.ARG_ROCKER_VOLUME,
             metavar='HOST-DIR[:CONTAINER-DIR[:OPTIONS]]',
             type=str,
             nargs='+',
             action='append',
-            help='mount volumes in container')
+            help='volume volumes in container')

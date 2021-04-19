@@ -19,12 +19,12 @@ import os
 import unittest
 
 from rocker.core import list_plugins
-from rocker.mount_extension import Mount
+from rocker.volume_extension import Volume
 
 
-class MountTest(unittest.TestCase):
+class VolumeTest(unittest.TestCase):
     def setUp(self):
-        self._instance = Mount()
+        self._instance = Volume()
         self._curr_path = os.path.abspath(os.path.curdir)
         self._virtual_path = "/path/in/container"
 
@@ -38,32 +38,32 @@ class MountTest(unittest.TestCase):
         print("DEBUG: Resulted docker_args: {}".format(docker_args))
         for arg_expected in expected:
             # Whitespace at the beginning is needed.
-            complete_expected = " {} {}".format(Mount.ARG_DOCKER_VOLUME, arg_expected[0])
+            complete_expected = " {} {}".format(Volume.ARG_DOCKER_VOLUME, arg_expected[0])
             self.assertTrue(complete_expected in docker_args)
 
     def test_args_single(self):
         """Passing source path"""
         arg = [[self._curr_path]]
         expected = [['{}:{}'.format(self._curr_path, self._curr_path)]]
-        mock_cliargs = {Mount.name: arg}
+        mock_cliargs = {Volume.name: arg}
         self._test_equals_args(mock_cliargs, expected)
 
     def test_args_twopaths(self):
         """Passing source path, dest path"""
         arg = ["{}:{}".format(self._curr_path, self._virtual_path)]
-        mock_cliargs = {Mount.name: [arg]}
+        mock_cliargs = {Volume.name: [arg]}
         self._test_equals_args(mock_cliargs, arg)
 
     def test_args_twopaths_opt(self):
-        """Passing source path, dest path, and Docker's mount option"""
+        """Passing source path, dest path, and Docker's volume option"""
         arg = ["{}:{}:ro".format(self._curr_path, self._virtual_path)]
-        mock_cliargs = {Mount.name: [arg]}
+        mock_cliargs = {Volume.name: [arg]}
         self._test_equals_args(mock_cliargs, arg)
 
     def test_args_two_volumes(self):
-        """Multiple mount points"""
+        """Multiple volume points"""
         arg_first = ["{}:{}:ro".format(self._curr_path, self._virtual_path)]
         arg_second = ["/tmp:{}".format(os.path.join(self._virtual_path, "tmp"))]
         args = [arg_first, arg_second]
-        mock_cliargs = {Mount.name: args}
+        mock_cliargs = {Volume.name: args}
         self._test_equals_args(mock_cliargs, args)
