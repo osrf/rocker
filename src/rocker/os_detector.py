@@ -35,9 +35,7 @@ RUN apt-get update && apt-get install -qy patchelf #needed for staticx
 RUN echo 'import distro; import sys; output = distro.linux_distribution(); print(output) if output[0] else sys.exit(1)' > /tmp/distrovenv/detect_os.py
 RUN . /tmp/distrovenv/bin/activate && pyinstaller --onefile /tmp/distrovenv/detect_os.py
 
-RUN . /tmp/distrovenv/bin/activate && staticx /dist/detect_os /dist/detect_os_static
-
-RUN chmod go+xr /dist/detect_os_static
+RUN . /tmp/distrovenv/bin/activate && staticx /dist/detect_os /dist/detect_os_static && chmod go+xr /dist/detect_os_static
 
 FROM %(image_name)s
 
