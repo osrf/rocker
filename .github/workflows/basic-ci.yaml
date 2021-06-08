@@ -17,6 +17,8 @@ jobs:
     - name: Install Dependencies And Self
       run: |
         python -m pip install --upgrade pip setuptools wheel
+        # Workaround for https://github.com/docker/docker-py/issues/2807
+        python -m pip install six
         pip install codecov coverage nose
         pip install .
     - name: Run headless tests
