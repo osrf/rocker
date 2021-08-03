@@ -32,7 +32,7 @@ RUN python3 -m venv /tmp/distrovenv
 RUN . /tmp/distrovenv/bin/activate && pip install distro pyinstaller==4.0 staticx
 RUN apt-get update && apt-get install -qy patchelf #needed for staticx
 
-RUN echo 'import distro; import sys; output = distro.linux_distribution(); print(output) if output[0] else sys.exit(1)' > /tmp/distrovenv/detect_os.py
+RUN echo 'import distro; import sys; output = (distro.name(), distro.version(), distro.codename()); print(output) if distro.name() else sys.exit(1)' > /tmp/distrovenv/detect_os.py
 RUN . /tmp/distrovenv/bin/activate && pyinstaller --onefile /tmp/distrovenv/detect_os.py
 
 RUN . /tmp/distrovenv/bin/activate && staticx /dist/detect_os /dist/detect_os_static && chmod go+xr /dist/detect_os_static
