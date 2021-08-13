@@ -50,6 +50,7 @@ kwargs = {
             'name = rocker.extensions:Name',
             'network = rocker.extensions:Network',
             'nvidia = rocker.nvidia_extension:Nvidia',
+            'cuda_dev = rocker.nvidia_extension:CudaDev',
             'privileged = rocker.extensions:Privileged',
             'pulse = rocker.extensions:PulseAudio',
             'ssh = rocker.ssh_extension:Ssh',
