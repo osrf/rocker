@@ -103,6 +103,8 @@ class RockerExtensionManager:
         parser.add_argument('--mode', choices=OPERATION_MODES,
             default=OPERATIONS_INTERACTIVE,
             help="Choose mode of operation for rocker")
+        parser.add_argument('--image-name', default=None,
+            help='Tag the final image, useful with dry-run')
         parser.add_argument('--extension-blacklist', nargs='*',
             default=[],
             help='Prevent any of these extensions from being loaded.')
@@ -223,6 +225,10 @@ class DockerImageGenerator(object):
             arguments['rm'] = True
             arguments['nocache'] = kwargs.get('nocache', False)
             arguments['pull'] = kwargs.get('pull', False)
+            image_name = kwargs.get('image_name', None)
+            if image_name:
+                print(f"Running docker tag {self.image_id} {image_name}")
+                arguments['tag'] = image_name
             print("Building docker file with arguments: ", arguments)
             try:
                 self.image_id = docker_build(
@@ -256,7 +262,11 @@ class DockerImageGenerator(object):
         for e in self.active_extensions:
             docker_args += e.get_docker_args(self.cliargs)
 
-        image = self.image_id
+        image_name = kwargs.get('image_name', None)
+        if image_name:
+            image = image_name
+        else:
+            image = self.image_id
         cmd = "docker run"
         if(not kwargs.get('nocleanup')):
             # remove container only if --nocleanup is not present
