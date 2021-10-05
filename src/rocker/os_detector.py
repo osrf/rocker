@@ -32,7 +32,7 @@ RUN python3 -m venv /tmp/distrovenv
 # patchelf needed for staticx
 # binutils provides objdump needed by pyinstaller
 RUN apt-get update && apt-get install -qy patchelf binutils
-RUN . /tmp/distrovenv/bin/activate && pip install distro pyinstaller==4.0 staticx
+RUN . /tmp/distrovenv/bin/activate && pip install distro pyinstaller==4.0 staticx==0.12.3
 
 RUN echo 'import distro; import sys; output = (distro.name(), distro.version(), distro.codename()); print(output) if distro.name() else sys.exit(1)' > /tmp/distrovenv/detect_os.py
 RUN . /tmp/distrovenv/bin/activate && pyinstaller --onefile /tmp/distrovenv/detect_os.py
