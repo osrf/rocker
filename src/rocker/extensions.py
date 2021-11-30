@@ -232,7 +232,7 @@ class User(RockerExtension):
             help="mount the current user's id and run as that user")
         parser.add_argument('--user-override-name',
             action='store',
-            default=defaults.get('user-override-username', None),
+            default=defaults.get('user-override-name', None),
             help="override the current user's name")
         parser.add_argument('--user-preserve-home',
             action='store_true',
