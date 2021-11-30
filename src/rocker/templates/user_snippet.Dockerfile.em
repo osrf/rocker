@@ -7,9 +7,9 @@ RUN if ! command -v sudo >/dev/null; then \
 
 @[if name != 'root']@
 RUN existing_user_by_uid=`getent passwd "@(uid)" | cut -f1 -d: || true` && \
-    if [ -n "${existing_user_by_uid}" ]; then userdel -r "${existing_user_by_uid}"; fi && \
+    if [ -n "${existing_user_by_uid}" ]; then userdel @('' if user_preserve_home else '-r') "${existing_user_by_uid}"; fi && \
     existing_user_by_name=`getent passwd "@(name)" | cut -f1 -d: || true` && \
-    if [ -n "${existing_user_by_name}" ]; then userdel -r "${existing_user_by_name}"; fi && \
+    if [ -n "${existing_user_by_name}" ]; then userdel @('' if user_preserve_home else '-r') "${existing_user_by_name}"; fi && \
     existing_group_by_gid=`getent group "@(gid)" | cut -f1 -d: || true` && \
     if [ -z "${existing_group_by_gid}" ]; then \
       groupadd -g "@(gid)" "@name"; \

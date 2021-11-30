@@ -220,6 +220,7 @@ class User(RockerExtension):
         if 'user_override_name' in cliargs and cliargs['user_override_name']:
             substitutions['name'] = cliargs['user_override_name']
             substitutions['dir'] = os.path.join('/home/', cliargs['user_override_name'])
+        substitutions['user_preserve_home'] = cliargs['user_preserve_home']
         substitutions['home_extension_active'] = True if 'home' in cliargs and cliargs['home'] else False
         return em.expand(snippet, substitutions)
 
@@ -233,6 +234,10 @@ class User(RockerExtension):
             action='store',
             default=defaults.get('user-override-username', None),
             help="override the current user's name")
+        parser.add_argument('--user-preserve-home',
+            action='store_true',
+            default=defaults.get('user-preserve-home', None),
+            help="Do not delete home directory if it exists when making a new user.")
 
 
 class Environment(RockerExtension):
