@@ -40,7 +40,7 @@ class Volume(RockerExtension):
         args = ['']
 
         # flatten cli_args['volume']
-        volumes = [ x for sublist in cli_args[self.name] for x in sublist]
+        volumes = [ x for x in cli_args[self.name] ]
 
         for volume in volumes:
             elems = volume.split(':')
@@ -65,6 +65,6 @@ class Volume(RockerExtension):
         parser.add_argument(Volume.ARG_ROCKER_VOLUME,
             metavar='HOST-DIR[:CONTAINER-DIR[:OPTIONS]]',
             type=str,
-            nargs='+',
             action='append',
-            help='volume volumes in container')
+            default=[],
+            help='volumes to map, can have more than one --volume directive')
