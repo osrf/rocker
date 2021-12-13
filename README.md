@@ -142,17 +142,19 @@ On Bionic
 
 ## Volume mount
 
-For arguments with one element not colon separated.
+### For arguments with one element not colon separated
 
-`--volume` adds paths as docker volumes. The last path must be terminated with two dashes `--`.
+`--volume` adds paths as docker volumes. One `--volume` directive must be used for each path.
 
-    rocker --volume ~/.vimrc ~/.bashrc -- ubuntu:18.04
+    rocker --volume ~/.vimrc --volume ~/.bashrc ubuntu:18.04
 
 The above example of the volume option will be expanded via absolute paths for `docker run` as follows:
 
     --volume /home/<USERNAME>/.vimrc:/home/<USERNAME>/.vimrc --volume /home/<USERNAME>/.bashrc:/home/<USERNAME>/.bashrc  
 
-For arguments with colon separation it will process the same as `docker`'s `--volume` option, `rocker --volume` takes 3 fields.
+### For arguments with colon separation
+
+it will process the same as `docker`'s `--volume` option, `rocker --volume` takes 3 fields.
 - 1st field: the path to the file or directory on the host machine.
 - 2nd field: (optional) the path where the file or directory is mounted in the container.
    - If only the 1st field is supplied, same value as the 1st field will be populated as the 2nd field.
