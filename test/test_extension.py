@@ -248,10 +248,15 @@ class UserExtensionTest(unittest.TestCase):
 
         user_override_active_cliargs = mock_cliargs
         user_override_active_cliargs['user_override_name'] = 'testusername'
-        print(p.get_snippet(user_override_active_cliargs))
         snippet_result = p.get_snippet(user_override_active_cliargs)
         self.assertTrue('USER testusername' in snippet_result)
         self.assertTrue('WORKDIR /home/testusername' in snippet_result)
+        self.assertTrue('userdel -r' in snippet_result)
+
+        user_override_active_cliargs['user_preserve_home'] = True
+        snippet_result = p.get_snippet(user_override_active_cliargs)
+        self.assertFalse('userdel -r' in snippet_result)
+
 
 
 class PulseExtensionTest(unittest.TestCase):
