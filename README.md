@@ -63,7 +63,19 @@ Rocker is available via pip you can install it via pip using
 
 `pip install rocker`
 
+## Archlinux ([AUR](https://aur.archlinux.org/))
 
+Using any AUR helper, for example, with `paru`
+
+```bash
+paru -S python-rocker
+```
+
+or 
+
+```bash
+paru -S python-rocker-git
+```
 
 ## Development
 To set things up in a virtual environment for isolation is a good way. If you don't already have it install python3's venv module.
