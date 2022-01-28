@@ -9,6 +9,8 @@ RUN if ! command -v sudo >/dev/null; then \
 RUN existing_user_by_uid=`getent passwd "@(uid)" | cut -f1 -d: || true` && \
     if [ -n "${existing_user_by_uid}" ]; then userdel @('' if user_preserve_home else '-r') "${existing_user_by_uid}"; fi && \
     existing_user_by_name=`getent passwd "@(name)" | cut -f1 -d: || true` && \
+    existing_user_uid=`getent passwd "@(name)" | cut -f3 -d: || true` && \
+    if [ -n "${existing_user_by_name}" ]; then find / -uid ${existing_user_uid} -exec chown -h @(uid) {} + || true ; find / -gid ${existing_user_uid} -exec chgrp -h @(uid) {} + || true ; fi && \
     if [ -n "${existing_user_by_name}" ]; then userdel @('' if user_preserve_home else '-r') "${existing_user_by_name}"; fi && \
     existing_group_by_gid=`getent group "@(gid)" | cut -f1 -d: || true` && \
     if [ -z "${existing_group_by_gid}" ]; then \
