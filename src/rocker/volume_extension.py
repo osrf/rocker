@@ -67,4 +67,4 @@ class Volume(RockerExtension):
             type=str,
             nargs='+',
             action='append',
-            help='volume volumes in container')
+            help='volume(s) to map into the container. The last path must be followed by two dashes "--"')
