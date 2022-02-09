@@ -18,11 +18,11 @@ Docker installation instructions: https://docs.docker.com/install/
 
 For the NVIDIA option this has been tested on the following systems using nvidia docker2:
 
-| Ubuntu distribution  | Linux Kernel |       Nvidia drivers      |
-| -------------------- | ------------ | ------------------------- |
-|         16.04        |     4.15     | nvidia-384 (works) <br> nvidia-340 (doesn't work)  |
-|         18.04        |              |     nvidia-390 (works)    |
-|         20.04        |    5.4.0     | nvidia-driver-460 (works) |
+| Ubuntu distribution | Linux Kernel | Nvidia drivers                                    |
+| ------------------- | ------------ | ------------------------------------------------- |
+| 16.04               | 4.15         | nvidia-384 (works) <br> nvidia-340 (doesn't work) |
+| 18.04               |              | nvidia-390 (works)                                |
+| 20.04               | 5.4.0        | nvidia-driver-460 (works)                         |
 
 Install nvidia-docker 2: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker
 
@@ -154,9 +154,11 @@ On Bionic
 
 ## Volume mount
 
-For arguments with one element not colon separated.
+### For arguments with one element not colon separated
 
-`--volume` adds paths as docker volumes. The last path must be terminated with two dashes `--`.
+`--volume` adds paths as docker volumes.
+
+**The last path must be terminated with two dashes `--`**.
 
     rocker --volume ~/.vimrc ~/.bashrc -- ubuntu:18.04
 
@@ -164,7 +166,9 @@ The above example of the volume option will be expanded via absolute paths for `
 
     --volume /home/<USERNAME>/.vimrc:/home/<USERNAME>/.vimrc --volume /home/<USERNAME>/.bashrc:/home/<USERNAME>/.bashrc  
 
-For arguments with colon separation it will process the same as `docker`'s `--volume` option, `rocker --volume` takes 3 fields.
+### For arguments with colon separation
+
+It will process the same as `docker`'s `--volume` option, `rocker --volume` takes 3 fields.
 - 1st field: the path to the file or directory on the host machine.
 - 2nd field: (optional) the path where the file or directory is mounted in the container.
    - If only the 1st field is supplied, same value as the 1st field will be populated as the 2nd field.
