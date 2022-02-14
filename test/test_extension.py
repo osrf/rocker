@@ -22,8 +22,11 @@ import os
 import unittest
 from pathlib import Path
 import pwd
+from io import BytesIO as StringIO
 
 
+from rocker.core import DockerImageGenerator
+from rocker.core import docker_build
 from rocker.core import list_plugins
 from rocker.extensions import name_to_argument
 
@@ -257,6 +260,50 @@ class UserExtensionTest(unittest.TestCase):
         snippet_result = p.get_snippet(user_override_active_cliargs)
         self.assertFalse('userdel -r' in snippet_result)
 
+    def test_user_collisions(self):
+        plugins = list_plugins()
+        user_plugin = plugins['user']
+        self.assertEqual(user_plugin.get_name(), 'user')
+
+        uid = os.getuid()+1
+        COLLIDING_UID_DOCKERFILE = f"""FROM ubuntu:jammy
+RUN useradd test -u{uid}
+
+"""
+        iof = StringIO(COLLIDING_UID_DOCKERFILE.encode())
+        image_id = docker_build(
+            fileobj=iof,
+            #output_callback=output_callback,
+            nocache=True,
+            forcerm=True,
+            tag="rocker:" + f"user_extension_test_uid_collision"
+        )
+        print(f'Image id is {image_id}')
+        self.assertTrue(image_id, f"Image failed to build >>>{COLLIDING_UID_DOCKERFILE}<<<")
+
+        # Test Colliding UID but not name
+        build_args = {
+            'user': True,
+            'user_override_name': 'test2',
+            'user_preserve_home': True,
+            # 'command': 'ls -l && touch /home/test2/home_directory_access_verification',
+            'command': 'touch /home/test2/testwrite',
+        } 
+        dig = DockerImageGenerator([user_plugin()], build_args, image_id)
+        exit_code = dig.build(**build_args)
+        self.assertTrue(exit_code == 0, f"Build failed with exit code {exit_code}")
+        run_exit_code = dig.run(**build_args)
+        self.assertTrue(run_exit_code == 0, f"Run failed with exit code {run_exit_code}")
+
+
+        # Test colliding UID and name
+        build_args['user_override_name'] = 'test'
+        build_args['command'] = 'touch /home/test/testwrite'
+        dig = DockerImageGenerator([user_plugin()], build_args, image_id)
+        exit_code = dig.build(**build_args)
+        self.assertTrue(exit_code == 0, f"Build failed with exit code {exit_code}")
+        run_exit_code = dig.run(**build_args)
+        self.assertTrue(run_exit_code == 0, f"Run failed with exit code {run_exit_code}")
 
 
 class PulseExtensionTest(unittest.TestCase):
