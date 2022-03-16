@@ -68,13 +68,18 @@ class RosPorts(RockerExtension):
         # only parameterized for testing
         ros_domain_id_str = cli_args.get('ros_domain_id')
         if not ros_domain_id_str:
-            ros_domain_id_str = os.environ.get('ROS_DOMAIN_ID', '0')
+            ros_domain_id_str = os.environ.get('ROS_DOMAIN_ID', 0)
         ros_domain_id = int(ros_domain_id_str)
 
-        # if cli_args.get('ros_ports_type') == 'multicast':   
-        (discovery_multicast_port, user_multicast_port) = get_multicast_dds_ports(ros_domain_id)
+        ports_type = cli_args.get('ros_ports_type')
+        ports = []
+        if ports_type == 'multicast' or ports_type == 'both':   
+            ports += get_multicast_dds_ports(ros_domain_id)
+        if ports_type == 'unicast' or ports_type == 'both':
+            ports += get_unicast_dds_ports(ros_domain_id, cli_args.get('ros_ports_unicast_participants'))
 
-        args += ' -p {discovery_multicast_port} -p {user_multicast_port}'.format(**locals())
+        for port in ports:
+            args += ' -p {port}'.format(**locals())
         args += ' -e ROS_DOMAIN_ID={ros_domain_id_str}'.format(**locals())
         return args
 
@@ -86,10 +91,16 @@ class RosPorts(RockerExtension):
             help="Expose ROS ports for DDS from container")
         parser.add_argument('--ros-domain-id',
             action='store',
+            type=int,
             default=defaults.get('ros_domain_id', None),
             help="Override the ROS_DOMAIN_ID from the automatically detected one in the environment for mapping ROS Ports")
         parser.add_argument('--ros-ports-type',
             action='store',
-            choices=['multicast', 'unicast'],
+            choices=['multicast', 'unicast', 'both'],
             default=defaults.get('ros_ports_type', 'multicast'),
-            help="Override the ROS_DOMAIN_ID from the automatically detected one in the environment for mapping ROS Ports")
+            help="Expose ports for unicast or multicast")
+        parser.add_argument('--ros-ports-unicast-participants',
+            action='store',
+            type=int,
+            default=defaults.get('ros_ports_unicast_participants', 1),
+            help="Set the number of unicast participants to map ports for.")
