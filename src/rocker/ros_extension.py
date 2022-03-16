@@ -25,18 +25,18 @@ from rocker.extensions import RockerExtension
 # TODO answer here too: https://answers.ros.org/question/347630/ros2-port-forwarding/
 
 
-PB = 7400
-DG = 250
-PG = 2
-d0 = 0
-d1 = 10
-d2 = 1
-d3 = 11
+DDS_PB = 7400
+DDS_DG = 250
+DDS_PG = 2
+DDS_d0 = 0
+DDS_d1 = 10
+DDS_d2 = 1
+DDS_d3 = 11
 
 def get_multicast_dds_ports(ros_domain_id):
 
-    discovery_multicast_port = PB + DG * ros_domain_id + d0
-    user_multicast_port = PB + DG * ros_domain_id + d2
+    discovery_multicast_port = DDS_PB + DDS_DG * ros_domain_id + DDS_d0
+    user_multicast_port = DDS_PB + DDS_DG * ros_domain_id + DDS_d2
 
     return [discovery_multicast_port, user_multicast_port]
 
@@ -45,8 +45,8 @@ def get_unicast_dds_ports(ros_domain_id, number_of_participants):
     ports = []
 
     for participant_id in range(number_of_participants):
-        discovery_unicast_port = PB + DG * ros_domain_id + d3 + PG * participant_id
-        user_unicast_port = PB + DG * ros_domain_id + d3 + PG * participant_id
+        discovery_unicast_port = DDS_PB + DDS_DG * ros_domain_id + DDS_d3 + DDS_PG * participant_id
+        user_unicast_port = DDS_PB + DDS_DG * ros_domain_id + DDS_d3 + DDS_PG * participant_id
         ports.append(discovery_unicast_port)
         ports.append(user_unicast_port)
 
