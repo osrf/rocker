@@ -52,6 +52,7 @@ kwargs = {
             'nvidia = rocker.nvidia_extension:Nvidia',
             'privileged = rocker.extensions:Privileged',
             'pulse = rocker.extensions:PulseAudio',
+            'ros = rocker.ros_extension:RosPorts',
             'ssh = rocker.ssh_extension:Ssh',
             'user = rocker.extensions:User',
             'x11 = rocker.nvidia_extension:X11',
