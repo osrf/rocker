@@ -23,6 +23,7 @@ For the NVIDIA option this has been tested on the following systems using nvidia
 | 16.04               | 4.15         | nvidia-384 (works) <br> nvidia-340 (doesn't work) |
 | 18.04               |              | nvidia-390 (works)                                |
 | 20.04               | 5.4.0        | nvidia-driver-460 (works)                         |
+| 22.04               | 5.13.0        | nvidia-driver-470 (works)                         |
 
 Install nvidia-docker 2: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker
 

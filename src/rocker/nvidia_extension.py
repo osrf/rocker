@@ -85,7 +85,7 @@ class Nvidia(RockerExtension):
         self._env_subs = None
         self.name = Nvidia.get_name()
         self.supported_distros = ['Ubuntu', 'Debian GNU/Linux']
-        self.supported_versions = ['16.04', '18.04', '20.04', '10']
+        self.supported_versions = ['16.04', '18.04', '20.04', '10', '22.04']
 
 
     def get_environment_subs(self, cliargs={}):
