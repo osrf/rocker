@@ -85,7 +85,7 @@ class Nvidia(RockerExtension):
         self._env_subs = None
         self.name = Nvidia.get_name()
         self.supported_distros = ['Ubuntu', 'Debian GNU/Linux']
-        self.supported_versions = ['16.04', '18.04', '20.04', '10', '22.04']
+        self.supported_versions = ['16.04', '18.04', '20.04', '10', '11', '22.04']
 
 
     def get_environment_subs(self, cliargs={}):
@@ -142,7 +142,7 @@ class CudaDev(RockerExtension):
         self._env_subs = None
         self.name = CudaDev.get_name()
         self.supported_distros = ['Ubuntu', 'Debian GNU/Linux']
-        self.supported_versions = ['20.04', '10']
+        self.supported_versions = ['20.04', '22.04', '18.04', '11'] # Debian 11
 
     def get_environment_subs(self, cliargs={}):
         if not self._env_subs:
@@ -156,6 +156,9 @@ class CudaDev(RockerExtension):
             print("WARNING unable to detect os for base image '%s', maybe the base image does not exist" % cliargs['base_image'])
             sys.exit(1)
         dist, ver, codename = detected_os
+
+        self._env_subs['download_osstring'] = dist.split()[0].lower()
+        self._env_subs['download_verstring'] = ver.replace('.', '')
 
         self._env_subs['image_distro_id'] = dist
         if self._env_subs['image_distro_id'] not in self.supported_distros:
@@ -187,5 +190,4 @@ class CudaDev(RockerExtension):
         parser.add_argument(name_to_argument(CudaDev.get_name()),
             action='store_true',
             default=defaults.get('cuda_dev', None),
-            help="Enable nvidia cuda-dev support")
-
+            help="Install cuda and nvidia-cuda-dev into the container")
