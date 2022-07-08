@@ -9,14 +9,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Enable contrib on debian to get required
 # https://packages.debian.org/bullseye/glx-alternative-nvidia
-
+# Enable non-free for nvidia-cuda-dev
+# https://packages.debian.org/bullseye/nvidia-cuda-dev
+# TODO(tfoote) make the sed logic robust to it already being there.
 
 RUN \
   @[if download_osstring == 'ubuntu']@
   wget https://developer.download.nvidia.com/compute/cuda/repos/@(download_osstring)@(download_verstring)/x86_64/cuda-@(download_osstring)@(download_verstring).pin \
   && mv cuda-@(download_osstring)@(download_verstring).pin /etc/apt/preferences.d/cuda-repository-pin-600 && \ 
   @[else]@  
-  sed -i 's/main/main contrib/' /etc/apt/sources.list && \
+  sed -i 's/main/main contrib non-free/' /etc/apt/sources.list && \
   @[end if]@
   apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/@(download_osstring)@(download_verstring)/x86_64/@(download_keyid).pub \
   && add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/@(download_osstring)@(download_verstring)/x86_64/ /" \
