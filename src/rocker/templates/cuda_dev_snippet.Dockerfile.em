@@ -4,7 +4,6 @@
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget software-properties-common gnupg2 \
-    && apt-get dist-upgrade -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Enable contrib on debian to get required
