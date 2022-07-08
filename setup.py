@@ -41,6 +41,7 @@ kwargs = {
             'detect_docker_image_os = rocker.cli:detect_image_os',
 	    ],
         'rocker.extensions': [
+            'cuda_dev = rocker.nvidia_extension:CudaDev',
             'devices = rocker.extensions:Devices',
             'dev_helpers = rocker.extensions:DevHelpers',
             'env = rocker.extensions:Environment',
@@ -50,7 +51,6 @@ kwargs = {
             'name = rocker.extensions:Name',
             'network = rocker.extensions:Network',
             'nvidia = rocker.nvidia_extension:Nvidia',
-            'cuda_dev = rocker.nvidia_extension:CudaDev',
             'privileged = rocker.extensions:Privileged',
             'pulse = rocker.extensions:PulseAudio',
             'ssh = rocker.ssh_extension:Ssh',
