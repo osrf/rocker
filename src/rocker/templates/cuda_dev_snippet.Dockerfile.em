@@ -18,7 +18,7 @@ RUN \
   @[else]@  
   sed -i 's/main/main contrib/' /etc/apt/sources.list && \
   @[end if]@
-  apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/@(download_osstring)@(download_verstring)/x86_64/3bf863cc.pub \
+  apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/@(download_osstring)@(download_verstring)/x86_64/@(download_keyid).pub \
   && add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/@(download_osstring)@(download_verstring)/x86_64/ /" \
   && apt-get update \
   && apt-get -y install cuda nvidia-cuda-dev \

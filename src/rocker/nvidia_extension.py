@@ -159,6 +159,7 @@ class CudaDev(RockerExtension):
 
         self._env_subs['download_osstring'] = dist.split()[0].lower()
         self._env_subs['download_verstring'] = ver.replace('.', '')
+        self._env_subs['download_keyid'] = '3bf863cc'
 
         self._env_subs['image_distro_id'] = dist
         if self._env_subs['image_distro_id'] not in self.supported_distros:
