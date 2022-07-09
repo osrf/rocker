@@ -78,7 +78,7 @@ def detect_os(image_name, output_callback=None, nocache=False):
 
     # Clean up the image
     client = get_docker_client()
-    client.images.remove(image=tag_name)
+    client.remove_image(image=tag_name)
 
     if p.exitstatus == 0:
         _detect_os_cache[image_name] = literal_eval(output.strip())
