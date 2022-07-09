@@ -215,15 +215,13 @@ class CudaDevTest(unittest.TestCase):
     def setUpClass(self):
         client = get_docker_client()
         self.dockerfile_tags = []
-        for distro_version in ['jammy', 'bionic']:
+        for distro_version in ['focal', 'jammy']:
             dockerfile = """
 FROM ubuntu:%(distro_version)s
 
-RUN apt-get update && apt-get install nvidia-smi -y && apt-get clean
-
-CMD nvidia-smi
+CMD cuda-gdb -h
 """
-            dockerfile_tag = 'testfixture_%s_glmark2' % distro_version
+            dockerfile_tag = 'testfixture_%s_cudadev' % distro_version
             iof = StringIO((dockerfile % locals()).encode())
             im = client.build(fileobj = iof, tag=dockerfile_tag)
             for e in im:
@@ -250,7 +248,7 @@ CMD nvidia-smi
 
     def test_cuda_dev(self):
         plugins = list_plugins()
-        desired_plugins = ['x11', 'nvidia', 'cuda'] #TODO(Tfoote) encode the x11 dependency into the plugin and remove from test here
+        desired_plugins = ['x11', 'nvidia', 'cuda_dev'] #TODO(Tfoote) encode the x11 dependency into the plugin and remove from test here
         active_extensions = [e() for e in plugins.values() if e.get_name() in desired_plugins]
         for tag in self.dockerfile_tags:
             dig = DockerImageGenerator(active_extensions, {}, tag)
