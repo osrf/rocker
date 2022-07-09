@@ -17,7 +17,7 @@ import pexpect
 from ast import literal_eval 
 from io import BytesIO as StringIO
 
-from .core import docker_build
+from .core import docker_build, get_docker_client
 
 
 DETECTION_TEMPLATE="""
@@ -54,12 +54,13 @@ def detect_os(image_name, output_callback=None, nocache=False):
         return _detect_os_cache[image_name]
 
     iof = StringIO((DETECTION_TEMPLATE % locals()).encode())
+    tag_name = "rocker:" + f"os_detect_{image_name}".replace(':', '_').replace('/', '_')
     image_id = docker_build(
         fileobj=iof,
         output_callback=output_callback,
         nocache=nocache,
         forcerm=True,  # Remove intermediate containers from RUN commands in DETECTION_TEMPLATE
-        tag="rocker:" + f"os_detect_{image_name}".replace(':', '_').replace('/', '_')
+        tag=tag_name
     )
     if not image_id:
         if output_callback:
@@ -74,6 +75,11 @@ def detect_os(image_name, output_callback=None, nocache=False):
     if output_callback:
         output_callback("output: ", output)
     p.terminate()
+
+    # Clean up the image
+    client = get_docker_client()
+    client.remove_image(image=tag_name)
+
     if p.exitstatus == 0:
         _detect_os_cache[image_name] = literal_eval(output.strip())
         return _detect_os_cache[image_name]
