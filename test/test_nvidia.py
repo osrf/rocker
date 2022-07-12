@@ -246,14 +246,28 @@ CMD dpkg -s cuda
             self.assertEqual(dig.build(), 0)
             self.assertNotEqual(dig.run(), 0)
 
-    def test_cuda(self):
+    def test_cuda_focal(self):
         plugins = list_plugins()
         desired_plugins = ['x11', 'nvidia', 'cuda'] #TODO(Tfoote) encode the x11 dependency into the plugin and remove from test here
         active_extensions = [e() for e in plugins.values() if e.get_name() in desired_plugins]
-        for tag in self.dockerfile_tags:
-            dig = DockerImageGenerator(active_extensions, {}, tag)
-            self.assertEqual(dig.build(), 0)
-            self.assertEqual(dig.run(), 0)
+        #for tag in self.dockerfile_tags:
+        # Hardcoded unrolled to keep test length down
+        tag = self.dockerfile_tags[0]
+        dig = DockerImageGenerator(active_extensions, {}, tag)
+        self.assertEqual(dig.build(), 0)
+        self.assertEqual(dig.run(), 0)
+
+    def test_cuda_jammy(self):
+        plugins = list_plugins()
+        desired_plugins = ['x11', 'nvidia', 'cuda'] #TODO(Tfoote) encode the x11 dependency into the plugin and remove from test here
+        active_extensions = [e() for e in plugins.values() if e.get_name() in desired_plugins]
+        #for tag in self.dockerfile_tags:
+        # Hardcoded unrolled to keep test length down
+        tag = self.dockerfile_tags[1]
+        dig = DockerImageGenerator(active_extensions, {}, tag)
+        self.assertEqual(dig.build(), 0)
+        self.assertEqual(dig.run(), 0)
+
 
     def test_cuda_env_subs(self):
         plugins = list_plugins()
