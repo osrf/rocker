@@ -210,7 +210,7 @@ CMD glmark2 --validate
         self.assertEqual(cm.exception.code, 1)
 
 
-class CudaDevTest(unittest.TestCase):
+class CudaTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         client = get_docker_client()
@@ -221,7 +221,7 @@ FROM ubuntu:%(distro_version)s
 
 CMD which cuda-gdb
 """
-            dockerfile_tag = 'testfixture_%s_cudadev' % distro_version
+            dockerfile_tag = 'testfixture_%s_cuda' % distro_version
             iof = StringIO((dockerfile % locals()).encode())
             im = client.build(fileobj = iof, tag=dockerfile_tag)
             for e in im:
@@ -240,15 +240,15 @@ CMD which cuda-gdb
         # "em.Error: interpreter stdout proxy lost"
         em.Interpreter._wasProxyInstalled = False
 
-    def test_no_cuda_dev(self):
+    def test_no_cuda(self):
         for tag in self.dockerfile_tags:
             dig = DockerImageGenerator([], {}, tag)
             self.assertEqual(dig.build(), 0)
             self.assertNotEqual(dig.run(), 0)
 
-    def test_cuda_dev(self):
+    def test_cuda(self):
         plugins = list_plugins()
-        desired_plugins = ['x11', 'nvidia', 'cuda_dev'] #TODO(Tfoote) encode the x11 dependency into the plugin and remove from test here
+        desired_plugins = ['x11', 'nvidia', 'cuda'] #TODO(Tfoote) encode the x11 dependency into the plugin and remove from test here
         active_extensions = [e() for e in plugins.values() if e.get_name() in desired_plugins]
         for tag in self.dockerfile_tags:
             dig = DockerImageGenerator(active_extensions, {}, tag)

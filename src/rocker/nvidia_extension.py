@@ -133,14 +133,14 @@ class Nvidia(RockerExtension):
             default=defaults.get(Nvidia.get_name(), None),
             help="Enable nvidia")
 
-class CudaDev(RockerExtension):
+class Cuda(RockerExtension):
     @staticmethod
     def get_name():
-        return 'cuda_dev'
+        return 'cuda'
 
     def __init__(self):
         self._env_subs = None
-        self.name = CudaDev.get_name()
+        self.name = Cuda.get_name()
         self.supported_distros = ['Ubuntu', 'Debian GNU/Linux']
         self.supported_versions = ['20.04', '22.04', '18.04', '11'] # Debian 11
 
@@ -188,7 +188,7 @@ class CudaDev(RockerExtension):
 
     @staticmethod
     def register_arguments(parser, defaults={}):
-        parser.add_argument(name_to_argument(CudaDev.get_name()),
+        parser.add_argument(name_to_argument(Cuda.get_name()),
             action='store_true',
-            default=defaults.get('cuda_dev', None),
+            default=defaults.get('cuda', None),
             help="Install cuda and nvidia-cuda-dev into the container")
