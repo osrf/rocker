@@ -254,3 +254,27 @@ CMD which cuda-gdb
             dig = DockerImageGenerator(active_extensions, {}, tag)
             self.assertEqual(dig.build(), 0)
             self.assertEqual(dig.run(), 0)
+
+    def test_cuda_env_subs(self):
+        plugins = list_plugins()
+        cuda_plugin = plugins['cuda']
+
+        p = cuda_plugin()
+
+        # base image doesn't exist
+        mock_cliargs = {'base_image': 'ros:does-not-exist'}
+        with self.assertRaises(SystemExit) as cm:
+            p.get_environment_subs(mock_cliargs)
+        self.assertEqual(cm.exception.code, 1)
+
+        # unsupported version
+        mock_cliargs = {'base_image': 'ubuntu:17.04'}
+        with self.assertRaises(SystemExit) as cm:
+            p.get_environment_subs(mock_cliargs)
+        self.assertEqual(cm.exception.code, 1)
+
+        # unsupported os
+        mock_cliargs = {'base_image': 'fedora'}
+        with self.assertRaises(SystemExit) as cm:
+            p.get_environment_subs(mock_cliargs)
+        self.assertEqual(cm.exception.code, 1)
