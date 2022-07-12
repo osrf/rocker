@@ -219,7 +219,7 @@ class CudaDevTest(unittest.TestCase):
             dockerfile = """
 FROM ubuntu:%(distro_version)s
 
-CMD cuda-gdb -h
+CMD which cuda-gdb
 """
             dockerfile_tag = 'testfixture_%s_cudadev' % distro_version
             iof = StringIO((dockerfile % locals()).encode())
