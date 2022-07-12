@@ -11,11 +11,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget software-properties-common gnupg2 \
     && rm -rf /var/lib/apt/lists/*
 
-# Precache nvidia-cuda-dev for faster iterations
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    nvidia-cuda-dev \
-    && rm -rf /var/lib/apt/lists/*
-
 # Enable contrib on debian to get required
 # https://packages.debian.org/bullseye/glx-alternative-nvidia
 # Enable non-free for nvidia-cuda-dev
