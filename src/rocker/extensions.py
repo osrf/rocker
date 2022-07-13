@@ -222,6 +222,11 @@ class User(RockerExtension):
             substitutions['dir'] = os.path.join('/home/', cliargs['user_override_name'])
         substitutions['user_preserve_home'] = True if 'user_preserve_home' in cliargs and cliargs['user_preserve_home'] else False
         substitutions['home_extension_active'] = True if 'home' in cliargs and cliargs['home'] else False
+        if 'user_override_shell' in cliargs and cliargs['user_override_shell'] is not None:
+            if cliargs['user_override_shell'] == '':
+                substitutions['shell'] = None
+            else:
+                substitutions['shell'] =  cliargs['user_override_shell']
         return em.expand(snippet, substitutions)
 
     @staticmethod
@@ -238,6 +243,10 @@ class User(RockerExtension):
             action='store_true',
             default=defaults.get('user-preserve-home', False),
             help="Do not delete home directory if it exists when making a new user.")
+        parser.add_argument('--user-override-shell',
+            action='store',
+            default=defaults.get('user-override-shell', None),
+            help="Override the current user's shell. Set to empty string to use container default shell")
 
 
 class Environment(RockerExtension):

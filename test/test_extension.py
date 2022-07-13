@@ -260,6 +260,17 @@ class UserExtensionTest(unittest.TestCase):
         snippet_result = p.get_snippet(user_override_active_cliargs)
         self.assertFalse('userdel -r' in snippet_result)
 
+        snippet_result = p.get_snippet(user_override_active_cliargs)
+        self.assertTrue(('-s ' + pwd.getpwuid(os.getuid()).pw_shell) in snippet_result)
+
+        user_override_active_cliargs['user_override_shell'] = 'testshell'
+        snippet_result = p.get_snippet(user_override_active_cliargs)
+        self.assertTrue('-s testshell' in snippet_result)
+
+        user_override_active_cliargs['user_override_shell'] = ''
+        snippet_result = p.get_snippet(user_override_active_cliargs)
+        self.assertFalse('-s' in snippet_result)
+
     def test_user_collisions(self):
         plugins = list_plugins()
         user_plugin = plugins['user']
