@@ -12,11 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import grp
 import os
 import em
 import getpass
-import tempfile
 from packaging.version import Version
 import pkgutil
 from pathlib import Path
@@ -42,10 +40,10 @@ class X11(RockerExtension):
     def __init__(self):
         self.name = X11.get_name()
         self._env_subs = None
-        self._xauth = tempfile.NamedTemporaryFile(prefix='.docker', suffix='.xauth')
+        self._xauth = "/tmp/.docker.xauth"
 
     def get_docker_args(self, cliargs):
-        xauth = self._xauth.name
+        xauth = self._xauth
         return "  -e DISPLAY -e TERM \
   -e QT_X11_NO_MITSHM=1 \
   -e XAUTHORITY=%(xauth)s -v %(xauth)s:%(xauth)s \
@@ -53,7 +51,7 @@ class X11(RockerExtension):
   -v /etc/localtime:/etc/localtime:ro " % locals()
 
     def precondition_environment(self, cliargs):
-        xauth = self._xauth.name
+        xauth = self._xauth
         display = os.getenv('DISPLAY')
         # Make sure processes in the container can connect to the x server
         # Necessary so gazebo can create a context for OpenGL rendering (even headless)
