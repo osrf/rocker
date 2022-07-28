@@ -42,7 +42,7 @@ class X11(RockerExtension):
     def __init__(self):
         self.name = X11.get_name()
         self._env_subs = None
-        self._xauth = tempfile.NamedTemporaryFile(prefix='.docker', suffix='.xauth')
+        self._xauth = None
 
     def get_docker_args(self, cliargs):
         xauth = self._xauth.name
@@ -53,6 +53,7 @@ class X11(RockerExtension):
   -v /etc/localtime:/etc/localtime:ro " % locals()
 
     def precondition_environment(self, cliargs):
+        self._xauth = tempfile.NamedTemporaryFile(prefix='.docker', suffix='.xauth', delete=not cliargs.get('nocleanup'))
         xauth = self._xauth.name
         display = os.getenv('DISPLAY')
         # Make sure processes in the container can connect to the x server
