@@ -72,12 +72,24 @@ CMD xdpyinfo
         p = x11_plugin()
         mock_cliargs = {'base_image': 'ubuntu:xenial'}
 
+        # Must be called before get_docker_args
+        docker_args = p.precondition_environment(mock_cliargs)
+
         docker_args = p.get_docker_args(mock_cliargs)
         self.assertIn(' -e DISPLAY -e TERM', docker_args)
         self.assertIn(' -e QT_X11_NO_MITSHM=1', docker_args)
         self.assertIn(' -e XAUTHORITY=', docker_args)
         self.assertIn(' -v /tmp/.X11-unix:/tmp/.X11-unix ', docker_args)
         self.assertIn(' -v /etc/localtime:/etc/localtime:ro ', docker_args)
+
+    def test_x11_extension_nocleanup(self):
+        plugins = list_plugins()
+        x11_plugin = plugins['x11']        
+        p = x11_plugin()
+        mock_cliargs = {'base_image': 'ubuntu:xenial', 'nocleanup': True}
+        docker_args = p.precondition_environment(mock_cliargs)
+        # TODO(tfoote) do more to check that it doesn't actually clean up.
+        # This is more of a smoke test
 
 
     def test_no_x11_xpdyinfo(self):

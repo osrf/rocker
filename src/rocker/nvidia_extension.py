@@ -44,6 +44,7 @@ class X11(RockerExtension):
         self._xauth = None
 
     def get_docker_args(self, cliargs):
+        assert self._xauth, 'xauth not initialized, get_docker_args must be called after precodition_environment'
         xauth = self._xauth.name
         return "  -e DISPLAY -e TERM \
   -e QT_X11_NO_MITSHM=1 \
