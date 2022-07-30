@@ -48,6 +48,11 @@ For intel integrated graphics support you will need to mount through a specific 
 --devices /dev/dri/card0
 ```
 
+For Intel Xe integrated graphics, you will need to use the `renderD128` option instead:
+
+```
+---devices /dev/dri/renderD128
+```
 
 # Installation
 
