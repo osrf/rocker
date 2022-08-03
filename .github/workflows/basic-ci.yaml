@@ -19,11 +19,11 @@ jobs:
         python -m pip install --upgrade pip setuptools wheel
         # Workaround for https://github.com/docker/docker-py/issues/2807
         python -m pip install six
-        pip install codecov coverage nose
+        pip install codecov pytest pytest-cov
         pip install .
     - name: Run headless tests
       uses: GabrielBB/xvfb-action@v1
       with:
-        run: nosetests -s -v --with-coverage --cover-package rocker --exclude test_nvidia_glmark2
+        run: python -m pytest -s -v --cov=rocker -k "not test_nvidia_glmark2"
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
