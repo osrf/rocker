@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import grp
 import os
 import em
 import getpass
@@ -42,9 +41,10 @@ class X11(RockerExtension):
     def __init__(self):
         self.name = X11.get_name()
         self._env_subs = None
-        self._xauth = tempfile.NamedTemporaryFile(prefix='.docker', suffix='.xauth')
+        self._xauth = None
 
     def get_docker_args(self, cliargs):
+        assert self._xauth, 'xauth not initialized, get_docker_args must be called after precodition_environment'
         xauth = self._xauth.name
         return "  -e DISPLAY -e TERM \
   -e QT_X11_NO_MITSHM=1 \
@@ -53,6 +53,7 @@ class X11(RockerExtension):
   -v /etc/localtime:/etc/localtime:ro " % locals()
 
     def precondition_environment(self, cliargs):
+        self._xauth = tempfile.NamedTemporaryFile(prefix='.docker', suffix='.xauth', delete=not cliargs.get('nocleanup'))
         xauth = self._xauth.name
         display = os.getenv('DISPLAY')
         # Make sure processes in the container can connect to the x server
