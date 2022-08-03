@@ -16,6 +16,7 @@
 # under the License.
 
 import docker
+import pytest
 import unittest
 
 
@@ -23,6 +24,7 @@ from rocker.os_detector import detect_os
 
 class RockerOSDetectorTest(unittest.TestCase):
 
+    @pytest.mark.docker
     def test_ubuntu(self):
         result = detect_os("ubuntu:xenial")
         self.assertEqual(result[0], 'Ubuntu')
@@ -37,15 +39,18 @@ class RockerOSDetectorTest(unittest.TestCase):
         self.assertEqual(result[0], 'Ubuntu')
         self.assertEqual(result[1], '18.04')
 
+    @pytest.mark.docker
     def test_fedora(self):
         result = detect_os("fedora:29")
         self.assertEqual(result[0], 'Fedora')
         self.assertEqual(result[1], '29')
 
+    @pytest.mark.docker
     def test_does_not_exist(self):
         result = detect_os("osrf/ros:does_not_exist")
         self.assertEqual(result, None)
 
+    @pytest.mark.docker
     def test_cannot_detect_os(self):
         # Test with output callback too get coverage of error reporting
         result = detect_os("scratch", output_callback=print)

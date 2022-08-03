@@ -19,6 +19,7 @@ import docker
 import em
 import unittest
 import pexpect
+import pytest
 
 
 from io import BytesIO as StringIO
@@ -31,6 +32,7 @@ from rocker.nvidia_extension import get_docker_version
 from test_extension import plugin_load_parser_correctly
 
 
+@pytest.mark.docker
 class X11Test(unittest.TestCase):
     @classmethod
     def setUpClass(self):
@@ -98,6 +100,7 @@ CMD xdpyinfo
             self.assertEqual(dig.build(), 0)
             self.assertNotEqual(dig.run(), 0)
 
+    @pytest.mark.x11
     def test_x11_xpdyinfo(self):
         plugins = list_plugins()
         desired_plugins = ['x11']
@@ -108,6 +111,7 @@ CMD xdpyinfo
             self.assertEqual(dig.run(), 0)
 
 
+@pytest.mark.docker
 class NvidiaTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
@@ -188,6 +192,8 @@ CMD glmark2 --validate
             self.assertEqual(dig.build(), 0)
             self.assertNotEqual(dig.run(), 0)
 
+    @pytest.mark.nvidia
+    @pytest.mark.x11
     def test_nvidia_glmark2(self):
         plugins = list_plugins()
         desired_plugins = ['x11', 'nvidia', 'user'] #TODO(Tfoote) encode the x11 dependency into the plugin and remove from test here
