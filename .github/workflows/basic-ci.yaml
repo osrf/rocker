@@ -19,8 +19,7 @@ jobs:
         python -m pip install --upgrade pip setuptools wheel
         # Workaround for https://github.com/docker/docker-py/issues/2807
         python -m pip install six
-        pip install codecov pytest pytest-cov
-        pip install .
+        python -m pip install -e .[test] codecov pytest-cov
     - name: Run headless tests
       uses: GabrielBB/xvfb-action@v1
       with:

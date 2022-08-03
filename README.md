@@ -100,11 +100,10 @@ For any new terminal re activate the venv before trying to use it.
 
 ### Testing
 
-To run tests install pytest and pytest-cov in the venv
+To run tests install the 'test' extra and pytest-cov in the venv
 
     . ~/rocker_venv/bin/activate
-    pip install pytest
-    pip install pytest-cov
+    pip install -e .[test] pytest-cov
 
 Then you can run pytest.
 
