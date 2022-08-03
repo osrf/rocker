@@ -100,19 +100,19 @@ For any new terminal re activate the venv before trying to use it.
 
 ### Testing
 
-To run tests install nose and coverage in the venv
+To run tests install pytest and pytest-cov in the venv
 
     . ~/rocker_venv/bin/activate
-    pip install nose
-    pip install coverage
+    pip install pytest
+    pip install pytest-cov
 
-Then you can run nosetests.
+Then you can run pytest.
 
-    nosetests-3.4 --with-coverage --cover-package rocker
+    python3 -m pytest --cov=rocker
 
 Notes:
 
-- Make sure to use the python3 instance of nosetest from inside the environment.
+- Make sure to use the python3 instance of pytest from inside the environment.
 - The tests include an nvidia test which assumes you're using a machine with an nvidia gpu.
 
 
