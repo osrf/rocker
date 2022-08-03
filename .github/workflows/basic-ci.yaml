@@ -24,6 +24,6 @@ jobs:
     - name: Run headless tests
       uses: GabrielBB/xvfb-action@v1
       with:
-        run: python -m pytest -s -v --cov=rocker -k "not test_nvidia_glmark2"
+        run: python -m pytest -s -v --cov=rocker -m "not nvidia"
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1

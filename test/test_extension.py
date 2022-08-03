@@ -22,6 +22,7 @@ import os
 import unittest
 from pathlib import Path
 import pwd
+import pytest
 from io import BytesIO as StringIO
 
 
@@ -126,6 +127,7 @@ class NetworkExtensionTest(unittest.TestCase):
         # "em.Error: interpreter stdout proxy lost"
         em.Interpreter._wasProxyInstalled = False
 
+    @pytest.mark.docker
     def test_network_extension(self):
         plugins = list_plugins()
         network_plugin = plugins['network']
@@ -271,6 +273,7 @@ class UserExtensionTest(unittest.TestCase):
         snippet_result = p.get_snippet(user_override_active_cliargs)
         self.assertFalse('-s' in snippet_result)
 
+    @pytest.mark.docker
     def test_user_collisions(self):
         plugins = list_plugins()
         user_plugin = plugins['user']

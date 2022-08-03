@@ -17,6 +17,7 @@
 
 import argparse
 import em
+import pytest
 import unittest
 
 from itertools import chain
@@ -56,18 +57,21 @@ class RockerCoreTest(unittest.TestCase):
             # Check that it can be cast to an int
             i = int(p)
 
+    @pytest.mark.docker
     def test_run_before_build(self):
         dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
         self.assertEqual(dig.run('true'), 1)
         self.assertEqual(dig.build(), 0)
         self.assertEqual(dig.run('true'), 0)
 
+    @pytest.mark.docker
     def test_return_code_no_extensions(self):
         dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
         self.assertEqual(dig.build(), 0)
         self.assertEqual(dig.run('true'), 0)
         self.assertEqual(dig.run('false'), 1)
 
+    @pytest.mark.docker
     def test_return_code_multiple_extensions(self):
         plugins = list_plugins()
         desired_plugins = ['home', 'user']
@@ -77,29 +81,34 @@ class RockerCoreTest(unittest.TestCase):
         self.assertEqual(dig.run('true'), 0)
         self.assertEqual(dig.run('false'), 1)
 
+    @pytest.mark.docker
     def test_noexecute(self):
         dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
         self.assertEqual(dig.build(), 0)
         self.assertEqual(dig.run('true', noexecute=True), 0)
 
+    @pytest.mark.docker
     def test_dry_run(self):
         dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
         self.assertEqual(dig.build(), 0)
         self.assertEqual(dig.run('true', mode='dry-run'), 0)
         self.assertEqual(dig.run('false', mode='dry-run'), 0)
 
+    @pytest.mark.docker
     def test_non_interactive(self):
         dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
         self.assertEqual(dig.build(), 0)
         self.assertEqual(dig.run('true', mode='non-interactive'), 0)
         self.assertEqual(dig.run('false', mode='non-interactive'), 1)
 
+    @pytest.mark.docker
     def test_device(self):
         dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
         self.assertEqual(dig.build(), 0)
         self.assertEqual(dig.run('true', devices=['/dev/random']), 0)
         self.assertEqual(dig.run('true', devices=['/dev/does_not_exist']), 0)
 
+    @pytest.mark.docker
     def test_network(self):
         dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
         self.assertEqual(dig.build(), 0)
@@ -107,6 +116,7 @@ class RockerCoreTest(unittest.TestCase):
         for n in networks:
             self.assertEqual(dig.run('true', network=n), 0)
 
+    @pytest.mark.docker
     def test_extension_manager(self):
         parser = argparse.ArgumentParser()
         extension_manager = RockerExtensionManager()
