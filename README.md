@@ -42,16 +42,10 @@ Note, that changing this setting will lead to a `Failed to initialize NVML: Unkn
 
 ## Intel integrated graphics support
 
-For intel integrated graphics support you will need to mount through a specific device
+For [Intel integrated graphics support](https://www.intel.com/content/www/us/en/develop/documentation/get-started-with-ai-linux/top/using-containers/using-containers-with-the-command-line.html) you will need to mount the `/dev/dri` directory as follows:
 
 ```
---devices /dev/dri/card0
-```
-
-For Intel Xe integrated graphics, you will need to use the `renderD128` option instead:
-
-```
----devices /dev/dri/renderD128
+--devices /dev/dri
 ```
 
 # Installation
