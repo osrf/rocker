@@ -2,11 +2,50 @@
 
 A tool to run docker images with customized local support injected for things like nvidia support. And user id specific files for cleaner mounting file permissions.
 
+## Difference from docker-compose
+
+A common question about rocker is how is it different than `docker-compose`.
+`rocker` is designed to solve a similar but different problem than `docker-compose`.
+The primary goal of `rocker` is to support the use of Docker in use cases where the containers will be effected by the local environment.
+A primary example of this is setting up file permissions inside the container to match the users outside of the container so that mounted files inside the container have the same UID as the host.
+This is done by dynamically generating overlays on the same core image after detecting the local conditions required.
+
+The secondary feature that `rocker` provides that docker-compose does not address is the ability to inject extra use case specific capabilities into a container before running.
+A common example is the ability to use NVIDIA drivers on a standard published image.
+`rocker` will take that standard published image and both inject the necessary drivers into the container which will match your host driver and simultaneously set the correct runtime flags.
+This is possible to do with docker-compose or straight docker.
+But the drawbacks are that you have to build and publish the combinatoric images of all possible drivers, and in addition you need to manually make sure to pass all the correct runtime arguments.
+This is especially true if you want to combine multiple possible additional features, such that the number of images starts scaling in a polynomic manner and maintenance of the number of images becomes unmanagable quickly.
+Whereas with `rocker` you can invoke your specific plugins and it will use multi-stage builds of docker images to customize the container for your specific use case, which lets you use official upstream docker images without requiring you to maintain a plethora of parallel built images.
+
+
+
 ## Know extensions
 
-Rocker supports extensions via entry points there are some built in but you can add your own. Here's a list of public repositories with extensions.
+Rocker supports extensions via entry points there are some built in but you can add your own.
+
+### Integrated Extensions
+
+There are a number of integrated extensions here's some of the highlights.
+You can get full details on the extensions from the main `rocker --help` command.
+
+- x11 -- Enable the use of X11 inside the container via the host X instance.
+- nvidia -- Enable NVIDIA graphics cards for rendering
+- cuda -- Enable NVIDIA CUDA in the container
+- user -- Create a user inside the container with the same settings as the host and run commands inside the container as that user.
+- home -- Mount the user's home directory into the container
+- pulse -- Mount pulse audio into the container
+- ssh -- Pass through ssh access to the container.
+
+As well as access to many of the docker arguments as well such as `device`, `env`, `volume`, `name`, `network`, and `privileged`.
+
+### Externally maintained extensions
+
+Here's a list of public repositories with extensions.
 
 - Off-your-rocker: https://github.com/sloretz/off-your-rocker
+
+
 
 # Prerequisites
 
