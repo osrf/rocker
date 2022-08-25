@@ -8,6 +8,7 @@ A common question about rocker is how is it different than `docker-compose`.
 `rocker` is designed to solve a similar but different problem than `docker-compose`.
 The primary goal of `rocker` is to support the use of Docker in use cases where the containers will be effected by the local environment.
 A primary example of this is setting up file permissions inside the container to match the users outside of the container so that mounted files inside the container have the same UID as the host.
+Doing this enables quickly going in and out of different containrs while leverating the same workspace on your host for testing on different platforms etc.
 This is done by dynamically generating overlays on the same core image after detecting the local conditions required.
 
 The secondary feature that `rocker` provides that docker-compose does not address is the ability to inject extra use case specific capabilities into a container before running.
