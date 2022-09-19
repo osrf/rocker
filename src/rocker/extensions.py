@@ -152,15 +152,17 @@ class Expose(RockerExtension):
         return ''
 
     def get_docker_args(self, cliargs):
-        args = ''
-        ports = cliargs.get('expose', None)
-        args += ' --expose %s ' % ports
-        return args
+        args = ['']
+        ports = cliargs.get('expose', [])
+        for port in ports:
+            args.append(' --expose {0}'.format(port))
+        return ' '.join(args)
 
     @staticmethod
     def register_arguments(parser, defaults={}):
         parser.add_argument('--expose',
             default=defaults.get('expose', None),
+            action='append',
             help="Exposes a port from the container to host machine.")
 
 
@@ -176,15 +178,17 @@ class Port(RockerExtension):
         return ''
 
     def get_docker_args(self, cliargs):
-        args = ''
-        ports = cliargs.get('port', None)
-        args += ' -p %s ' % ports
-        return args
+        args = ['']
+        ports = cliargs.get('port', [])
+        for port in ports:
+            args.append(' -p {0}'.format(port))
+        return ' '.join(args)
 
     @staticmethod
     def register_arguments(parser, defaults={}):
         parser.add_argument('--port',
             default=defaults.get('port', None),
+            action='append',
             help="Binds port from the container to host machine.")
 
 

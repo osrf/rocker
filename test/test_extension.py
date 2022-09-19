@@ -168,15 +168,16 @@ class ExposeExtensionTest(unittest.TestCase):
         p = expose_plugin()
         self.assertTrue(plugin_load_parser_correctly(expose_plugin))
 
-        mock_cliargs = {'expose': 'none'}
+        mock_cliargs = {}
         self.assertEqual(p.get_snippet(mock_cliargs), '')
         self.assertEqual(p.get_preamble(mock_cliargs), '')
         args = p.get_docker_args(mock_cliargs)
-        self.assertIn('--expose none', args)
+        self.assertNotIn('--expose', args)
 
-        mock_cliargs = {'expose': '80'}
+        mock_cliargs = {'expose': ['80', '8080']}
         args = p.get_docker_args(mock_cliargs)
         self.assertIn('--expose 80', args)
+        self.assertIn('--expose 8080', args)
 
 class PortExtensionTest(unittest.TestCase):
 
@@ -200,15 +201,16 @@ class PortExtensionTest(unittest.TestCase):
         p = port_plugin()
         self.assertTrue(plugin_load_parser_correctly(port_plugin))
 
-        mock_cliargs = {'port': 'none'}
+        mock_cliargs = {}
         self.assertEqual(p.get_snippet(mock_cliargs), '')
         self.assertEqual(p.get_preamble(mock_cliargs), '')
         args = p.get_docker_args(mock_cliargs)
-        self.assertIn('-p none', args)
+        self.assertNotIn('-p', args)
 
-        mock_cliargs = {'port': '80:8080'}
+        mock_cliargs = {'port': ['80:8080', '81:8081']}
         args = p.get_docker_args(mock_cliargs)
         self.assertIn('-p 80:8080', args)
+        self.assertIn('-p 81:8081', args)
 
 class NameExtensionTest(unittest.TestCase):
 
