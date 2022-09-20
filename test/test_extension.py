@@ -146,6 +146,71 @@ class NetworkExtensionTest(unittest.TestCase):
         args = p.get_docker_args(mock_cliargs)
         self.assertTrue('--network host' in args)
 
+class ExposeExtensionTest(unittest.TestCase):
+
+    def setUp(self):
+        # Work around interference between empy Interpreter
+        # stdout proxy and test runner. empy installs a proxy on stdout
+        # to be able to capture the information.
+        # And the test runner creates a new stdout object for each test.
+        # This breaks empy as it assumes that the proxy has persistent
+        # between instances of the Interpreter class
+        # empy will error with the exception
+        # "em.Error: interpreter stdout proxy lost"
+        em.Interpreter._wasProxyInstalled = False
+
+    @pytest.mark.docker
+    def test_expose_extension(self):
+        plugins = list_plugins()
+        expose_plugin = plugins['expose']
+        self.assertEqual(expose_plugin.get_name(), 'expose')
+
+        p = expose_plugin()
+        self.assertTrue(plugin_load_parser_correctly(expose_plugin))
+
+        mock_cliargs = {}
+        self.assertEqual(p.get_snippet(mock_cliargs), '')
+        self.assertEqual(p.get_preamble(mock_cliargs), '')
+        args = p.get_docker_args(mock_cliargs)
+        self.assertNotIn('--expose', args)
+
+        mock_cliargs = {'expose': ['80', '8080']}
+        args = p.get_docker_args(mock_cliargs)
+        self.assertIn('--expose 80', args)
+        self.assertIn('--expose 8080', args)
+
+class PortExtensionTest(unittest.TestCase):
+
+    def setUp(self):
+        # Work around interference between empy Interpreter
+        # stdout proxy and test runner. empy installs a proxy on stdout
+        # to be able to capture the information.
+        # And the test runner creates a new stdout object for each test.
+        # This breaks empy as it assumes that the proxy has persistent
+        # between instances of the Interpreter class
+        # empy will error with the exception
+        # "em.Error: interpreter stdout proxy lost"
+        em.Interpreter._wasProxyInstalled = False
+
+    @pytest.mark.docker
+    def test_port_extension(self):
+        plugins = list_plugins()
+        port_plugin = plugins['port']
+        self.assertEqual(port_plugin.get_name(), 'port')
+
+        p = port_plugin()
+        self.assertTrue(plugin_load_parser_correctly(port_plugin))
+
+        mock_cliargs = {}
+        self.assertEqual(p.get_snippet(mock_cliargs), '')
+        self.assertEqual(p.get_preamble(mock_cliargs), '')
+        args = p.get_docker_args(mock_cliargs)
+        self.assertNotIn('-p', args)
+
+        mock_cliargs = {'port': ['80:8080', '81:8081']}
+        args = p.get_docker_args(mock_cliargs)
+        self.assertIn('-p 80:8080', args)
+        self.assertIn('-p 81:8081', args)
 
 class NameExtensionTest(unittest.TestCase):
 

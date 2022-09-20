@@ -139,6 +139,59 @@ class Network(RockerExtension):
             default=defaults.get('network', None),
             help="What network configuration to use.")
 
+
+class Expose(RockerExtension):
+    @staticmethod
+    def get_name():
+        return 'expose'
+
+    def __init__(self):
+        self.name = Expose.get_name()
+
+    def get_preamble(self, cliargs):
+        return ''
+
+    def get_docker_args(self, cliargs):
+        args = ['']
+        ports = cliargs.get('expose', [])
+        for port in ports:
+            args.append(' --expose {0}'.format(port))
+        return ' '.join(args)
+
+    @staticmethod
+    def register_arguments(parser, defaults={}):
+        parser.add_argument('--expose',
+            default=defaults.get('expose', None),
+            action='append',
+            help="Exposes a port from the container to host machine.")
+
+
+class Port(RockerExtension):
+    @staticmethod
+    def get_name():
+        return 'port'
+
+    def __init__(self):
+        self.name = Port.get_name()
+
+    def get_preamble(self, cliargs):
+        return ''
+
+    def get_docker_args(self, cliargs):
+        args = ['']
+        ports = cliargs.get('port', [])
+        for port in ports:
+            args.append(' -p {0}'.format(port))
+        return ' '.join(args)
+
+    @staticmethod
+    def register_arguments(parser, defaults={}):
+        parser.add_argument('--port',
+            default=defaults.get('port', None),
+            action='append',
+            help="Binds port from the container to host machine.")
+
+
 class PulseAudio(RockerExtension):
     @staticmethod
     def get_name():
