@@ -1,4 +1,4 @@
-# Copyright 2019 Open Source Robotics Foundation
+# Copyright 2019-2022 Arm Ltd., Open Source Robotics Foundation
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,37 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import pexpect
 
-from ast import literal_eval 
 from io import BytesIO as StringIO
 
 from .core import docker_build, get_docker_client
 
 
 DETECTION_TEMPLATE="""
-FROM python:3-slim-stretch as detector
-# Force the older version of debian for detector.
-# GLIBC is forwards compatible but not necessarily backwards compatible for pyinstaller
-# https://github.com/pyinstaller/pyinstaller/wiki/FAQ#gnulinux
-# StaticX is supposed to take care of this but there appears to be an issue when using subprocess
+FROM golang:1.19 as detector
 
-RUN mkdir -p /tmp/distrovenv
-RUN python3 -m venv /tmp/distrovenv
-# patchelf needed for staticx
-# binutils provides objdump needed by pyinstaller
-RUN apt-get update && apt-get install -qy patchelf binutils
-RUN . /tmp/distrovenv/bin/activate && pip install distro pyinstaller==4.0 staticx==0.12.3
-
-RUN echo 'import distro; import sys; output = (distro.name(), distro.version(), distro.codename()); print(output) if distro.name() else sys.exit(1)' > /tmp/distrovenv/detect_os.py
-RUN . /tmp/distrovenv/bin/activate && pyinstaller --onefile /tmp/distrovenv/detect_os.py
-
-RUN . /tmp/distrovenv/bin/activate && staticx /dist/detect_os /dist/detect_os_static && chmod go+xr /dist/detect_os_static
+# For reliability, pin a distro-detect commit instead of targeting a branch.
+RUN git clone -q https://github.com/dekobon/distro-detect.git && \
+    cd distro-detect && \
+    git checkout -q 5f5b9c724b9d9a117732d2a4292e6288905734e1 && \
+    CGO_ENABLED=0 go build .
 
 FROM %(image_name)s
 
-COPY --from=detector /dist/detect_os_static /tmp/detect_os
-ENTRYPOINT [ "/tmp/detect_os" ]
+COPY --from=detector /go/distro-detect/distro-detect /tmp/detect_os
+ENTRYPOINT [ "/tmp/detect_os", "-format", "json-one-line" ]
 CMD [ "" ]
 """
 
@@ -81,7 +71,19 @@ def detect_os(image_name, output_callback=None, nocache=False):
     client.remove_image(image=tag_name)
 
     if p.exitstatus == 0:
-        _detect_os_cache[image_name] = literal_eval(output.strip())
+        try:
+            detect_dict = json.loads(output.strip())
+        except ValueError:
+            if output_callback:
+                output_callback('Failed to parse JSON')
+            return None
+
+        dist = detect_dict.get('name', '')
+        os_release = detect_dict.get('os_release', {})
+        ver = os_release.get('VERSION_ID', '')
+        codename = os_release.get('VERSION_CODENAME', '')
+
+        _detect_os_cache[image_name] = (dist, ver, codename)
         return _detect_os_cache[image_name]
     else:
         if output_callback:
