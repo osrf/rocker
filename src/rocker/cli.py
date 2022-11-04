@@ -35,7 +35,7 @@ def main():
     parser.add_argument('--nocache', action='store_true')
     parser.add_argument('--nocleanup', action='store_true', help='do not remove the docker container when stopped')
     parser.add_argument('--pull', action='store_true')
-    parser.add_argument('-v', '--version', action='version',
+    parser.add_argument('--version', action='version',
         version='%(prog)s ' + get_rocker_version())
 
     try:
