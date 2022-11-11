@@ -212,3 +212,10 @@ It will process the same as `docker`'s `--volume` option, `rocker --volume` take
 - 2nd field: (optional) the path where the file or directory is mounted in the container.
    - If only the 1st field is supplied, same value as the 1st field will be populated as the 2nd field.
 - 3rd field: (optional) bind propagation as `ro`, `z`, and `Z`. See [docs.docker.com](https://docs.docker.com/storage/bind-mounts/) for further detail.
+
+
+## Helpful tips
+
+Clean up the rocker cache
+
+    `docker images | grep rocker_cache | awk '{ printf $1":"$2; print"" }' | xargs docker rmi`

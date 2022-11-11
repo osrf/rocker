@@ -14,6 +14,7 @@
 
 from collections import OrderedDict
 import io
+from hashlib import md5
 import os
 import re
 import sys
@@ -225,8 +226,15 @@ class DockerImageGenerator(object):
             arguments['pull'] = kwargs.get('pull', False)
             image_name = kwargs.get('image_name', None)
             if image_name:
-                print(f"Running docker tag {self.image_id} {image_name}")
                 arguments['tag'] = image_name
+            else:
+                kwhash = self.get_argument_hash(kwargs)
+                #TODO(tfoote) Only flag extensions in the image (aka skip runtime only)
+                tag = 'rocker_cache:' + kwargs.get('image', '').replace(':', '_') + '_extensions__' + '_'.join([x.name for x in self.active_extensions]) + '__arghash' + str(kwhash)
+                arguments['tag'] = tag
+
+            print(f"{kwargs} Generated Image Tagged: {tag}")
+
             print("Building docker file with arguments: ", arguments)
             try:
                 self.image_id = docker_build(
@@ -242,6 +250,15 @@ class DockerImageGenerator(object):
             except docker.errors.APIError as ex:
                 print("Docker build failed\n", ex)
                 return 1
+
+    def get_argument_hash(self, kwargs):
+        """ Compute the has of the arguments excluding elements not included
+        in the image such as the command
+        """
+        # TODO(tfoote) flag specific keywords as being in the image vs only runtime
+        invariant = kwargs
+        invariant.pop('command')
+        return md5(str(invariant).encode()).hexdigest()
 
     def get_operating_mode(self, args):
         operating_mode = args.get('mode')
