@@ -226,3 +226,71 @@ CMD glmark2 --validate
         with self.assertRaises(SystemExit) as cm:
             p.get_environment_subs(mock_cliargs)
         self.assertEqual(cm.exception.code, 1)
+
+class CudaTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(self):
+        client = get_docker_client()
+        self.dockerfile_tags = []
+        for distro_version in ['focal', 'jammy']:
+            dockerfile = """
+FROM ubuntu:%(distro_version)s
+CMD dpkg -s cuda
+"""
+            dockerfile_tag = 'testfixture_%s_cuda' % distro_version
+            iof = StringIO((dockerfile % locals()).encode())
+            im = client.build(fileobj = iof, tag=dockerfile_tag)
+            for e in im:
+                pass
+                #print(e)
+            self.dockerfile_tags.append(dockerfile_tag)
+
+    def setUp(self):
+        # Work around interference between empy Interpreter
+        # stdout proxy and test runner. empy installs a proxy on stdout
+        # to be able to capture the information.
+        # And the test runner creates a new stdout object for each test.
+        # This breaks empy as it assumes that the proxy has persistent
+        # between instances of the Interpreter class
+        # empy will error with the exception
+        # "em.Error: interpreter stdout proxy lost"
+        em.Interpreter._wasProxyInstalled = False
+
+    def test_no_cuda(self):
+        for tag in self.dockerfile_tags:
+            dig = DockerImageGenerator([], {}, tag)
+            self.assertEqual(dig.build(), 0)
+            self.assertNotEqual(dig.run(), 0)
+
+    def test_cuda(self):
+        plugins = list_plugins()
+        desired_plugins = ['x11', 'nvidia', 'cuda'] #TODO(Tfoote) encode the x11 dependency into the plugin and remove from test here
+        active_extensions = [e() for e in plugins.values() if e.get_name() in desired_plugins]
+        for tag in self.dockerfile_tags:
+            dig = DockerImageGenerator(active_extensions, {}, tag)
+            self.assertEqual(dig.build(), 0)
+            self.assertEqual(dig.run(), 0)
+
+    def test_cuda_env_subs(self):
+        plugins = list_plugins()
+        cuda_plugin = plugins['cuda']
+
+        p = cuda_plugin()
+
+        # base image doesn't exist
+        mock_cliargs = {'base_image': 'ros:does-not-exist'}
+        with self.assertRaises(SystemExit) as cm:
+            p.get_environment_subs(mock_cliargs)
+        self.assertEqual(cm.exception.code, 1)
+
+        # unsupported version
+        mock_cliargs = {'base_image': 'ubuntu:17.04'}
+        with self.assertRaises(SystemExit) as cm:
+            p.get_environment_subs(mock_cliargs)
+        self.assertEqual(cm.exception.code, 1)
+
+        # unsupported os
+        mock_cliargs = {'base_image': 'fedora'}
+        with self.assertRaises(SystemExit) as cm:
+            p.get_environment_subs(mock_cliargs)
+        self.assertEqual(cm.exception.code, 1)

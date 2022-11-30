@@ -57,6 +57,7 @@ kwargs = {
             'ssh = rocker.ssh_extension:Ssh',
             'user = rocker.extensions:User',
             'x11 = rocker.nvidia_extension:X11',
+            'cuda = rocker.nvidia_extension:Cuda',
         ]
 	},
     'author': 'Tully Foote',
