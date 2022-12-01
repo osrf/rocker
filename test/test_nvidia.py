@@ -256,12 +256,17 @@ CMD dpkg -s cuda
         # "em.Error: interpreter stdout proxy lost"
         em.Interpreter._wasProxyInstalled = False
 
+
+    @pytest.mark.docker
     def test_no_cuda(self):
         for tag in self.dockerfile_tags:
             dig = DockerImageGenerator([], {}, tag)
             self.assertEqual(dig.build(), 0)
             self.assertNotEqual(dig.run(), 0)
 
+    @pytest.mark.nvidia
+    @pytest.mark.x11
+    @pytest.mark.docker
     def test_cuda(self):
         plugins = list_plugins()
         desired_plugins = ['x11', 'nvidia', 'cuda'] #TODO(Tfoote) encode the x11 dependency into the plugin and remove from test here
