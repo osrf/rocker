@@ -394,3 +394,29 @@ class Privileged(RockerExtension):
                             action='store_true',
                             default=defaults.get(Privileged.get_name(), None),
                             help="give extended privileges to the container")
+
+
+class GroupAdd(RockerExtension):
+    @staticmethod
+    def get_name():
+        return 'group_add'
+
+    def __init__(self):
+        self.name = GroupAdd.get_name()
+
+    def get_preamble(self, cliargs):
+        return ''
+
+    def get_docker_args(self, cliargs):
+        args = ['']
+        groups = cliargs.get('group_add', [])
+        for group in groups:
+            args.append(' --group-add {0}'.format(group))
+        return ' '.join(args)
+
+    @staticmethod
+    def register_arguments(parser, defaults={}):
+        parser.add_argument(name_to_argument(GroupAdd.get_name()),
+            default=defaults.get(GroupAdd.get_name(), None),
+            action='append',
+            help="Add additional groups to join.")

@@ -517,3 +517,37 @@ class EnvExtensionTest(unittest.TestCase):
         self.assertEqual(p.get_snippet(mock_cliargs), '')
         self.assertEqual(p.get_preamble(mock_cliargs), '')
         self.assertEqual(p.get_docker_args(mock_cliargs), ' --env-file foo --env-file bar')
+
+
+class GroupAddExtensionTest(unittest.TestCase):
+
+    def setUp(self):
+        # Work around interference between empy Interpreter
+        # stdout proxy and test runner. empy installs a proxy on stdout
+        # to be able to capture the information.
+        # And the test runner creates a new stdout object for each test.
+        # This breaks empy as it assumes that the proxy has persistent
+        # between instances of the Interpreter class
+        # empy will error with the exception
+        # "em.Error: interpreter stdout proxy lost"
+        em.Interpreter._wasProxyInstalled = False
+
+    @pytest.mark.docker
+    def test_group_add_extension(self):
+        plugins = list_plugins()
+        group_add_plugin = plugins['group_add']
+        self.assertEqual(group_add_plugin.get_name(), 'group_add')
+
+        p = group_add_plugin()
+        self.assertTrue(plugin_load_parser_correctly(group_add_plugin))
+
+        mock_cliargs = {}
+        self.assertEqual(p.get_snippet(mock_cliargs), '')
+        self.assertEqual(p.get_preamble(mock_cliargs), '')
+        args = p.get_docker_args(mock_cliargs)
+        self.assertNotIn('--group_add', args)
+
+        mock_cliargs = {'group_add': ['sudo', 'docker']}
+        args = p.get_docker_args(mock_cliargs)
+        self.assertIn('--group-add sudo', args)
+        self.assertIn('--group-add docker', args)
