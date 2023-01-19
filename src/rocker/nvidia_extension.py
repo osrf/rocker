@@ -123,6 +123,11 @@ class Nvidia(RockerExtension):
         return em.expand(snippet, self.get_environment_subs(cliargs))
 
     def get_docker_args(self, cliargs):
+        force_flag = cliargs.get('nvidia', None)
+        if force_flag == 'runtime':
+            return "  --runtime=nvidia"
+        if force_flag == 'gpus':
+            return "  --gpus all"
         if get_docker_version() >= Version("19.03"):
             return "  --gpus all"
         return "  --runtime=nvidia"
@@ -130,9 +135,11 @@ class Nvidia(RockerExtension):
     @staticmethod
     def register_arguments(parser, defaults={}):
         parser.add_argument(name_to_argument(Nvidia.get_name()),
-            action='store_true',
-            default=defaults.get(Nvidia.get_name(), None),
-            help="Enable nvidia")
+            choices=['auto', 'runtime', 'gpus'],
+            nargs='?',
+            const='auto',
+            default=defaults.get(Nvidia.get_name(), 'auto'),
+            help="Enable nvidia. Default behavior is to pick flag based on docker version.")
 
 class Cuda(RockerExtension):
     @staticmethod
