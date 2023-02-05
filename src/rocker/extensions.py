@@ -397,6 +397,7 @@ class Privileged(RockerExtension):
 
 
 class GroupAdd(RockerExtension):
+    """Add additional groups to running container."""
     @staticmethod
     def get_name():
         return 'group_add'
