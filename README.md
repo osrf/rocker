@@ -45,6 +45,7 @@ As well as access to many of the docker arguments as well such as `device`, `env
 Here's a list of public repositories with extensions.
 
 - Off-your-rocker: https://github.com/sloretz/off-your-rocker
+- mp_rocker: https://github.com/miguelprada/mp_rocker
 
 
 
