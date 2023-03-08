@@ -46,6 +46,7 @@ Here's a list of public repositories with extensions.
 
 - Off-your-rocker: https://github.com/sloretz/off-your-rocker
 - mp_rocker: https://github.com/miguelprada/mp_rocker
+- ghrocker: https://github.com/tfoote/ghrocker
 
 
 
