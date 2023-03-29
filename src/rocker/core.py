@@ -125,11 +125,12 @@ def get_docker_client():
         # Validate that the server is available
         docker_client.ping()
         return docker_client
-    except (docker.errors.APIError, ConnectionError) as ex:
+    except (docker.errors.DockerException, docker.errors.APIError, ConnectionError) as ex:
         raise DependencyMissing('Docker Client failed to connect to docker daemon.'
             ' Please verify that docker is installed and running.'
             ' As well as that you have permission to access the docker daemon.'
-            ' This is usually by being a member of the docker group.')
+            ' This is usually by being a member of the docker group.'
+            ' The underlying error was:\n"""\n%s\n"""\n' % ex)
 
 
 def docker_build(docker_client = None, output_callback = None, **kwargs):
