@@ -1,4 +1,5 @@
 ARG USERNAME=@(name)
+ARG HOMEDIR=@(dir)
 
 # make sure sudo is installed to be able to give user sudo access in docker
 RUN if ! command -v sudo >/dev/null; then \
@@ -23,11 +24,11 @@ RUN existing_user_by_uid=`getent passwd "@(uid)" | cut -f1 -d: || true` && \
 
 @[if not home_extension_active ]@
 # Making sure a home directory exists if we haven't mounted the user's home directory explicitly
-RUN mkdir -p "$(dirname "@(dir)")" && mkhomedir_helper $USERNAME
+RUN mkdir -p "$(dirname "$HOMEDIR")" && mkhomedir_helper $USERNAME
 @[end if]@
 # Commands below run as the developer user
 USER $USERNAME
-WORKDIR @(dir)
+WORKDIR $HOMEDIR
 @[else]@
 # Detected user is root, which already exists so not creating new user.
 @[end if]@
