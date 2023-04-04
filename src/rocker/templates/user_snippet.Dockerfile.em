@@ -19,7 +19,7 @@ RUN existing_user_by_uid=`getent passwd "@(uid)" | cut -f1 -d: || true` && \
     if [ -z "${existing_group_by_gid}" ]; then \
       groupadd -g "@(gid)" "@name"; \
     fi && \
-    useradd --no-log-init --no-create-home --uid "@(uid)" @(str('-s ' + shell) if shell else '') -c "@(gecos)" -g "@(gid)" -d "@(dir)" "@(name)" && \
+    useradd --no-log-init --no-create-home --uid "@(uid)" @(str('-s ' + shell) if shell else '') -c "@(gecos)" -g "@(gid)" -d "$HOMEDIR" "$USERNAME" && \
     echo "$USERNAME ALL=NOPASSWD: ALL" >> /etc/sudoers.d/rocker
 
 @[if not home_extension_active ]@
