@@ -4,10 +4,10 @@ on: [push, pull_request]
 jobs:
   basic_ci:
     name: Basic CI
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python-version: [3.8]
+        python-version: [3.8, 3.10]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
