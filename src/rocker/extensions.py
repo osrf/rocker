@@ -278,6 +278,7 @@ class User(RockerExtension):
             substitutions['user_groups'] = ' '.join(['{};{}'.format(g.gr_name, g.gr_gid) for g in grp.getgrall() if substitutions['name'] in g.gr_mem])
         else:
             substitutions['user_groups'] = ''
+        substitutions['user_preserve_groups_permissive'] = True if 'user_preserve_groups_permissive' in cliargs and cliargs['user_preserve_groups_permissive'] else False
         substitutions['home_extension_active'] = True if 'home' in cliargs and cliargs['home'] else False
         if 'user_override_shell' in cliargs and cliargs['user_override_shell'] is not None:
             if cliargs['user_override_shell'] == '':
@@ -304,6 +305,11 @@ class User(RockerExtension):
             action='store_true',
             default=defaults.get('user-preserve-groups', False),
             help="Assign user to same groups as he belongs in host.")
+        parser.add_argument('--user-preserve-groups-permissive',
+            action='store_true',
+            default=defaults.get('user-preserve-groups-permissive', False),
+            help="If using user-preserve-groups allow failures in assignment."
+                 "This is important if the host and target have different rules. https://unix.stackexchange.com/a/11481/83370" )
         parser.add_argument('--user-override-shell',
             action='store',
             default=defaults.get('user-override-shell', None),

@@ -321,6 +321,13 @@ class UserExtensionTest(unittest.TestCase):
         snippet_result = p.get_snippet(user_override_active_cliargs)
         self.assertTrue('usermod -aG' in snippet_result)
 
+        user_override_active_cliargs = mock_cliargs
+        user_override_active_cliargs['user_preserve_groups'] = True
+        user_override_active_cliargs['user_preserve_groups_permissive'] = True
+        snippet_result = p.get_snippet(user_override_active_cliargs)
+        self.assertTrue('usermod -aG' in snippet_result)
+        self.assertTrue('user-preserve-group-permissive Enabled' in snippet_result)
+
         user_override_active_cliargs['user_override_name'] = 'testusername'
         snippet_result = p.get_snippet(user_override_active_cliargs)
         self.assertTrue('USER testusername' in snippet_result)
