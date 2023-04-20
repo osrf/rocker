@@ -22,7 +22,11 @@ RUN existing_user_by_uid=`getent passwd "@(uid)" | cut -f1 -d: || true` && \
     for groupinfo in ${user_groups}; do \
       existing_group_by_name=`getent group ${groupinfo%;*} || true`; \
       existing_group_by_gid=`getent group ${groupinfo#*;} || true`; \
-      if [ -z "${existing_group_by_name}" ] && [ -z "${existing_group_by_gid}" ]; then groupadd -g "${groupinfo#*;}" "${groupinfo%;*}" && usermod -aG "${groupinfo%;*}" "@(name)" @(('|| (true && echo "user-preserve-group-permissive Enabled, continuing without processing group $groupinfo" )') if user_preserve_groups_permissive else ''); fi \
+      if [ -z "${existing_group_by_name}" ] && [ -z "${existing_group_by_gid}" ]; then \
+        groupadd -g "${groupinfo#*;}" "${groupinfo%;*}" && usermod -aG "${groupinfo%;*}" "@(name)" @(('|| (true && echo "user-preserve-group-permissive Enabled, continuing without processing group $groupinfo" )') if user_preserve_groups_permissive else ''); \
+      elif [ "${existing_group_by_name}" = "${existing_group_by_gid}" ]; then \
+        usermod -aG "${groupinfo%;*}" "@(name)"; \
+      fi; \
     done && \
 @[end if]@
     echo "@(name) ALL=NOPASSWD: ALL" >> /etc/sudoers.d/rocker
