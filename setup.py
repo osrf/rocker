@@ -47,6 +47,7 @@ kwargs = {
             'env = rocker.extensions:Environment',
             'expose = rocker.extensions:Expose',
             'git = rocker.git_extension:Git',
+            'group_add = rocker.extensions:GroupAdd',
             'home = rocker.extensions:HomeDir',
             'name = rocker.extensions:Name',
             'network = rocker.extensions:Network',
