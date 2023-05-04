@@ -317,12 +317,18 @@ class UserExtensionTest(unittest.TestCase):
         self.assertFalse('mkhomedir_helper' in p.get_snippet(home_active_cliargs))
 
         user_override_active_cliargs = mock_cliargs
-        user_override_active_cliargs['user_preserve_groups'] = True
+        user_override_active_cliargs['user_preserve_groups'] = []
         snippet_result = p.get_snippet(user_override_active_cliargs)
         self.assertTrue('usermod -aG' in snippet_result)
 
         user_override_active_cliargs = mock_cliargs
-        user_override_active_cliargs['user_preserve_groups'] = True
+        user_override_active_cliargs['user_preserve_groups'] = ['cdrom', 'audio']
+        snippet_result = p.get_snippet(user_override_active_cliargs)
+        self.assertTrue('cdrom' in snippet_result)
+        self.assertTrue('audio' in snippet_result)
+
+        user_override_active_cliargs = mock_cliargs
+        user_override_active_cliargs['user_preserve_groups'] = []
         user_override_active_cliargs['user_preserve_groups_permissive'] = True
         snippet_result = p.get_snippet(user_override_active_cliargs)
         self.assertTrue('usermod -aG' in snippet_result)
