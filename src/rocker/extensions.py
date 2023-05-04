@@ -274,8 +274,17 @@ class User(RockerExtension):
             substitutions['name'] = cliargs['user_override_name']
             substitutions['dir'] = os.path.join('/home/', cliargs['user_override_name'])
         substitutions['user_preserve_home'] = True if 'user_preserve_home' in cliargs and cliargs['user_preserve_home'] else False
-        if 'user_preserve_groups' in cliargs and cliargs['user_preserve_groups']:
-            substitutions['user_groups'] = ' '.join(['{};{}'.format(g.gr_name, g.gr_gid) for g in grp.getgrall() if substitutions['name'] in g.gr_mem])
+        if 'user_preserve_groups' in cliargs:
+            all_groups = grp.getgrall()
+            matched_groups = [g for g in all_groups if g.gr_name in cliargs['user_preserve_groups']]
+            matched_group_names = [g.gr_name for g in matched_groups]
+            unmatched_groups = [n for n in cliargs['user_preserve_groups'] if n not in matched_group_names]
+            if unmatched_groups:
+                print('Warning skipping groups %s because they do not exist on the host.' % unmatched_groups)
+            if cliargs['user_preserve_groups']:
+                substitutions['user_groups'] = ' '.join(['{};{}'.format(g.gr_name, g.gr_gid) for g in matched_groups])
+            else:
+                substitutions['user_groups'] = ' '.join(['{};{}'.format(g.gr_name, g.gr_gid) for g in all_groups if substitutions['name'] in g.gr_mem])
         else:
             substitutions['user_groups'] = ''
         substitutions['user_preserve_groups_permissive'] = True if 'user_preserve_groups_permissive' in cliargs and cliargs['user_preserve_groups_permissive'] else False
@@ -302,9 +311,10 @@ class User(RockerExtension):
             default=defaults.get('user-preserve-home', False),
             help="Do not delete home directory if it exists when making a new user.")
         parser.add_argument('--user-preserve-groups',
-            action='store_true',
+            action='store',
+            nargs='*',
             default=defaults.get('user-preserve-groups', False),
-            help="Assign user to same groups as he belongs in host.")
+            help="Assign user to same groups as he belongs in host. If arguments provided they are the explicit list of groups.")
         parser.add_argument('--user-preserve-groups-permissive',
             action='store_true',
             default=defaults.get('user-preserve-groups-permissive', False),
