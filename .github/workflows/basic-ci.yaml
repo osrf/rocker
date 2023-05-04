@@ -16,12 +16,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install Dependencies And Self
       run: |
-        docker run hello-world
-        docker --version
-        which docker
         python -m pip install --upgrade pip setuptools wheel
-        # Workaround for https://github.com/docker/docker-py/issues/2807
-        python -m pip install six
         python -m pip install -e .[test] codecov pytest-cov
     - name: Run headless tests
       uses: GabrielBB/xvfb-action@v1
