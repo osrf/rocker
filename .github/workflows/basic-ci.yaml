@@ -19,7 +19,7 @@ jobs:
         python -m pip install --upgrade pip setuptools wheel
         python -m pip install -e .[test] codecov pytest-cov
     - name: Run headless tests
-      uses: GabrielBB/xvfb-action@v1
+      uses: coactions/setup-xvfb@v1
       with:
         run: python -m pytest -s -v --cov=rocker -m "not nvidia"
     - name: Upload coverage to Codecov
