@@ -18,6 +18,7 @@ jobs:
       run: |
         docker run hello-world
         docker --version
+        which docker
         python -m pip install --upgrade pip setuptools wheel
         # Workaround for https://github.com/docker/docker-py/issues/2807
         python -m pip install six
