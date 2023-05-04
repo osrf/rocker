@@ -274,14 +274,15 @@ class User(RockerExtension):
             substitutions['name'] = cliargs['user_override_name']
             substitutions['dir'] = os.path.join('/home/', cliargs['user_override_name'])
         substitutions['user_preserve_home'] = True if 'user_preserve_home' in cliargs and cliargs['user_preserve_home'] else False
-        if 'user_preserve_groups' in cliargs:
+        if 'user_preserve_groups' in cliargs and isinstance(cliargs['user_preserve_groups'], list):
+            query_groups = cliargs['user_preserve_groups']
             all_groups = grp.getgrall()
-            matched_groups = [g for g in all_groups if g.gr_name in cliargs['user_preserve_groups']]
-            matched_group_names = [g.gr_name for g in matched_groups]
-            unmatched_groups = [n for n in cliargs['user_preserve_groups'] if n not in matched_group_names]
-            if unmatched_groups:
-                print('Warning skipping groups %s because they do not exist on the host.' % unmatched_groups)
-            if cliargs['user_preserve_groups']:
+            if query_groups:
+                matched_groups = [g for g in all_groups if g.gr_name in query_groups]
+                matched_group_names = [g.gr_name for g in matched_groups]
+                unmatched_groups = [n for n in cliargs['user_preserve_groups'] if n not in matched_group_names]
+                if unmatched_groups:
+                    print('Warning skipping groups %s because they do not exist on the host.' % unmatched_groups)
                 substitutions['user_groups'] = ' '.join(['{};{}'.format(g.gr_name, g.gr_gid) for g in matched_groups])
             else:
                 substitutions['user_groups'] = ' '.join(['{};{}'.format(g.gr_name, g.gr_gid) for g in all_groups if substitutions['name'] in g.gr_mem])
