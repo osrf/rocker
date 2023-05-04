@@ -17,8 +17,6 @@ jobs:
     - name: Install Dependencies And Self
       run: |
         docker run hello-world
-        sudo apt-get update
-        sudo apt-get install -y docker
         docker --version
         python -m pip install --upgrade pip setuptools wheel
         # Workaround for https://github.com/docker/docker-py/issues/2807
