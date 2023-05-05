@@ -148,6 +148,9 @@ def docker_build(docker_client = None, output_callback = None, **kwargs):
             continue
         if output_callback is not None:
             output_callback(output)
+            
+        if "error" in output.lower():
+            raise Exception(f"Build failed: {output}")
 
         match = re.match(r'Successfully built ([a-z0-9]{12})', output)
         if match:
