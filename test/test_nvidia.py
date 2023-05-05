@@ -185,6 +185,21 @@ CMD glmark2 --validate
         else:
             self.assertIn(' --runtime=nvidia', docker_args)
 
+        mock_cliargs = {'nvidia': 'auto'}
+        docker_args = p.get_docker_args(mock_cliargs)
+        if get_docker_version() >= Version("19.03"):
+            self.assertIn(' --gpus all', docker_args)
+        else:
+            self.assertIn(' --runtime=nvidia', docker_args)
+
+        mock_cliargs = {'nvidia': 'gpus'}
+        docker_args = p.get_docker_args(mock_cliargs)
+        self.assertIn(' --gpus all', docker_args)
+
+        mock_cliargs = {'nvidia': 'runtime'}
+        docker_args = p.get_docker_args(mock_cliargs)
+        self.assertIn(' --runtime=nvidia', docker_args)
+
 
     def test_no_nvidia_glmark2(self):
         for tag in self.dockerfile_tags:
