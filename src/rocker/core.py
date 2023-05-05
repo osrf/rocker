@@ -136,6 +136,7 @@ def get_docker_client():
 def docker_build(docker_client = None, output_callback = None, **kwargs):
     image_id = None
     build_success = False
+    build_output = []
 
     if not docker_client:
         docker_client = get_docker_client()
@@ -148,9 +149,10 @@ def docker_build(docker_client = None, output_callback = None, **kwargs):
             continue
         if output_callback is not None:
             output_callback(output)
+        build_output.append(output)
             
         if "error" in output.lower():
-            raise Exception(f"Build failed: {output}")
+            raise Exception("Build failed")
 
         match = re.match(r'Successfully built ([a-z0-9]{12})', output)
         if match:
@@ -160,7 +162,7 @@ def docker_build(docker_client = None, output_callback = None, **kwargs):
     if build_success:
         return image_id
     else:
-        raise Exception(f"Build failed: {output}")
+        raise Exception("Build failed: "+"\n".join(build_output))
 
 
 class SIGWINCHPassthrough(object):
