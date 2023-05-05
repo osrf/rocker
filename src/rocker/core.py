@@ -160,7 +160,7 @@ def docker_build(docker_client = None, output_callback = None, **kwargs):
     if build_success:
         return image_id
     else:
-        raise Exception("Build failed: no more output and success not detected")
+        raise Exception(f"Build failed: {output}")
 
 
 class SIGWINCHPassthrough(object):
