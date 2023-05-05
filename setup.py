@@ -50,6 +50,7 @@ kwargs = {
             'git = rocker.git_extension:Git',
             'group_add = rocker.extensions:GroupAdd',
             'home = rocker.extensions:HomeDir',
+            'hostname = rocker.extensions:Hostname',
             'name = rocker.extensions:Name',
             'network = rocker.extensions:Network',
             'nvidia = rocker.nvidia_extension:Nvidia',
