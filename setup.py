@@ -7,6 +7,7 @@ install_requires = [
     'empy',
     'pexpect',
     'packaging',
+    'urllib3<2', # Workaround for https://github.com/docker/docker-py/issues/3113
 ]
 
 # docker API used to be in a package called `docker-py` before the 2.0 release
@@ -49,6 +50,7 @@ kwargs = {
             'git = rocker.git_extension:Git',
             'group_add = rocker.extensions:GroupAdd',
             'home = rocker.extensions:HomeDir',
+            'hostname = rocker.extensions:Hostname',
             'name = rocker.extensions:Name',
             'network = rocker.extensions:Network',
             'nvidia = rocker.nvidia_extension:Nvidia',
