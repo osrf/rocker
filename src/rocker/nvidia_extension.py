@@ -138,7 +138,7 @@ class Nvidia(RockerExtension):
             choices=['auto', 'runtime', 'gpus'],
             nargs='?',
             const='auto',
-            default=defaults.get(Nvidia.get_name(), 'auto'),
+            default=defaults.get(Nvidia.get_name(), None),
             help="Enable nvidia. Default behavior is to pick flag based on docker version.")
 
 class Cuda(RockerExtension):
