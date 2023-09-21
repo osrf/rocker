@@ -150,6 +150,7 @@ class RockerCoreTest(unittest.TestCase):
                 return {'foo'}
 
         extension_manager = RockerExtensionManager()
+        extension_manager.available_plugins = dict(foo=Foo, bar=Bar)
 
         correct_extensions = {'bar': True, 'foo': True}
         extension_manager.get_active_extensions(correct_extensions)
