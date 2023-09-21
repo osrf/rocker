@@ -146,7 +146,7 @@ class RockerExtensionManager:
         return self.sort_extensions(active_extensions)
 
     @staticmethod
-    def sort_extensions(extensions):
+    def sort_extensions(extensions: typing.Dict[str, typing.Type[RockerExtension]]) -> typing.List[RockerExtension]:
 
         def topological_sort(source: typing.Dict[str, typing.Set[str]]) -> typing.List[str]:
             """Perform a topological sort on names and dependencies and returns the sorted list of names."""
