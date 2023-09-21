@@ -28,6 +28,7 @@ from rocker.core import get_docker_client
 from rocker.core import get_rocker_version
 from rocker.core import RockerExtension
 from rocker.core import RockerExtensionManager
+from rocker.core import RequiredExtensionMissingError
 
 class RockerCoreTest(unittest.TestCase):
 
@@ -133,6 +134,30 @@ class RockerCoreTest(unittest.TestCase):
         self.assertEqual(len(active_extensions), 1)
         self.assertEqual(active_extensions[0].get_name(), 'user')
 
+    def test_required_extensions(self):
+        class Foo(RockerExtension):
+            @classmethod
+            def get_name(cls):
+                return 'foo'
+
+        class Bar(RockerExtension):
+            @classmethod
+            def get_name(cls):
+                return 'bar'
+
+            @staticmethod
+            def required_extensions():
+                return {'foo'}
+
+        extension_manager = RockerExtensionManager()
+
+        correct_extensions = {'bar': True, 'foo': True}
+        extension_manager.get_active_extensions(correct_extensions)
+
+        incorrect_extensions = {'bar': True}
+        self.assertRaises(RequiredExtensionMissingError,
+                          extension_manager.get_active_extensions, incorrect_extensions)
+
     def test_extension_sorting(self):
         class AUserExtension(RockerExtension):
             @classmethod
@@ -159,7 +184,7 @@ class RockerCoreTest(unittest.TestCase):
                 return 'bar'
 
             @staticmethod
-            def preceding_extensions():
+            def required_extensions():
                 return {'foo'}
 
         sorted_extensions = RockerExtensionManager.sort_extensions(
