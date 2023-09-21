@@ -32,6 +32,7 @@ import fcntl
 import signal
 import struct
 import termios
+import typing
 
 SYS_STDOUT = sys.stdout
 
@@ -45,7 +46,10 @@ class DependencyMissing(RuntimeError):
     pass
 
 
-class RockerExtension(object):
+class RequiredExtensionMissingError(RuntimeError):
+    pass
+
+
     """The base class for Rocker extension points"""
 
     def precondition_environment(self, cliargs):
@@ -53,10 +57,28 @@ class RockerExtension(object):
         pass
 
     def validate_environment(self, cliargs):
-        """ Check that the environment is something that can be used.
+        """Check that the environment is something that can be used.
         This will check that we're on the right base OS and that the 
         necessary resources are available, like hardware."""
         pass
+
+    @staticmethod
+    def preceding_extensions() -> typing.Set[str]:
+        """
+        Optional extensions. This merely ensures the preceding
+        extensions are applied before this extension when applying
+        snippets and arguments if they are present.
+        """
+        return set()
+
+    @staticmethod
+    def required_extensions() -> typing.Set[str]:
+        """
+        Ensures the specified extensions are present and combined with
+        this extension. In addition, it orders the application of
+        the required extensions before this extension.
+        """
+        return set()
 
     def get_preamble(self, cliargs):
         return ''
@@ -109,10 +131,69 @@ class RockerExtensionManager:
 
 
     def get_active_extensions(self, cli_args):
-        active_extensions = [e() for e in self.available_plugins.values() if e.check_args_for_activation(cli_args) and e.get_name() not in cli_args['extension_blacklist']]
-        active_extensions.sort(key=lambda e:e.get_name().startswith('user'))
-        return active_extensions
+        """
+        Checks for missing dependencies (specified by each extension's
+        required_extensions() method) and additionally sorts them.
+        """
+        active_extensions = {
+            name: cls for name, cls in self.available_plugins.items()
+            if cls.check_args_for_activation(cli_args) and cls.get_name() not in cli_args['extension_blacklist']
+        }
+        names = set(active_extensions.keys())
+        for name, cls in active_extensions.items():
+            if not cls.required_extensions().issubset(names):
+                raise RequiredExtensionMissingError(f"extension '{name}' is missing required extensions {list(cls.required_extensions())}")
+        return self.sort_extensions(active_extensions)
 
+    @staticmethod
+    def sort_extensions(extensions: typing.Dict[str, typing.Type[RockerExtension]]) -> typing.List[RockerExtension]:
+
+        def topological_sort(source: typing.Dict[str, typing.Set[str]]) -> typing.List[str]:
+            """Perform a topological sort on names and dependencies and returns the sorted list of names."""
+            names = set(source.keys())
+            # dependencies are merely desired, not required, so prune them if they are not active
+            pending = [(name, dependencies.intersection(names)) for name, dependencies in source.items()]
+            emitted = []
+            while pending:
+                next_pending = []
+                next_emitted = []
+                for entry in pending:
+                    name, deps = entry
+                    deps.difference_update(emitted)  # remove dependencies already emitted
+                    if deps:  # still has dependencies? recheck during next pass
+                        next_pending.append(entry)
+                    else:  # no more dependencies? time to emit
+                        yield name
+                        next_emitted.append(name)  # remember what was emitted for difference_update()
+                if not next_emitted:
+                    raise ValueError("cyclic dependancy detected: %r" % (next_pending,))
+                pending = next_pending
+                emitted = next_emitted
+
+        extension_graph = {}
+        # assume all extensions must precede user unless explicitly stated otherwise
+        extensions_preceding_user = {k for k in extensions.keys() if k != 'user'}
+
+        for name, cls in sorted(extensions.items()):
+            if name == 'user':
+                # the 'user' extension is special and handled differently
+                continue
+
+            if 'user' in cls.preceding_extensions() or 'user' in cls.required_extensions():
+                # update the set so that the "user" extension can load before this extension
+                extensions_preceding_user.remove(name)
+
+            extension_graph[name] = cls.required_extensions().union(cls.preceding_extensions())
+
+        if 'user' in extensions.keys():
+            # update the "user" extension with the additional implied preceding extensions
+            extension_graph['user'] = extensions['user'].required_extensions().union(
+                extensions['user'].preceding_extensions()).union(extensions_preceding_user)
+
+        active_extension_list = []
+        for name in topological_sort(extension_graph):
+            active_extension_list.append(extensions[name]())
+        return active_extension_list
 
 def get_docker_client():
     """Simple helper function for pre 2.0 imports"""
@@ -253,7 +334,6 @@ class DockerImageGenerator(object):
             operating_mode = OPERATIONS_NON_INTERACTIVE
             print("No tty detected for stdin forcing non-interactive")
         return operating_mode
-
 
     def generate_docker_cmd(self, command='', **kwargs):
         docker_args = ''
