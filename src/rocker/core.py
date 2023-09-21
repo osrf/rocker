@@ -50,6 +50,7 @@ class RequiredExtensionMissingError(RuntimeError):
     pass
 
 
+class RockerExtension(object):
     """The base class for Rocker extension points"""
 
     def precondition_environment(self, cliargs):
@@ -57,7 +58,7 @@ class RequiredExtensionMissingError(RuntimeError):
         pass
 
     def validate_environment(self, cliargs):
-        """Check that the environment is something that can be used.
+        """ Check that the environment is something that can be used.
         This will check that we're on the right base OS and that the 
         necessary resources are available, like hardware."""
         pass
