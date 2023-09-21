@@ -150,12 +150,12 @@ class RockerCoreTest(unittest.TestCase):
                 return {'foo'}
 
         extension_manager = RockerExtensionManager()
-        extension_manager.available_plugins = dict(foo=Foo, bar=Bar)
+        extension_manager.available_plugins = {'foo': Foo, 'bar': Bar}
 
-        correct_extensions = {'bar': True, 'foo': True}
+        correct_extensions = {'bar': True, 'foo': True, 'extension_blacklist': []}
         extension_manager.get_active_extensions(correct_extensions)
 
-        incorrect_extensions = {'bar': True}
+        incorrect_extensions = {'bar': True, 'extension_blacklist': []}
         self.assertRaises(RequiredExtensionMissingError,
                           extension_manager.get_active_extensions, incorrect_extensions)
 
