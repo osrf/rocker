@@ -134,23 +134,43 @@ class RockerCoreTest(unittest.TestCase):
         self.assertEqual(active_extensions[0].get_name(), 'user')
 
     def test_extension_sorting(self):
+        class AUserExtension(RockerExtension):
+            @classmethod
+            def get_name(cls):
+                return 'a_user_extension'
+
+            @staticmethod
+            def preceding_extensions():
+                return {'user'}
+
+        class User(RockerExtension):
+            @classmethod
+            def get_name(cls):
+                return 'user'
+
         class Foo(RockerExtension):
             @classmethod
             def get_name(cls):
-                return "foo"
+                return 'foo'
 
         class Bar(RockerExtension):
             @classmethod
             def get_name(cls):
-                return "bar"
+                return 'bar'
 
             @staticmethod
-            def desired_extensions():
-                return {"foo"}
+            def preceding_extensions():
+                return {'foo'}
 
-        sorted_extensions = RockerExtensionManager.sort_extensions(extensions={'bar': Bar, 'foo': Foo})
-        self.assertEqual(sorted_extensions[0].get_name(), "foo")
-        self.assertEqual(sorted_extensions[1].get_name(), "bar")
+        sorted_extensions = RockerExtensionManager.sort_extensions(
+            extensions={'a_user_extension': AUserExtension,
+                        'user': User,
+                        'bar': Bar,
+                        'foo': Foo})
+        self.assertEqual(sorted_extensions[0].get_name(), 'foo')
+        self.assertEqual(sorted_extensions[1].get_name(), 'bar')
+        self.assertEqual(sorted_extensions[2].get_name(), 'user')
+        self.assertEqual(sorted_extensions[3].get_name(), 'a_user_extension')
 
     def test_docker_cmd_interactive(self):
         dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
