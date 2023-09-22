@@ -18,6 +18,7 @@
 import argparse
 import em
 import os
+import pwd
 import pytest
 import unittest
 
@@ -150,9 +151,12 @@ class RockerCoreTest(unittest.TestCase):
 
         self.assertNotIn('-it', dig.generate_docker_cmd(mode='non-interactive'))
 
+    def test_docker_user_detection(self):
+        userinfo = pwd.getpwuid(os.getuid())
+        username_detected =  getattr(userinfo, 'pw_' + 'name')
+        self.assertEqual(username_detected, get_user_name())
 
     def test_docker_user_setting(self):
-        self.assertEqual(os.getlogin(), get_user_name())
         parser = argparse.ArgumentParser()
         extension_manager = RockerExtensionManager()
         default_args = {}
