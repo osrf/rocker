@@ -155,6 +155,7 @@ class RockerExtensionManager:
             else:
                 raise ExtensionError(f"Extension '{name}' not found. Is it installed?")
 
+            # add additional reqs for processing not already known about
             known_reqs = set(active_extensions.keys()).union(find_reqs)
             missing_reqs = cls.required_extensions().difference(known_reqs)
             if missing_reqs:
