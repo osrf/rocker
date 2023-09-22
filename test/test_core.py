@@ -17,6 +17,7 @@
 
 import argparse
 import em
+import os
 import pytest
 import unittest
 
@@ -27,6 +28,7 @@ from rocker.core import list_plugins
 from rocker.core import get_docker_client
 from rocker.core import get_rocker_version
 from rocker.core import RockerExtensionManager
+from rocker.core import get_user_name
 
 class RockerCoreTest(unittest.TestCase):
 
@@ -150,6 +152,7 @@ class RockerCoreTest(unittest.TestCase):
 
 
     def test_docker_user_setting(self):
+        self.assertEqual(os.getlogin(), get_user_name())
         parser = argparse.ArgumentParser()
         extension_manager = RockerExtensionManager()
         default_args = {}
