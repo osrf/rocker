@@ -35,8 +35,6 @@ RUN existing_user_by_uid=`getent passwd "@(uid)" | cut -f1 -d: || true` && \
 # Making sure a home directory exists if we haven't mounted the user's home directory explicitly
 RUN mkdir -p "$(dirname "@(dir)")" && mkhomedir_helper @(name)
 @[end if]@
-# Commands below run as the developer user
-USER @(name)
 WORKDIR @(dir)
 @[else]@
 # Detected user is root, which already exists so not creating new user.

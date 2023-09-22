@@ -128,7 +128,7 @@ class RockerCoreTest(unittest.TestCase):
         self.assertIn('non-interactive', help_str)
         self.assertIn('--extension-blacklist', help_str)
 
-        active_extensions = active_extensions = extension_manager.get_active_extensions({'user': True, 'ssh': True, 'extension_blacklist': ['ssh']})
+        active_extensions = extension_manager.get_active_extensions({'user': True, 'ssh': True, 'extension_blacklist': ['ssh']})
         self.assertEqual(len(active_extensions), 1)
         self.assertEqual(active_extensions[0].get_name(), 'user')
 
@@ -147,6 +147,21 @@ class RockerCoreTest(unittest.TestCase):
             self.assertNotIn('-it', dig.generate_docker_cmd(mode='interactive'))
 
         self.assertNotIn('-it', dig.generate_docker_cmd(mode='non-interactive'))
+
+
+    def test_docker_user_setting(self):
+        parser = argparse.ArgumentParser()
+        extension_manager = RockerExtensionManager()
+        default_args = {}
+        extension_manager.extend_cli_parser(parser, default_args)
+        active_extensions = extension_manager.get_active_extensions({'user': True, 'extension_blacklist': ['ssh']})
+        dig = DockerImageGenerator(active_extensions, {'user_override_name': 'foo'}, 'ubuntu:bionic')
+
+        self.assertIn('USER root', dig.dockerfile)
+        self.assertNotIn('USER foo', dig.dockerfile)
+        dig = DockerImageGenerator(active_extensions, {'user': True, 'user_override_name': 'foo'}, 'ubuntu:bionic')
+        self.assertIn('USER root', dig.dockerfile)
+        self.assertIn('USER foo', dig.dockerfile)
 
 
     def test_docker_cmd_nocleanup(self):
