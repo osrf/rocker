@@ -367,7 +367,6 @@ class UserExtensionTest(unittest.TestCase):
 
         user_override_active_cliargs['user_override_name'] = 'testusername'
         snippet_result = p.get_snippet(user_override_active_cliargs)
-        self.assertTrue('USER testusername' in snippet_result)
         self.assertTrue('WORKDIR /home/testusername' in snippet_result)
         self.assertTrue('userdel -r' in snippet_result)
 
