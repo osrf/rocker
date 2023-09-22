@@ -28,7 +28,7 @@ from rocker.core import get_docker_client
 from rocker.core import get_rocker_version
 from rocker.core import RockerExtension
 from rocker.core import RockerExtensionManager
-from rocker.core import RequiredExtensionMissingError
+from rocker.core import ExtensionError
 
 class RockerCoreTest(unittest.TestCase):
 
@@ -134,7 +134,7 @@ class RockerCoreTest(unittest.TestCase):
         self.assertEqual(len(active_extensions), 1)
         self.assertEqual(active_extensions[0].get_name(), 'user')
 
-    def test_required_extensions(self):
+    def test_strict_required_extensions(self):
         class Foo(RockerExtension):
             @classmethod
             def get_name(cls):
@@ -152,12 +152,37 @@ class RockerCoreTest(unittest.TestCase):
         extension_manager = RockerExtensionManager()
         extension_manager.available_plugins = {'foo': Foo, 'bar': Bar}
 
-        correct_extensions = {'bar': True, 'foo': True, 'extension_blacklist': []}
-        extension_manager.get_active_extensions(correct_extensions)
+        correct_extensions_args = {'strict_extension_selection': True, 'bar': True, 'foo': True, 'extension_blacklist': []}
+        extension_manager.get_active_extensions(correct_extensions_args)
 
-        incorrect_extensions = {'bar': True, 'extension_blacklist': []}
-        self.assertRaises(RequiredExtensionMissingError,
-                          extension_manager.get_active_extensions, incorrect_extensions)
+        incorrect_extensions_args = {'strict_extension_selection': True, 'bar': True, 'extension_blacklist': []}
+        self.assertRaises(ExtensionError,
+                          extension_manager.get_active_extensions, incorrect_extensions_args)
+
+    def test_implicit_required_extensions(self):
+        class Foo(RockerExtension):
+            @classmethod
+            def get_name(cls):
+                return 'foo'
+
+        class Bar(RockerExtension):
+            @classmethod
+            def get_name(cls):
+                return 'bar'
+
+            @staticmethod
+            def required_extensions():
+                return {'foo'}
+
+        extension_manager = RockerExtensionManager()
+        extension_manager.available_plugins = {'foo': Foo, 'bar': Bar}
+
+        implicit_extensions_args = {'strict_extension_selection': False, 'bar': True, 'extension_blacklist': []}
+        active_extensions = extension_manager.get_active_extensions(implicit_extensions_args)
+        self.assertEqual(len(active_extensions), 2)
+        self.assertEqual(active_extensions[0].get_name(), 'foo')
+        self.assertEqual(active_extensions[1].get_name(), 'bar')
+
 
     def test_extension_sorting(self):
         class AUserExtension(RockerExtension):

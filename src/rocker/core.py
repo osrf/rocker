@@ -46,7 +46,7 @@ class DependencyMissing(RuntimeError):
     pass
 
 
-class RequiredExtensionMissingError(RuntimeError):
+class ExtensionError(RuntimeError):
     pass
 
 
@@ -129,6 +129,10 @@ class RockerExtensionManager:
         parser.add_argument('--extension-blacklist', nargs='*',
             default=[],
             help='Prevent any of these extensions from being loaded.')
+        parser.add_argument('--strict-extension-selection', action='store_true',
+            help='When enabled, causes an error if required extensions are not explicitly '
+            'called out on the command line. Otherwise, the required extensions will '
+            'automatically be loaded if available.')
 
 
     def get_active_extensions(self, cli_args):
@@ -136,14 +140,30 @@ class RockerExtensionManager:
         Checks for missing dependencies (specified by each extension's
         required_extensions() method) and additionally sorts them.
         """
-        active_extensions = {
-            name: cls for name, cls in self.available_plugins.items()
-            if cls.check_args_for_activation(cli_args) and cls.get_name() not in cli_args['extension_blacklist']
-        }
-        names = set(active_extensions.keys())
-        for name, cls in active_extensions.items():
-            if not cls.required_extensions().issubset(names):
-                raise RequiredExtensionMissingError(f"extension '{name}' is missing required extensions {list(cls.required_extensions())}")
+        active_extensions = {}
+        find_reqs = set([name for name, cls in self.available_plugins.items()
+            if cls.check_args_for_activation(cli_args) and cls.get_name() not in cli_args['extension_blacklist']])
+        while find_reqs:
+            name = find_reqs.pop()
+
+            if name in self.available_plugins.keys():
+                if name not in cli_args['extension_blacklist']:
+                    cls = self.available_plugins[name]
+                    active_extensions[name] = cls
+                else:
+                    raise ExtensionError(f"Extension '{name}' is blacklisted.")
+            else:
+                raise ExtensionError(f"Extension '{name}' not found. Is it installed?")
+
+            known_reqs = set(active_extensions.keys()).union(find_reqs)
+            missing_reqs = cls.required_extensions().difference(known_reqs)
+            if missing_reqs:
+                if cli_args['strict_extension_selection']:
+                    raise ExtensionError(f"Extension '{name}' is missing required extension(s) {list(missing_reqs)}")
+                else:
+                    print(f"Adding implicilty required extension(s) {list(missing_reqs)} required by extension '{name}'")
+                    find_reqs = find_reqs.union(missing_reqs)
+
         return self.sort_extensions(active_extensions)
 
     @staticmethod
@@ -167,7 +187,7 @@ class RockerExtensionManager:
                         yield name
                         next_emitted.append(name)  # remember what was emitted for difference_update()
                 if not next_emitted:
-                    raise ValueError("cyclic dependancy detected: %r" % (next_pending,))
+                    raise ExtensionError("Cyclic dependancy detected: %r" % (next_pending,))
                 pending = next_pending
                 emitted = next_emitted
 
