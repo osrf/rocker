@@ -130,9 +130,9 @@ class RockerCoreTest(unittest.TestCase):
         self.assertIn('non-interactive', help_str)
         self.assertIn('--extension-blacklist', help_str)
 
-        active_extensions = active_extensions = extension_manager.get_active_extensions({'user': True, 'ssh': True, 'extension_blacklist': ['ssh']})
-        self.assertEqual(len(active_extensions), 1)
-        self.assertEqual(active_extensions[0].get_name(), 'user')
+        self.assertRaises(ExtensionError,
+                          extension_manager.get_active_extensions,
+                          {'user': True, 'ssh': True, 'extension_blacklist': ['ssh']})
 
     def test_strict_required_extensions(self):
         class Foo(RockerExtension):

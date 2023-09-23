@@ -141,8 +141,7 @@ class RockerExtensionManager:
         required() method) and additionally sorts them.
         """
         active_extensions = {}
-        find_reqs = set([name for name, cls in self.available_plugins.items()
-            if cls.check_args_for_activation(cli_args) and cls.get_name() not in cli_args['extension_blacklist']])
+        find_reqs = set([name for name, cls in self.available_plugins.items() if cls.check_args_for_activation(cli_args)])
         while find_reqs:
             name = find_reqs.pop()
 
