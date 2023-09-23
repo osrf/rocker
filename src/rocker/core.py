@@ -192,28 +192,8 @@ class RockerExtensionManager:
                 pending = next_pending
                 emitted = next_emitted
 
-        extension_graph = {}
-        # assume all extensions must precede user unless explicitly stated otherwise
-        invoke_after_user = {k for k in extensions.keys() if k != 'user'}
-
-        for name, cls in sorted(extensions.items()):
-            if name == 'user':
-                # the 'user' extension is special and handled differently
-                continue
-
-            if 'user' in cls.invoke_after():
-                # update the set so that the "user" extension can load before this extension
-                invoke_after_user.remove(name)
-
-            extension_graph[name] = cls.invoke_after()
-
-        if 'user' in extensions.keys():
-            # update the 'user' extension with the additional implied invoke after extensions
-            extension_graph['user'] = extensions['user'].invoke_after().union(invoke_after_user)
-
-        active_extension_list = []
-        for name in topological_sort(extension_graph):
-            active_extension_list.append(extensions[name]())
+        extension_graph = {name: cls.invoke_after() for name, cls in sorted(extensions.items())}
+        active_extension_list = [extensions[name]() for name in topological_sort(extension_graph)]
         return active_extension_list
 
 def get_docker_client():
