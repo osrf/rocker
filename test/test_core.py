@@ -146,7 +146,7 @@ class RockerCoreTest(unittest.TestCase):
                 return 'bar'
 
             @staticmethod
-            def required_extensions():
+            def required():
                 return {'foo'}
 
         extension_manager = RockerExtensionManager()
@@ -171,7 +171,7 @@ class RockerCoreTest(unittest.TestCase):
                 return 'bar'
 
             @staticmethod
-            def required_extensions():
+            def required():
                 return {'foo'}
 
         extension_manager = RockerExtensionManager()
@@ -180,25 +180,14 @@ class RockerCoreTest(unittest.TestCase):
         implicit_extensions_args = {'strict_extension_selection': False, 'bar': True, 'extension_blacklist': []}
         active_extensions = extension_manager.get_active_extensions(implicit_extensions_args)
         self.assertEqual(len(active_extensions), 2)
-        self.assertEqual(active_extensions[0].get_name(), 'foo')
-        self.assertEqual(active_extensions[1].get_name(), 'bar')
-
+        # required extensions are not ordered, just check to make sure they are both present
+        if active_extensions[0].get_name() == 'foo':
+            self.assertEqual(active_extensions[1].get_name(), 'bar')
+        else:
+            self.assertEqual(active_extensions[0].get_name(), 'bar')
+            self.assertEqual(active_extensions[1].get_name(), 'foo')
 
     def test_extension_sorting(self):
-        class AUserExtension(RockerExtension):
-            @classmethod
-            def get_name(cls):
-                return 'a_user_extension'
-
-            @staticmethod
-            def preceding_extensions():
-                return {'user'}
-
-        class User(RockerExtension):
-            @classmethod
-            def get_name(cls):
-                return 'user'
-
         class Foo(RockerExtension):
             @classmethod
             def get_name(cls):
@@ -210,18 +199,14 @@ class RockerCoreTest(unittest.TestCase):
                 return 'bar'
 
             @staticmethod
-            def required_extensions():
-                return {'foo'}
+            def invoke_after():
+                return {'foo', 'absent_extension'}
 
         sorted_extensions = RockerExtensionManager.sort_extensions(
-            extensions={'a_user_extension': AUserExtension,
-                        'user': User,
-                        'bar': Bar,
+            extensions={'bar': Bar,
                         'foo': Foo})
         self.assertEqual(sorted_extensions[0].get_name(), 'foo')
         self.assertEqual(sorted_extensions[1].get_name(), 'bar')
-        self.assertEqual(sorted_extensions[2].get_name(), 'user')
-        self.assertEqual(sorted_extensions[3].get_name(), 'a_user_extension')
 
     def test_docker_cmd_interactive(self):
         dig = DockerImageGenerator([], {}, 'ubuntu:bionic')

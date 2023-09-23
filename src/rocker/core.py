@@ -64,20 +64,20 @@ class RockerExtension(object):
         pass
 
     @staticmethod
-    def preceding_extensions() -> typing.Set[str]:
+    def invoke_after() -> typing.Set[str]:
         """
-        Optional extensions. This merely ensures the preceding
-        extensions are applied before this extension when applying
-        snippets and arguments if they are present.
+        This extension should be loaded after the extensions in the returned
+        set. These extensions are not required to be present, but if they are,
+        they will be loaded before this extension.
         """
         return set()
 
     @staticmethod
-    def required_extensions() -> typing.Set[str]:
+    def required() -> typing.Set[str]:
         """
         Ensures the specified extensions are present and combined with
-        this extension. In addition, it orders the application of
-        the required extensions before this extension.
+        this extension. If the required extension should be loaded before
+        this extension, it should also be added to the `invoke_after` set.
         """
         return set()
 
@@ -138,7 +138,7 @@ class RockerExtensionManager:
     def get_active_extensions(self, cli_args):
         """
         Checks for missing dependencies (specified by each extension's
-        required_extensions() method) and additionally sorts them.
+        required() method) and additionally sorts them.
         """
         active_extensions = {}
         find_reqs = set([name for name, cls in self.available_plugins.items()
@@ -157,7 +157,7 @@ class RockerExtensionManager:
 
             # add additional reqs for processing not already known about
             known_reqs = set(active_extensions.keys()).union(find_reqs)
-            missing_reqs = cls.required_extensions().difference(known_reqs)
+            missing_reqs = cls.required().difference(known_reqs)
             if missing_reqs:
                 if cli_args['strict_extension_selection']:
                     raise ExtensionError(f"Extension '{name}' is missing required extension(s) {list(missing_reqs)}")
@@ -173,7 +173,7 @@ class RockerExtensionManager:
         def topological_sort(source: typing.Dict[str, typing.Set[str]]) -> typing.List[str]:
             """Perform a topological sort on names and dependencies and returns the sorted list of names."""
             names = set(source.keys())
-            # dependencies are merely desired, not required, so prune them if they are not active
+            # prune optional dependencies if they are not present (at this point the required check has already occurred)
             pending = [(name, dependencies.intersection(names)) for name, dependencies in source.items()]
             emitted = []
             while pending:
@@ -194,23 +194,22 @@ class RockerExtensionManager:
 
         extension_graph = {}
         # assume all extensions must precede user unless explicitly stated otherwise
-        extensions_preceding_user = {k for k in extensions.keys() if k != 'user'}
+        invoke_after_user = {k for k in extensions.keys() if k != 'user'}
 
         for name, cls in sorted(extensions.items()):
             if name == 'user':
                 # the 'user' extension is special and handled differently
                 continue
 
-            if 'user' in cls.preceding_extensions() or 'user' in cls.required_extensions():
+            if 'user' in cls.invoke_after():
                 # update the set so that the "user" extension can load before this extension
-                extensions_preceding_user.remove(name)
+                invoke_after_user.remove(name)
 
-            extension_graph[name] = cls.required_extensions().union(cls.preceding_extensions())
+            extension_graph[name] = cls.invoke_after()
 
         if 'user' in extensions.keys():
-            # update the "user" extension with the additional implied preceding extensions
-            extension_graph['user'] = extensions['user'].required_extensions().union(
-                extensions['user'].preceding_extensions()).union(extensions_preceding_user)
+            # update the 'user' extension with the additional implied invoke after extensions
+            extension_graph['user'] = extensions['user'].invoke_after().union(invoke_after_user)
 
         active_extension_list = []
         for name in topological_sort(extension_graph):
