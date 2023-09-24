@@ -145,8 +145,7 @@ class RockerCoreTest(unittest.TestCase):
             def get_name(cls):
                 return 'bar'
 
-            @staticmethod
-            def required():
+            def required(self, cli_args):
                 return {'foo'}
 
         extension_manager = RockerExtensionManager()
@@ -170,8 +169,7 @@ class RockerCoreTest(unittest.TestCase):
             def get_name(cls):
                 return 'bar'
 
-            @staticmethod
-            def required():
+            def required(self, cli_args):
                 return {'foo'}
 
         extension_manager = RockerExtensionManager()
@@ -198,15 +196,16 @@ class RockerCoreTest(unittest.TestCase):
             def get_name(cls):
                 return 'bar'
 
-            @staticmethod
-            def invoke_after():
+            def invoke_after(self, cli_args):
                 return {'foo', 'absent_extension'}
 
-        sorted_extensions = RockerExtensionManager.sort_extensions(
-            extensions={'bar': Bar,
-                        'foo': Foo})
-        self.assertEqual(sorted_extensions[0].get_name(), 'foo')
-        self.assertEqual(sorted_extensions[1].get_name(), 'bar')
+        extension_manager = RockerExtensionManager()
+        extension_manager.available_plugins = {'foo': Foo, 'bar': Bar}
+
+        args = {'bar': True, 'foo': True, 'extension_blacklist': []}
+        active_extensions = extension_manager.get_active_extensions(args)
+        self.assertEqual(active_extensions[0].get_name(), 'foo')
+        self.assertEqual(active_extensions[1].get_name(), 'bar')
 
     def test_docker_cmd_interactive(self):
         dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
