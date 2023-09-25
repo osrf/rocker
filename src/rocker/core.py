@@ -325,12 +325,12 @@ class DockerImageGenerator(object):
 def write_files(extensions, args_dict, target_directory):
     all_files = {}
     for active_extension in extensions:
-        for file_name, contents in active_extension.get_files(args_dict).items():
-            if os.path.isabs(file_name):
+        for filepath, contents in active_extension.get_files(args_dict).items():
+            if os.path.isabs(filepath):
                 print('WARNING!! Path %s from extension %s is absolute'
-                      'and cannot be written out, skipping' % (file_name, active_extension.get_name()))
+                      'and cannot be written out, skipping' % (filepath, active_extension.get_name()))
                 continue
-            full_path = os.path.join(target_directory, file_name)
+            full_path = os.path.join(target_directory, filepath)
             pathlib.Path(os.path.dirname(full_path)).mkdir(exist_ok=True, parents=True)
             with open(full_path, 'w') as fh:
                 print('Writing to file %s' % full_path)
