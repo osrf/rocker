@@ -26,7 +26,9 @@ from rocker.core import DockerImageGenerator
 from rocker.core import list_plugins
 from rocker.core import get_docker_client
 from rocker.core import get_rocker_version
+from rocker.core import RockerExtension
 from rocker.core import RockerExtensionManager
+from rocker.core import ExtensionError
 
 class RockerCoreTest(unittest.TestCase):
 
@@ -128,9 +130,82 @@ class RockerCoreTest(unittest.TestCase):
         self.assertIn('non-interactive', help_str)
         self.assertIn('--extension-blacklist', help_str)
 
-        active_extensions = active_extensions = extension_manager.get_active_extensions({'user': True, 'ssh': True, 'extension_blacklist': ['ssh']})
-        self.assertEqual(len(active_extensions), 1)
-        self.assertEqual(active_extensions[0].get_name(), 'user')
+        self.assertRaises(ExtensionError,
+                          extension_manager.get_active_extensions,
+                          {'user': True, 'ssh': True, 'extension_blacklist': ['ssh']})
+
+    def test_strict_required_extensions(self):
+        class Foo(RockerExtension):
+            @classmethod
+            def get_name(cls):
+                return 'foo'
+
+        class Bar(RockerExtension):
+            @classmethod
+            def get_name(cls):
+                return 'bar'
+
+            def required(self, cli_args):
+                return {'foo'}
+
+        extension_manager = RockerExtensionManager()
+        extension_manager.available_plugins = {'foo': Foo, 'bar': Bar}
+
+        correct_extensions_args = {'strict_extension_selection': True, 'bar': True, 'foo': True, 'extension_blacklist': []}
+        extension_manager.get_active_extensions(correct_extensions_args)
+
+        incorrect_extensions_args = {'strict_extension_selection': True, 'bar': True, 'extension_blacklist': []}
+        self.assertRaises(ExtensionError,
+                          extension_manager.get_active_extensions, incorrect_extensions_args)
+
+    def test_implicit_required_extensions(self):
+        class Foo(RockerExtension):
+            @classmethod
+            def get_name(cls):
+                return 'foo'
+
+        class Bar(RockerExtension):
+            @classmethod
+            def get_name(cls):
+                return 'bar'
+
+            def required(self, cli_args):
+                return {'foo'}
+
+        extension_manager = RockerExtensionManager()
+        extension_manager.available_plugins = {'foo': Foo, 'bar': Bar}
+
+        implicit_extensions_args = {'strict_extension_selection': False, 'bar': True, 'extension_blacklist': []}
+        active_extensions = extension_manager.get_active_extensions(implicit_extensions_args)
+        self.assertEqual(len(active_extensions), 2)
+        # required extensions are not ordered, just check to make sure they are both present
+        if active_extensions[0].get_name() == 'foo':
+            self.assertEqual(active_extensions[1].get_name(), 'bar')
+        else:
+            self.assertEqual(active_extensions[0].get_name(), 'bar')
+            self.assertEqual(active_extensions[1].get_name(), 'foo')
+
+    def test_extension_sorting(self):
+        class Foo(RockerExtension):
+            @classmethod
+            def get_name(cls):
+                return 'foo'
+
+        class Bar(RockerExtension):
+            @classmethod
+            def get_name(cls):
+                return 'bar'
+
+            def invoke_after(self, cli_args):
+                return {'foo', 'absent_extension'}
+
+        extension_manager = RockerExtensionManager()
+        extension_manager.available_plugins = {'foo': Foo, 'bar': Bar}
+
+        args = {'bar': True, 'foo': True, 'extension_blacklist': []}
+        active_extensions = extension_manager.get_active_extensions(args)
+        self.assertEqual(active_extensions[0].get_name(), 'foo')
+        self.assertEqual(active_extensions[1].get_name(), 'bar')
 
     def test_docker_cmd_interactive(self):
         dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
@@ -147,7 +222,6 @@ class RockerCoreTest(unittest.TestCase):
             self.assertNotIn('-it', dig.generate_docker_cmd(mode='interactive'))
 
         self.assertNotIn('-it', dig.generate_docker_cmd(mode='non-interactive'))
-
 
     def test_docker_cmd_nocleanup(self):
         dig = DockerImageGenerator([], {}, 'ubuntu:bionic')

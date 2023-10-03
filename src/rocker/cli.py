@@ -20,6 +20,7 @@ from .core import DockerImageGenerator
 from .core import get_rocker_version
 from .core import RockerExtensionManager
 from .core import DependencyMissing
+from .core import ExtensionError
 
 from .os_detector import detect_os
 
@@ -54,9 +55,11 @@ def main():
         args_dict['mode'] = OPERATIONS_DRY_RUN
         print('DEPRECATION Warning: --noexecute is deprecated for --mode dry-run please switch your usage by December 2020')
     
-    active_extensions = extension_manager.get_active_extensions(args_dict)
-    # Force user to end if present otherwise it will break other extensions
-    active_extensions.sort(key=lambda e:e.get_name().startswith('user'))
+    try:
+        active_extensions = extension_manager.get_active_extensions(args_dict)
+    except ExtensionError as e:
+        print(f"ERROR! {str(e)}")
+        return 1
     print("Active extensions %s" % [e.get_name() for e in active_extensions])
 
     base_image = args.image
