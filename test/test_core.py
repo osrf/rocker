@@ -244,6 +244,44 @@ class RockerCoreTest(unittest.TestCase):
         dig = DockerImageGenerator(active_extensions, {'user': True, 'user_override_name': 'foo'}, 'ubuntu:bionic')
         self.assertIn('USER root', dig.dockerfile)
         self.assertIn('USER foo', dig.dockerfile)
+    
+    def test_docker_user_snippet(self):
+
+        root_snippet_content = "RUN echo run as root"
+        user_snippet_content = "RUN echo run as user"
+
+        class UserSnippet(RockerExtension):
+            def __init__(self):
+                self.name = 'usersnippet'
+
+            @classmethod
+            def get_name(cls):
+                return 'usersnippet'
+
+            def get_snippet(self, cli_args):
+                return root_snippet_content
+
+
+            def get_user_snippet(self, cli_args):
+                return user_snippet_content
+
+        extension_manager = RockerExtensionManager()
+        extension_manager.available_plugins = {'usersnippet': UserSnippet}
+        active_extensions = extension_manager.get_active_extensions({'user': True, 'usersnippet': UserSnippet, 'extension_blacklist': ['ssh']})
+        self.assertTrue(active_extensions)
+
+        # No user snippet
+        mock_cli_args = {'user': False, 'usersnippet': True, 'user_override_name': 'foo'}
+        dig = DockerImageGenerator(active_extensions, mock_cli_args, 'ubuntu:bionic')
+        self.assertIn('USER root', dig.dockerfile)
+        self.assertNotIn('USER foo', dig.dockerfile)
+
+        # User snippet added
+        mock_cli_args = {'user': True, 'usersnippet': True, 'user_override_name': 'foo'}
+        dig = DockerImageGenerator(active_extensions, mock_cli_args, 'ubuntu:bionic')
+        self.assertIn(root_snippet_content, dig.dockerfile)
+        self.assertIn('USER foo', dig.dockerfile)
+        self.assertIn(user_snippet_content, dig.dockerfile)
 
     def test_docker_cmd_nocleanup(self):
         dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
