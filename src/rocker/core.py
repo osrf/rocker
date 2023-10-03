@@ -15,6 +15,7 @@
 from collections import OrderedDict
 import io
 import os
+import pwd
 import re
 import sys
 
@@ -83,6 +84,11 @@ class RockerExtension(object):
         return ''
 
     def get_snippet(self, cliargs):
+        """ Get a dockerfile snippet to be executed as ROOT."""
+        return ''
+
+    def get_user_snippet(self, cliargs):
+        """ Get a dockerfile snippet to be executed after switchingto the expected USER."""
         return ''
 
     def get_files(self, cliargs):
@@ -210,6 +216,9 @@ def get_docker_client():
             ' This is usually by being a member of the docker group.'
             ' The underlying error was:\n"""\n%s\n"""\n' % ex)
 
+def get_user_name():
+    userinfo = pwd.getpwuid(os.getuid())
+    return getattr(userinfo, 'pw_' + 'name')
 
 def docker_build(docker_client = None, output_callback = None, **kwargs):
     image_id = None
@@ -415,14 +424,27 @@ def write_files(extensions, args_dict, target_directory):
 
 def generate_dockerfile(extensions, args_dict, base_image):
     dockerfile_str = ''
+    # Preamble snippets
     for el in extensions:
         dockerfile_str += '# Preamble from extension [%s]\n' % el.name
         dockerfile_str += el.get_preamble(args_dict) + '\n'
     dockerfile_str += '\nFROM %s\n' % base_image
+    # ROOT snippets
     dockerfile_str += 'USER root\n'
     for el in extensions:
         dockerfile_str += '# Snippet from extension [%s]\n' % el.name
         dockerfile_str += el.get_snippet(args_dict) + '\n'
+    # Set USER if user extension activated
+    if 'user' in args_dict and args_dict['user']:
+        if 'user_override_name' in args_dict and args_dict['user_override_name']:
+            username = args_dict['user_override_name']
+        else:
+            username = get_user_name()
+        dockerfile_str += f'USER {username}\n'
+    # USER snippets
+    for el in extensions:
+        dockerfile_str += '# User Snippet from extension [%s]\n' % el.name
+        dockerfile_str += el.get_user_snippet(args_dict) + '\n'
     return dockerfile_str
 
 
