@@ -33,6 +33,7 @@ import fcntl
 import signal
 import struct
 import termios
+import typing
 
 SYS_STDOUT = sys.stdout
 
@@ -43,6 +44,10 @@ OPERATION_MODES = [OPERATIONS_INTERACTIVE, OPERATIONS_NON_INTERACTIVE , OPERATIO
 
 
 class DependencyMissing(RuntimeError):
+    pass
+
+
+class ExtensionError(RuntimeError):
     pass
 
 
@@ -58,6 +63,22 @@ class RockerExtension(object):
         This will check that we're on the right base OS and that the 
         necessary resources are available, like hardware."""
         pass
+
+    def invoke_after(self, cliargs) -> typing.Set[str]:
+        """
+        This extension should be loaded after the extensions in the returned
+        set. These extensions are not required to be present, but if they are,
+        they will be loaded before this extension.
+        """
+        return set()
+
+    def required(self, cliargs) -> typing.Set[str]:
+        """
+        Ensures the specified extensions are present and combined with
+        this extension. If the required extension should be loaded before
+        this extension, it should also be added to the `invoke_after` set.
+        """
+        return set()
 
     def get_preamble(self, cliargs):
         return ''
@@ -112,13 +133,70 @@ class RockerExtensionManager:
         parser.add_argument('--extension-blacklist', nargs='*',
             default=[],
             help='Prevent any of these extensions from being loaded.')
+        parser.add_argument('--strict-extension-selection', action='store_true',
+            help='When enabled, causes an error if required extensions are not explicitly '
+            'called out on the command line. Otherwise, the required extensions will '
+            'automatically be loaded if available.')
 
 
     def get_active_extensions(self, cli_args):
-        active_extensions = [e() for e in self.available_plugins.values() if e.check_args_for_activation(cli_args) and e.get_name() not in cli_args['extension_blacklist']]
-        active_extensions.sort(key=lambda e:e.get_name().startswith('user'))
-        return active_extensions
+        """
+        Checks for missing dependencies (specified by each extension's
+        required() method) and additionally sorts them.
+        """
+        def sort_extensions(extensions, cli_args):
 
+            def topological_sort(source: typing.Dict[str, typing.Set[str]]) -> typing.List[str]:
+                """Perform a topological sort on names and dependencies and returns the sorted list of names."""
+                names = set(source.keys())
+                # prune optional dependencies if they are not present (at this point the required check has already occurred)
+                pending = [(name, dependencies.intersection(names)) for name, dependencies in source.items()]
+                emitted = []
+                while pending:
+                    next_pending = []
+                    next_emitted = []
+                    for entry in pending:
+                        name, deps = entry
+                        deps.difference_update(emitted)  # remove dependencies already emitted
+                        if deps:  # still has dependencies? recheck during next pass
+                            next_pending.append(entry)
+                        else:  # no more dependencies? time to emit
+                            yield name
+                            next_emitted.append(name)  # remember what was emitted for difference_update()
+                    if not next_emitted:
+                        raise ExtensionError("Cyclic dependancy detected: %r" % (next_pending,))
+                    pending = next_pending
+                    emitted = next_emitted
+
+            extension_graph = {name: cls.invoke_after(cli_args) for name, cls in sorted(extensions.items())}
+            active_extension_list = [extensions[name] for name in topological_sort(extension_graph)]
+            return active_extension_list
+
+        active_extensions = {}
+        find_reqs = set([name for name, cls in self.available_plugins.items() if cls.check_args_for_activation(cli_args)])
+        while find_reqs:
+            name = find_reqs.pop()
+
+            if name in self.available_plugins.keys():
+                if name not in cli_args['extension_blacklist']:
+                    ext = self.available_plugins[name]()
+                    active_extensions[name] = ext
+                else:
+                    raise ExtensionError(f"Extension '{name}' is blacklisted.")
+            else:
+                raise ExtensionError(f"Extension '{name}' not found. Is it installed?")
+
+            # add additional reqs for processing not already known about
+            known_reqs = set(active_extensions.keys()).union(find_reqs)
+            missing_reqs = ext.required(cli_args).difference(known_reqs)
+            if missing_reqs:
+                if cli_args['strict_extension_selection']:
+                    raise ExtensionError(f"Extension '{name}' is missing required extension(s) {list(missing_reqs)}")
+                else:
+                    print(f"Adding implicilty required extension(s) {list(missing_reqs)} required by extension '{name}'")
+                    find_reqs = find_reqs.union(missing_reqs)
+
+        return sort_extensions(active_extensions, cli_args)
 
 def get_docker_client():
     """Simple helper function for pre 2.0 imports"""
@@ -262,7 +340,6 @@ class DockerImageGenerator(object):
             operating_mode = OPERATIONS_NON_INTERACTIVE
             print("No tty detected for stdin forcing non-interactive")
         return operating_mode
-
 
     def generate_docker_cmd(self, command='', **kwargs):
         docker_args = ''
