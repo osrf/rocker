@@ -48,8 +48,9 @@ class TestFileInjection(RockerExtension):
 
     def get_files(self, cliargs):
         all_files = {}
-        all_files['test_file.txt'] = """The quick brown fox jumped over the lazy dog.
-%s""" % cliargs
+        all_files['test_file.txt'] = """The quick brown fox jumped over the lazy dog. %s""" % cliargs
+        all_files['path/to/test_file.txt'] = """The quick brown fox jumped over the lazy dog. %s""" % cliargs
+        all_files['../outside/path/to/test_file.txt'] = """Path outside directory should be skipped"""
         all_files['/absolute.txt'] = """Absolute file path should be skipped"""
         return all_files
 
@@ -89,4 +90,11 @@ class FileInjectionExtensionTest(unittest.TestCase):
                 self.assertIn('test_key', content)
                 self.assertIn('test_value', content)
 
+            with open(os.path.join(td, 'path/to/test_file.txt'), 'r') as fh:
+                content = fh.read()
+                self.assertIn('quick brown', content)
+                self.assertIn('test_key', content)
+                self.assertIn('test_value', content)
+
+            self.assertFalse(os.path.exists('../outside/path/to/test_file.txt'))
             self.assertFalse(os.path.exists('/absolute.txt'))

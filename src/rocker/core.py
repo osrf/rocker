@@ -30,6 +30,7 @@ import docker
 import pexpect
 
 import fcntl
+from pathlib import Path
 import signal
 import struct
 import termios
@@ -410,12 +411,17 @@ class DockerImageGenerator(object):
 def write_files(extensions, args_dict, target_directory):
     all_files = {}
     for active_extension in extensions:
-        for file_name, contents in active_extension.get_files(args_dict).items():
-            if os.path.isabs(file_name):
+        for file_path, contents in active_extension.get_files(args_dict).items():
+            if os.path.isabs(file_path):
                 print('WARNING!! Path %s from extension %s is absolute'
-                      'and cannot be written out, skipping' % (file_name, active_extension.get_name()))
+                      'and cannot be written out, skipping' % (file_path, active_extension.get_name()))
                 continue
-            full_path = os.path.join(target_directory, file_name)
+            full_path = os.path.join(target_directory, file_path)
+            if Path(target_directory).resolve() not in Path(full_path).resolve().parents:
+                print('WARNING!! Path %s from extension %s is outside target directory'
+                      'and cannot be written out, skipping' % (file_path, active_extension.get_name()))
+                continue
+            Path(os.path.dirname(full_path)).mkdir(exist_ok=True, parents=True)
             with open(full_path, 'w') as fh:
                 print('Writing to file %s' % full_path)
                 fh.write(contents)
