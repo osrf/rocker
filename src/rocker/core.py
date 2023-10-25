@@ -246,7 +246,7 @@ def docker_build(docker_client = None, output_callback = None, **kwargs):
             image_id = match.group(1)
 
     if image_id:
-        return image_id
+        return docker_client.inspect_image(image_id).get('Id')
     else:
         print("no more output and success not detected")
         return None
