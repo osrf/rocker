@@ -25,7 +25,7 @@ from .core import ExtensionError
 from .os_detector import detect_os
 
 
-def main():
+def main(implementation='rocker'):
 
     parser = argparse.ArgumentParser(
         description='A tool for running docker with extra options',
@@ -37,7 +37,6 @@ def main():
     parser.add_argument('--nocleanup', action='store_true', help='do not remove the docker container when stopped')
     parser.add_argument('--persist-image', action='store_true', help='do not remove the docker image when stopped', default=False) #TODO(tfoote) Add a name to it if persisting
     parser.add_argument('--pull', action='store_true')
-    parser.add_argument('--use-podman', action='store_true')
     parser.add_argument('--version', action='version',
         version='%(prog)s ' + get_rocker_version())
 
@@ -51,6 +50,7 @@ def main():
 
     args = parser.parse_args()
     args_dict = vars(args)
+    args_dict['use_podman'] = implementation == 'podman'
 
     if args.noexecute:
         from .core import OPERATIONS_DRY_RUN
@@ -95,3 +95,10 @@ def detect_image_os():
         return 0
     else:
         return 1
+
+def rocker_main():
+    return main(implementation='rocker')
+
+
+def rodman_main():
+    return main(implementation='podman')
