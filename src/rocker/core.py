@@ -422,7 +422,8 @@ def write_files(extensions, args_dict, target_directory):
                       'and cannot be written out, skipping' % (file_path, active_extension.get_name()))
                 continue
             Path(os.path.dirname(full_path)).mkdir(exist_ok=True, parents=True)
-            with open(full_path, 'w') as fh:
+            mode = 'wb' if isinstance(contents, bytes) else 'w' # check to see if contents should be written as binary
+            with open(full_path, mode) as fh:
                 print('Writing to file %s' % full_path)
                 fh.write(contents)
     return all_files
