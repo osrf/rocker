@@ -170,15 +170,6 @@ After the ekf converges,
 
 You can send a takeoff command and then click to command the vehicle to fly to a point on the map.
 
-
-## Fly a plane
-
-Example usage with a plane 
-
-    rocker --nvidia --x11 --user --home --pull --pulse tfoote/drone_demo roslaunch sitl_launcher plane_demo.launch world_name:=worlds/plane.world gui:=false
-
-In QGroundControl go ahead and make a mission, upload it, and then start the mission.
-
 ## ROS 2 rviz
 
     rocker --nvidia --x11 osrf/ros:crystal-desktop rviz2
