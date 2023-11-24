@@ -14,7 +14,7 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install Dependencies And Self
+    - name: Install Test Dependencies And Self
       run: |
         python -m pip install --upgrade pip setuptools wheel
         python -m pip install -e .[test] codecov pytest-cov
@@ -24,3 +24,32 @@ jobs:
         run: python -m pytest -s -v --cov=rocker -m "not nvidia"
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
+  cli_smoke_tests:
+    name: CLI smoke tests
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        python-version: [3.8, '3.10']
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install Dependencies And Self
+      run: |
+        python -m pip install --upgrade pip setuptools wheel
+        python -m pip install -e .
+    - name: Check os_detector script
+      run: |
+        detect_docker_image_os ubuntu
+    - name: Check detector help
+      run: |
+        detect_docker_image_os ubuntu -h
+    - name: Check main runs
+      run: |
+        rocker ubuntu 'true'
+    - name: Check rocker help
+      run: |
+        rocker -h
+
