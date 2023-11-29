@@ -49,7 +49,7 @@ class X11(RockerExtension):
         return "  -e DISPLAY -e TERM \
   -e QT_X11_NO_MITSHM=1 \
   -e XAUTHORITY=%(xauth)s -v %(xauth)s:%(xauth)s \
-  -v /tmp/.X11-unix:/tmp/.X11-unix \
+  -v /tmp/.X11-unix:/tmp/.X11-unix -v /dev:/dev \
   -v /etc/localtime:/etc/localtime:ro " % locals()
 
     def precondition_environment(self, cliargs):
