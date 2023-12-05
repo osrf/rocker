@@ -25,6 +25,7 @@ import subprocess
 import sys
 
 from .core import get_docker_client
+from .em import empy_expand
 
 
 def name_to_argument(name):
@@ -81,7 +82,7 @@ class DevHelpers(RockerExtension):
 
     def get_snippet(self, cliargs):
         snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
-        return em.expand(snippet, globals=self.get_environment_subs())
+        return empy_expand(snippet, self.get_environment_subs())
 
     @staticmethod
     def register_arguments(parser, defaults={}):
@@ -238,7 +239,7 @@ class PulseAudio(RockerExtension):
 
     def get_snippet(self, cliargs):
         snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
-        return em.expand(snippet, globals=self.get_environment_subs())
+        return empy_expand(snippet, self.get_environment_subs())
 
     def get_docker_args(self, cliargs):
         args = ' -v /run/user/%(user_id)s/pulse:/run/user/%(user_id)s/pulse --device /dev/snd '\
@@ -318,7 +319,7 @@ class User(RockerExtension):
                 substitutions['shell'] = None
             else:
                 substitutions['shell'] =  cliargs['user_override_shell']
-        return em.expand(snippet, globals=substitutions)
+        return empy_expand(snippet, substitutions)
 
     @staticmethod
     def register_arguments(parser, defaults={}):

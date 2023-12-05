@@ -27,6 +27,8 @@ from .os_detector import detect_os
 from .extensions import name_to_argument
 from .core import get_docker_client
 from .core import RockerExtension
+from .em import empy_expand
+
 
 def get_docker_version():
     docker_version_raw = get_docker_client().version()['Version']
@@ -116,11 +118,11 @@ class Nvidia(RockerExtension):
 
     def get_preamble(self, cliargs):
         preamble = pkgutil.get_data('rocker', 'templates/%s_preamble.Dockerfile.em' % self.name).decode('utf-8')
-        return em.expand(preamble, globals=self.get_environment_subs(cliargs))
+        return empy_expand(preamble, self.get_environment_subs(cliargs))
 
     def get_snippet(self, cliargs):
         snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
-        return em.expand(snippet, globals=self.get_environment_subs(cliargs))
+        return empy_expand(snippet, self.get_environment_subs(cliargs))
 
     def get_docker_args(self, cliargs):
         force_flag = cliargs.get('nvidia', None)
@@ -184,11 +186,11 @@ class Cuda(RockerExtension):
     def get_preamble(self, cliargs):
         return ''
         # preamble = pkgutil.get_data('rocker', 'templates/%s_preamble.Dockerfile.em' % self.name).decode('utf-8')
-        # return em.expand(preamble, globals=self.get_environment_subs(cliargs))
+        # return empy_expand(preamble, self.get_environment_subs(cliargs))
 
     def get_snippet(self, cliargs):
         snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
-        return em.expand(snippet, globals=self.get_environment_subs(cliargs))
+        return empy_expand(snippet, self.get_environment_subs(cliargs))
 
     def get_docker_args(self, cliargs):
         return ""
