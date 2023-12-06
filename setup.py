@@ -4,7 +4,7 @@ import os
 from setuptools import setup
 
 install_requires = [
-    'empy<4',
+    'empy',
     'pexpect',
     'packaging',
     'urllib3',
