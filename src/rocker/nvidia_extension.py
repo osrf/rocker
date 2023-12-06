@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import os
-import em
 import getpass
 import tempfile
 from packaging.version import Version

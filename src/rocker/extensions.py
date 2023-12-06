@@ -15,7 +15,6 @@
 import grp
 import os
 import docker
-import em
 import getpass
 import pwd
 import pkgutil
