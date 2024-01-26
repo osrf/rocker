@@ -461,11 +461,26 @@ def generate_dockerfile(extensions, args_dict, base_image):
     return dockerfile_str
 
 
+def list_entry_points():
+    entry_points = importlib_metadata.entry_points()
+    if hasattr(entry_points, 'select'):
+        styles_groups = entry_points.select(group='flake8_import_order.styles')
+    else:
+        styles_groups = entry_points.get('flake8_import_order.styles', [])
+
+    return styles_groups
+
 def list_plugins(extension_point='rocker.extensions'):
+
+    all_entry_points = importlib_metadata.entry_points()
+    if hasattr(all_entry_points, 'select'):
+        rocker_extensions = all_entry_points.select(group=extension_point)
+    else:
+        rocker_extensions = all_entry_points.get(extension_point, [])
+
     unordered_plugins = {
     entry_point.name: entry_point.load()
-    for entry_point
-    in importlib_metadata.entry_points().select(group=extension_point)
+    for entry_point in rocker_extensions
     }
     # Order plugins by extension point name for consistent ordering below
     plugin_names = list(unordered_plugins.keys())
