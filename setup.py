@@ -3,8 +3,11 @@
 import os
 from setuptools import setup
 
+# importlib-metadata dependency can be removed when RHEL8 and other 3.6 based systems are not in support cycles
+
 install_requires = [
     'empy',
+    'importlib-metadata; python_version < "3.8"',
     'pexpect',
     'packaging',
     'urllib3',
