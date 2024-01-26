@@ -19,7 +19,13 @@ import pwd
 import re
 import sys
 
-import pkg_resources
+# importlib-metadata dependency can be removed when RHEL8 and other 3.6 based systems are not in support cycles
+if sys.version_info >= (3, 8):
+    import importlib.metadata as importlib_metadata
+else:
+    import importlib_metadata
+
+
 import pkgutil
 from requests.exceptions import ConnectionError
 import shlex
@@ -459,7 +465,7 @@ def list_plugins(extension_point='rocker.extensions'):
     unordered_plugins = {
     entry_point.name: entry_point.load()
     for entry_point
-    in pkg_resources.iter_entry_points(extension_point)
+    in importlib_metadata.entry_points().select(group=extension_point)
     }
     # Order plugins by extension point name for consistent ordering below
     plugin_names = list(unordered_plugins.keys())
@@ -468,4 +474,4 @@ def list_plugins(extension_point='rocker.extensions'):
 
 
 def get_rocker_version():
-    return pkg_resources.require('rocker')[0].version
+    return importlib_metadata.version('rocker')
