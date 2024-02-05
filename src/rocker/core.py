@@ -439,13 +439,13 @@ def generate_dockerfile(extensions, args_dict, base_image):
     dockerfile_str = ''
     # Preamble snippets
     for el in extensions:
-        dockerfile_str += '# Preamble from extension [%s]\n' % el.name
+        dockerfile_str += '# Preamble from extension [%s]\n' % el.get_name()
         dockerfile_str += el.get_preamble(args_dict) + '\n'
     dockerfile_str += '\nFROM %s\n' % base_image
     # ROOT snippets
     dockerfile_str += 'USER root\n'
     for el in extensions:
-        dockerfile_str += '# Snippet from extension [%s]\n' % el.name
+        dockerfile_str += '# Snippet from extension [%s]\n' % el.get_name()
         dockerfile_str += el.get_snippet(args_dict) + '\n'
     # Set USER if user extension activated
     if 'user' in args_dict and args_dict['user']:
@@ -456,7 +456,7 @@ def generate_dockerfile(extensions, args_dict, base_image):
         dockerfile_str += f'USER {username}\n'
     # USER snippets
     for el in extensions:
-        dockerfile_str += '# User Snippet from extension [%s]\n' % el.name
+        dockerfile_str += '# User Snippet from extension [%s]\n' % el.get_name()
         dockerfile_str += el.get_user_snippet(args_dict) + '\n'
     return dockerfile_str
 
