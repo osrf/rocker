@@ -45,19 +45,19 @@ class VolumeTest(unittest.TestCase):
         """Passing source path"""
         arg = [[self._curr_path]]
         expected = [['{}:{}'.format(self._curr_path, self._curr_path)]]
-        mock_cliargs = {Volume.name: arg}
+        mock_cliargs = {Volume.get_name(): arg}
         self._test_equals_args(mock_cliargs, expected)
 
     def test_args_twopaths(self):
         """Passing source path, dest path"""
         arg = ["{}:{}".format(self._curr_path, self._virtual_path)]
-        mock_cliargs = {Volume.name: [arg]}
+        mock_cliargs = {Volume.get_name(): [arg]}
         self._test_equals_args(mock_cliargs, arg)
 
     def test_args_twopaths_opt(self):
         """Passing source path, dest path, and Docker's volume option"""
         arg = ["{}:{}:ro".format(self._curr_path, self._virtual_path)]
-        mock_cliargs = {Volume.name: [arg]}
+        mock_cliargs = {Volume.get_name(): [arg]}
         self._test_equals_args(mock_cliargs, arg)
 
     def test_args_two_volumes(self):
@@ -65,5 +65,5 @@ class VolumeTest(unittest.TestCase):
         arg_first = ["{}:{}:ro".format(self._curr_path, self._virtual_path)]
         arg_second = ["/tmp:{}".format(os.path.join(self._virtual_path, "tmp"))]
         args = [arg_first, arg_second]
-        mock_cliargs = {Volume.name: args}
+        mock_cliargs = {Volume.get_name(): args}
         self._test_equals_args(mock_cliargs, args)
