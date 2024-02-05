@@ -21,11 +21,9 @@ from rocker.extensions import RockerExtension
 
 class Ssh(RockerExtension):
 
-    name = 'ssh'
-
-    @classmethod
-    def get_name(cls):
-        return cls.name
+    @staticmethod
+    def get_name():
+        return 'ssh'
 
     def precondition_environment(self, cli_args):
         pass
