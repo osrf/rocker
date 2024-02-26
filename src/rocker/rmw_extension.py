@@ -54,8 +54,8 @@ class RMW(RockerExtension):
     @staticmethod
     def register_arguments(parser, defaults={}):
         parser.add_argument(name_to_argument(RMW.get_name()),
-            default=defaults.get('rmw', 'fastrtps'),
-            nargs='?',
+            default=defaults.get('rmw', None),
+            nargs='*',
             help="Set the default RMW implementation")
 
         # parser.add_argument('rosdistro',
