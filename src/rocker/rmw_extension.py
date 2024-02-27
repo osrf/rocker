@@ -22,6 +22,18 @@ from rocker.extensions import name_to_argument
 
 
 class RMW(RockerExtension):
+    rmw_map = {
+        # TODO(tfoote) Remove extra ddscommon working around recent upgrade of dds-common from 2.x to 3.x which is out of date in the image
+        'cyclonedds': ['ros-${ROS_DISTRO}-rmw-cyclonedds-cpp', 'ros-${ROS_DISTRO}-rmw-dds-common'],
+        'fastrtps'  : ['ros-${ROS_DISTRO}-rmw-fastrtps-cpp'],
+        # TODO(tfoote) Enable connext with license acceptance method
+        # 'connextdds': ['ros-${ROS_DISTRO}-rmw-connextdds'],
+    }
+
+    @staticmethod
+    def get_package_names(rmw_name):
+        return RMW.rmw_map[rmw_name]
+
     @staticmethod
     def get_name():
         return 'rmw'
@@ -31,7 +43,7 @@ class RMW(RockerExtension):
         self.name = RMW.get_name()
 
     def get_docker_args(self, cli_args):
-        implementation = cli_args.get('rmw')
+        implementation = cli_args.get('rmw')[0]
         args = f' -e RMW_IMPLEMENTATION=rmw_{implementation}_cpp'
         return args #% self.get_environment_subs()
 
@@ -44,10 +56,14 @@ class RMW(RockerExtension):
         return ''
 
     def get_snippet(self, cliargs):
-        snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.get_name()).decode('utf-8')
+        snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % RMW.get_name()).decode('utf-8')
         data = self.get_environment_subs()
         # data['rosdistro'] = cliargs.get('rosdistro', 'rolling')
-        data['rmw'] = cliargs.get('rmw', None)
+        rmw = cliargs.get('rmw', None)
+        if rmw:
+            rmw = rmw[0]
+        data['rmw'] = rmw
+        data['packages'] = RMW.get_package_names(rmw)
         # data['rosdistro'] = 'rolling'
         return empy_expand(snippet, data)
 
@@ -55,7 +71,8 @@ class RMW(RockerExtension):
     def register_arguments(parser, defaults={}):
         parser.add_argument(name_to_argument(RMW.get_name()),
             default=defaults.get('rmw', None),
-            nargs='*',
+            nargs=1,
+            choices=RMW.rmw_map.keys(),
             help="Set the default RMW implementation")
 
         # parser.add_argument('rosdistro',
