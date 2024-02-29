@@ -60,6 +60,7 @@ kwargs = {
             'port = rocker.extensions:Port',
             'privileged = rocker.extensions:Privileged',
             'pulse = rocker.extensions:PulseAudio',
+            'rmw = rocker.rmw_extension:RMW',
             'ssh = rocker.ssh_extension:Ssh',
             'user = rocker.extensions:User',
             'volume = rocker.volume_extension:Volume',
