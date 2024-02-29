@@ -154,7 +154,7 @@ Then you can run pytest.
 Notes:
 
 - Make sure to use the python3 instance of pytest from inside the environment.
-- The tests include an nvidia test which assumes you're using a machine with an nvidia gpu.
+- The tests include an nvidia test which assumes you're using a machine with an nvidia gpu. To skip them use `-m "not nvidia"`
 
 
 # Example usage

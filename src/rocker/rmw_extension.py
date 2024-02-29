@@ -42,7 +42,10 @@ class RMW(RockerExtension):
         self.name = RMW.get_name()
 
     def get_docker_args(self, cli_args):
-        implementation = cli_args.get('rmw')[0]
+        rmw_config = cli_args.get('rmw')
+        if not rmw_config:
+            return '' # not active
+        implementation = rmw_config[0]
         args = f' -e RMW_IMPLEMENTATION=rmw_{implementation}_cpp'
         return args #% self.get_environment_subs()
 
@@ -61,6 +64,8 @@ class RMW(RockerExtension):
         rmw = cliargs.get('rmw', None)
         if rmw:
             rmw = rmw[0]
+        else:
+            return '' # rmw not active
         data['rmw'] = rmw
         data['packages'] = RMW.get_package_names(rmw)
         # data['rosdistro'] = 'rolling'

@@ -10,7 +10,7 @@ RUN \
      @(' '.join(packages)) \
    && apt-get clean ;\
   else \
-   echo "Found rmw implementation no need to install" ; \
+   echo "Found rmw packages @(' '.join(packages)) no need to install" ; \
   fi
 @[ end if ]@
 
