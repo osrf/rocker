@@ -51,7 +51,6 @@ class rmwExtensionTest(unittest.TestCase):
         
 
         mock_cliargs = {'rmw': ['cyclonedds']}
-        # TODO self.assertEqual(p.get_snippet(mock_cliargs), '')
         self.assertEqual(p.get_preamble(mock_cliargs), '')
         args = p.get_docker_args(mock_cliargs)
         self.assertIn('-e RMW_IMPLEMENTATION=rmw_cyclonedds_cpp', args)
