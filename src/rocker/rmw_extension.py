@@ -23,8 +23,7 @@ from rocker.extensions import name_to_argument
 
 class RMW(RockerExtension):
     rmw_map = {
-        # TODO(tfoote) Remove extra ddscommon working around recent upgrade of dds-common from 2.x to 3.x which is out of date in the image
-        'cyclonedds': ['ros-${ROS_DISTRO}-rmw-cyclonedds-cpp', 'ros-${ROS_DISTRO}-rmw-dds-common'],
+        'cyclonedds': ['ros-${ROS_DISTRO}-rmw-cyclonedds-cpp'],
         'fastrtps'  : ['ros-${ROS_DISTRO}-rmw-fastrtps-cpp'],
         # TODO(tfoote) Enable connext with license acceptance method
         # 'connextdds': ['ros-${ROS_DISTRO}-rmw-connextdds'],
