@@ -6,15 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
-## Unreleased
+## [v0.2.15](https://github.com/osrf/rocker/releases/tag/v0.2.15) - 2024-03-01
 
-<small>[Compare with latest](https://github.com/osrf/rocker/compare/v0.2.14...HEAD)</small>
+<small>[Compare with v0.2.14](https://github.com/osrf/rocker/compare/v0.2.14...v0.2.15)</small>
 
 ### Added
 
+- Add changelog ([39a2842](https://github.com/osrf/rocker/commit/39a2842d03fec73b4b0d70c3922c4ab1c93c2cc0) by Tully Foote).
 - Add a shorthand option for switching to alternate rmws (#268) ([35e68c1](https://github.com/osrf/rocker/commit/35e68c17232a50cfb3a781b066e2c0d6691cb07e) by Tully Foote).
 
-<!-- insertion marker -->
 ## [v0.2.14](https://github.com/osrf/rocker/releases/tag/v0.2.14) - 2024-01-26
 
 <small>[Compare with v0.2.13](https://github.com/osrf/rocker/compare/v0.2.13...v0.2.14)</small>
