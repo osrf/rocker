@@ -39,12 +39,9 @@ class ExtensionsTest(unittest.TestCase):
         self.assertEqual(name_to_argument('as-df'), '--as-df')
 
 class TestFileInjection(RockerExtension):
-
-    name = 'test_file_injection'
-
-    @classmethod
-    def get_name(cls):
-        return cls.name
+    @staticmethod
+    def get_name():
+        return 'test_file_injection'
 
     def get_files(self, cliargs):
         all_files = {}
