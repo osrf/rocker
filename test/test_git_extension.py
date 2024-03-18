@@ -57,7 +57,7 @@ class GitExtensionTest(unittest.TestCase):
 
         p = git_plugin()
         self.assertTrue(plugin_load_parser_correctly(git_plugin))
-        
+
 
         mock_cliargs = {}
         mock_config_file = tempfile.NamedTemporaryFile()
@@ -75,6 +75,12 @@ class GitExtensionTest(unittest.TestCase):
         # Test with user "enabled"
         mock_cliargs = {'user': True}
         mock_cliargs['git_config_path'] = mock_config_file.name
+        user_args = p.get_docker_args(mock_cliargs)
+        user_gitconfig_target = os.path.expanduser('~/.gitconfig')
+        self.assertIn('-v %s:%s' % (user_gitconfig, user_gitconfig_target), user_args)
+
+        # Test with an existing overridden user key, but with None value
+        mock_cliargs['user_override_name'] = None
         user_args = p.get_docker_args(mock_cliargs)
         user_gitconfig_target = os.path.expanduser('~/.gitconfig')
         self.assertIn('-v %s:%s' % (user_gitconfig, user_gitconfig_target), user_args)
