@@ -23,9 +23,9 @@ RUN existing_user_by_uid=`getent passwd "@(uid)" | cut -f1 -d: || true` && \
       existing_group_by_name=`getent group ${groupinfo%;*} || true`; \
       existing_group_by_gid=`getent group ${groupinfo#*;} || true`; \
       if [ -z "${existing_group_by_name}" ] && [ -z "${existing_group_by_gid}" ]; then \
-        groupadd -g "${groupinfo#*;}" "${groupinfo%;*}" && usermod -aG "${groupinfo%;*}" "@(name)" @(('|| (true && echo "user-preserve-group-permissive Enabled, continuing without processing group $groupinfo" )') if user_preserve_groups_permissive else '') || (echo "Failed to add group ${groupinfo%;*}, consider option --user-preserve-group-permissive" && exit 2); \
+        groupadd -g "${groupinfo#*;}" "${groupinfo%;*}" && usermod -aG "${groupinfo%;*}" "@(name)" @( ('|| (true && echo "user-preserve-group-permissive Enabled, continuing without processing group $groupinfo" )') if user_preserve_groups_permissive else '') || (echo "Failed to add group ${groupinfo%;*}, consider option --user-preserve-group-permissive" && exit 2); \
       elif [ "${existing_group_by_name}" = "${existing_group_by_gid}" ]; then \
-        usermod -aG "${groupinfo%;*}" "@(name)" @(('|| (true && echo "user-preserve-group-permissive Enabled, continuing without processing group $groupinfo" )') if user_preserve_groups_permissive else '') || (echo "Failed to adjust group ${groupinfo%;*}, consider option --user-preserve-group-permissive" && exit 2); \
+        usermod -aG "${groupinfo%;*}" "@(name)" @( ('|| (true && echo "user-preserve-group-permissive Enabled, continuing without processing group $groupinfo" )') if user_preserve_groups_permissive else '') || (echo "Failed to adjust group ${groupinfo%;*}, consider option --user-preserve-group-permissive" && exit 2); \
       fi; \
     done && \
 @[end if]@
