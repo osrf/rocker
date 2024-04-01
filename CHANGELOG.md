@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## Unreleased
+
+<small>[Compare with latest](https://github.com/osrf/rocker/compare/v0.2.15...HEAD)</small>
+
+### Fixed
+
+- Fix --user arg when using empy 4 (#276) ([4078d22](https://github.com/osrf/rocker/commit/4078d223a2158e9a6fea31d8871dc7df7ee094f0) by Gary Servin).
+
+<!-- insertion marker -->
 ## [v0.2.15](https://github.com/osrf/rocker/releases/tag/v0.2.15) - 2024-03-01
 
 <small>[Compare with v0.2.14](https://github.com/osrf/rocker/compare/v0.2.14...v0.2.15)</small>
