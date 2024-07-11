@@ -87,7 +87,7 @@ class Nvidia(RockerExtension):
         self._env_subs = None
         self.name = Nvidia.get_name()
         self.supported_distros = ['Ubuntu', 'Debian GNU/Linux']
-        self.supported_versions = ['16.04', '18.04', '20.04', '10', '22.04']
+        self.supported_versions = ['16.04', '18.04', '20.04', '10', '22.04', '24.04']
 
 
     def get_environment_subs(self, cliargs={}):
@@ -95,7 +95,7 @@ class Nvidia(RockerExtension):
             self._env_subs = {}
             self._env_subs['user_id'] = os.getuid()
             self._env_subs['username'] = getpass.getuser()
-        
+
         # non static elements test every time
         detected_os = detect_os(cliargs['base_image'], print, nocache=cliargs.get('nocache', False))
         if detected_os is None:
@@ -201,5 +201,3 @@ class Cuda(RockerExtension):
             action='store_true',
             default=defaults.get('cuda', None),
             help="Install cuda and nvidia-cuda-dev into the container")
-
-
