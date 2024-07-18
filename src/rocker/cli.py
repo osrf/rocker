@@ -25,7 +25,7 @@ from .core import ExtensionError
 from .os_detector import detect_os
 
 
-def main():
+def main(implementation='rocker'):
 
     parser = argparse.ArgumentParser(
         description='A tool for running docker with extra options',
@@ -49,6 +49,7 @@ def main():
 
     args = parser.parse_args()
     args_dict = vars(args)
+    args_dict['use_podman'] = implementation == 'podman'
 
     if args.noexecute:
         from .core import OPERATIONS_DRY_RUN
@@ -88,3 +89,10 @@ def detect_image_os():
         return 0
     else:
         return 1
+
+def rocker_main():
+    return main(implementation='rocker')
+
+
+def rodman_main():
+    return main(implementation='podman')
