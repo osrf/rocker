@@ -172,7 +172,15 @@ CMD glmark2 --validate
 
 
         preamble = p.get_preamble(mock_cliargs)
-        self.assertIn('FROM nvidia/opengl:1.0-glvnd-devel-', preamble)
+        self.assertIn('FROM nvidia/opengl:1.0-glvnd-devel-ubuntu18.04', preamble)
+
+        mock_cliargs = {'base_image': 'ubuntu:jammy'}
+        preamble = p.get_preamble(mock_cliargs)
+        self.assertIn('FROM nvidia/opengl:1.0-glvnd-devel-ubuntu22.04', preamble)
+
+        mock_cliargs = {'base_image': 'ubuntu:jammy', 'nvidia_glvnd_version': '20.04'}
+        preamble = p.get_preamble(mock_cliargs)
+        self.assertIn('FROM nvidia/opengl:1.0-glvnd-devel-ubuntu20.04', preamble)
 
         docker_args = p.get_docker_args(mock_cliargs)
         #TODO(tfoote) restore with #37 self.assertIn(' -e DISPLAY -e TERM', docker_args)
