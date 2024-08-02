@@ -170,14 +170,10 @@ class Nvidia(RockerExtension):
             help="Enable nvidia. Default behavior is to pick flag based on docker version.")
         parser.add_argument('--nvidia-glvnd-version',
             choices=NVIDIA_GLVND_VALID_VERSIONS,
-            # nargs='1',
-            # const='auto',
             default=defaults.get('nvidia-glvnd-version', None),
             help="Explicitly select an nvidia glvnd version")
         parser.add_argument('--nvidia-glvnd-policy',
             choices=[GLVND_VERSION_POLICY_LATEST_LTS],
-            # nargs='1',
-            # const='auto',
             default=defaults.get('nvidia-glvnd-policy', GLVND_VERSION_POLICY_LATEST_LTS),
             help="Set an nvidia glvnd version policy if version is unset")
 
