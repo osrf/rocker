@@ -28,11 +28,34 @@ from .core import get_docker_client
 from .core import RockerExtension
 from .em import empy_expand
 
+GLVND_VERSION_POLICY_LATEST_LTS='latest_lts'
+
+NVIDIA_GLVND_VALID_VERSIONS=['16.04', '18.04','20.04', '22.04', '24.04']
 
 def get_docker_version():
     docker_version_raw = get_docker_client().version()['Version']
     # Fix for version 17.09.0-ce
     return Version(docker_version_raw.split('-')[0])
+
+def glvnd_version_from_policy(image_version, policy):
+    # Default policy GLVND_VERSION_POLICY_LATEST_LTS
+    if not policy:
+        policy = GLVND_VERSION_POLICY_LATEST_LTS
+
+    if policy == GLVND_VERSION_POLICY_LATEST_LTS:
+        if image_version in ['16.04', '16.10', '17.04', '17.10']:
+            return '16.04'
+        if image_version in ['18.04', '18.10', '19.04', '19.10']:
+            return '18.04'
+        if image_version in ['20.04', '20.10', '21.04', '21.10']:
+            return '20.04'
+        if image_version in ['22.04', '22.10', '23.04', '23.10']:
+            return '22.04'
+        # 24.04 is not available yet
+        # if image_version in ['24.04', '24.10', '25.04', '25.10']:
+        #     return '24.04'
+        return '22.04'
+    return None
 
 class X11(RockerExtension):
     @staticmethod
@@ -112,6 +135,10 @@ class Nvidia(RockerExtension):
             print("WARNING distro %s version %s not in supported list by Nvidia supported versions" % (dist, ver), self.supported_versions)
             sys.exit(1)
             # TODO(tfoote) add a standard mechanism for checking preconditions and disabling plugins
+        nvidia_glvnd_version = cliargs.get('nvidia_glvnd_version', None)
+        if not nvidia_glvnd_version:
+            nvidia_glvnd_version = glvnd_version_from_policy(ver, cliargs.get('nvidia_glvnd_policy', None) )
+        self._env_subs['nvidia_glvnd_version'] = nvidia_glvnd_version
 
         return self._env_subs
 
@@ -141,6 +168,18 @@ class Nvidia(RockerExtension):
             const='auto',
             default=defaults.get(Nvidia.get_name(), None),
             help="Enable nvidia. Default behavior is to pick flag based on docker version.")
+        parser.add_argument('--nvidia-glvnd-version',
+            choices=NVIDIA_GLVND_VALID_VERSIONS,
+            # nargs='1',
+            # const='auto',
+            default=defaults.get('nvidia-glvnd-version', None),
+            help="Explicitly select an nvidia glvnd version")
+        parser.add_argument('--nvidia-glvnd-policy',
+            choices=[GLVND_VERSION_POLICY_LATEST_LTS],
+            # nargs='1',
+            # const='auto',
+            default=defaults.get('nvidia-glvnd-policy', GLVND_VERSION_POLICY_LATEST_LTS),
+            help="Set an nvidia glvnd version policy if version is unset")
 
 class Cuda(RockerExtension):
     @staticmethod
