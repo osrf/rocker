@@ -21,7 +21,7 @@ Whereas with `rocker` you can invoke your specific plugins and it will use multi
 
 
 
-## Know extensions
+## Known extensions
 
 Rocker supports extensions via entry points there are some built in but you can add your own.
 
