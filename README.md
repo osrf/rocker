@@ -38,7 +38,7 @@ You can get full details on the extensions from the main `rocker --help` command
 - pulse -- Mount pulse audio into the container
 - ssh -- Pass through ssh access to the container.
 
-As well as access to many of the docker arguments as well such as `device`, `env`, `volume`, `name`, `network`, and `privileged`.
+As well as access to many of the docker arguments as well such as `device`, `env`, `volume`, `name`, `network`, `ipc`, and `privileged`.
 
 ### Externally maintained extensions
 
