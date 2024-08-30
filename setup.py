@@ -56,7 +56,6 @@ kwargs = {
             'hostname = rocker.extensions:Hostname',
             'name = rocker.extensions:Name',
             'network = rocker.extensions:Network',
-            'ipc = rocker.extensions:IPC',
             'nvidia = rocker.nvidia_extension:Nvidia',
             'port = rocker.extensions:Port',
             'privileged = rocker.extensions:Privileged',
