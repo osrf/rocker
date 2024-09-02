@@ -91,6 +91,32 @@ class DevHelpers(RockerExtension):
             help="add development tools emacs and byobu to your environment")
 
 
+class Expose(RockerExtension):
+    @staticmethod
+    def get_name():
+        return 'expose'
+
+    def __init__(self):
+        self.name = Expose.get_name()
+
+    def get_preamble(self, cliargs):
+        return ''
+
+    def get_docker_args(self, cliargs):
+        args = ['']
+        ports = cliargs.get('expose', [])
+        for port in ports:
+            args.append(' --expose {0}'.format(port))
+        return ' '.join(args)
+
+    @staticmethod
+    def register_arguments(parser, defaults={}):
+        parser.add_argument('--expose',
+            default=defaults.get('expose', None),
+            action='append',
+            help="Exposes a port from the container to host machine.")
+
+
 class Hostname(RockerExtension):
     @staticmethod
     def get_name():
@@ -113,6 +139,29 @@ class Hostname(RockerExtension):
     def register_arguments(parser, defaults={}):
         parser.add_argument('--hostname', default=defaults.get('hostname', ''),
                             help='Hostname of the container.')
+
+
+class Ipc(RockerExtension):
+    @staticmethod
+    def get_name():
+        return 'ipc'
+    def __init__(self):
+        self.name = Ipc.get_name()
+
+    def get_preamble(self, cliargs):
+        return ''
+    
+    def get_docker_args(self, cliargs):
+        args = ''
+        ipc = cliargs.get('ipc', None)
+        args += ' --ipc %s ' % ipc
+        return args
+    
+    @staticmethod
+    def register_arguments(parser, defaults={}):
+        parser.add_argument('--ipc', default=defaults.get('ipc', None),
+                            help='IPC namespace to use. To share ipc with the host use host. More details can be found at https://docs.docker.com/reference/cli/docker/container/run/#ipc')
+
 
 class Name(RockerExtension):
     @staticmethod
@@ -161,52 +210,6 @@ class Network(RockerExtension):
         parser.add_argument('--network', choices=[n['Name'] for n in client.networks()],
             default=defaults.get('network', None),
             help="What network configuration to use.")
-
-class IPC(RockerExtension):
-    @staticmethod
-    def get_name():
-        return 'ipc'
-    def __init__(self):
-        self.name = IPC.get_name()
-
-    def get_preamble(self, cliargs):
-        return ''
-    
-    def get_docker_args(self, cliargs):
-        args = ''
-        ipc = cliargs.get('ipc', None)
-        args += ' --ipc %s ' % ipc
-        return args
-    
-    @staticmethod
-    def register_arguments(parser, defaults={}):
-        parser.add_argument('--ipc', default=defaults.get('ipc', 'private'),
-                            help='IPC namespace to use. To share ipc with the host use host. More details can be found at https://docs.docker.com/reference/cli/docker/container/run/#ipc')
-
-class Expose(RockerExtension):
-    @staticmethod
-    def get_name():
-        return 'expose'
-
-    def __init__(self):
-        self.name = Expose.get_name()
-
-    def get_preamble(self, cliargs):
-        return ''
-
-    def get_docker_args(self, cliargs):
-        args = ['']
-        ports = cliargs.get('expose', [])
-        for port in ports:
-            args.append(' --expose {0}'.format(port))
-        return ' '.join(args)
-
-    @staticmethod
-    def register_arguments(parser, defaults={}):
-        parser.add_argument('--expose',
-            default=defaults.get('expose', None),
-            action='append',
-            help="Exposes a port from the container to host machine.")
 
 
 class Port(RockerExtension):
