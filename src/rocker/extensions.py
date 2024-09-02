@@ -181,7 +181,7 @@ class IPC(RockerExtension):
     @staticmethod
     def register_arguments(parser, defaults={}):
         parser.add_argument('--ipc', default=defaults.get('ipc', 'private'),
-                            help='IPC namespace to use.')
+                            help='IPC namespace to use. To share ipc with the host use host. More details can be found at https://docs.docker.com/reference/cli/docker/container/run/#ipc')
 
 class Expose(RockerExtension):
     @staticmethod
