@@ -54,6 +54,7 @@ kwargs = {
             'group_add = rocker.extensions:GroupAdd',
             'home = rocker.extensions:HomeDir',
             'hostname = rocker.extensions:Hostname',
+            'ipc = rocker.extensions:Ipc',
             'name = rocker.extensions:Name',
             'network = rocker.extensions:Network',
             'nvidia = rocker.nvidia_extension:Nvidia',
