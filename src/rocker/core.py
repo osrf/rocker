@@ -117,7 +117,9 @@ class RockerExtension(object):
         return True if cli_args.get(cls.get_name()) else False
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults:dict=None):
+        if defaults is None:
+            defaults={}
         raise NotImplementedError
 
 
