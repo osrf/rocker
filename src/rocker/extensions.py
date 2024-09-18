@@ -12,16 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import getpass
 import grp
 import os
-import docker
-import getpass
-import pwd
 import pkgutil
-from pathlib import Path
-from shlex import quote
+import pwd
 import subprocess
 import sys
+from pathlib import Path
+from shlex import quote
+
+import docker
 
 from .core import get_docker_client
 from .em import empy_expand
@@ -31,6 +32,7 @@ def name_to_argument(name):
     return '--%s' % name.replace('_', '-')
 
 from .core import RockerExtension
+
 
 class Detach(RockerExtension):
     @staticmethod
@@ -494,4 +496,3 @@ class GroupAdd(RockerExtension):
             default=defaults.get(GroupAdd.get_name(), None),
             action='append',
             help="Add additional groups to join.")
-

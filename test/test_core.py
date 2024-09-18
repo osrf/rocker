@@ -16,23 +16,19 @@
 # under the License.
 
 import argparse
-import em
 import os
 import pwd
-import pytest
 import unittest
-
 from itertools import chain
 
-from rocker.core import DockerImageGenerator
-from rocker.core import ExtensionError
-from rocker.core import base_image_exists
-from rocker.core import list_plugins
-from rocker.core import get_docker_client
-from rocker.core import get_rocker_version
-from rocker.core import get_user_name
-from rocker.core import RockerExtension
-from rocker.core import RockerExtensionManager
+import em
+import pytest
+
+from rocker.core import (DockerImageGenerator, ExtensionError, RockerExtension,
+                         RockerExtensionManager, base_image_exists,
+                         get_docker_client, get_rocker_version, get_user_name,
+                         list_plugins)
+
 
 class RockerCoreTest(unittest.TestCase):
 

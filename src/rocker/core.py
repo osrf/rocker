@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import OrderedDict
-from contextlib import nullcontext
 import io
 import os
 import pwd
 import re
 import sys
+from collections import OrderedDict
+from contextlib import nullcontext
 
 # importlib-metadata dependency can be removed when RHEL8 and other 3.6 based systems are not in support cycles
 if sys.version_info >= (3, 8):
@@ -26,22 +26,20 @@ if sys.version_info >= (3, 8):
 else:
     import importlib_metadata
 
-
+import fcntl
 import pkgutil
-from requests.exceptions import ConnectionError
 import shlex
+import signal
+import struct
 import subprocess
 import tempfile
+import termios
+import typing
+from pathlib import Path
 
 import docker
 import pexpect
-
-import fcntl
-from pathlib import Path
-import signal
-import struct
-import termios
-import typing
+from requests.exceptions import ConnectionError
 
 SYS_STDOUT = sys.stdout
 

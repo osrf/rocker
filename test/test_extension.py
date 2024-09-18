@@ -16,19 +16,17 @@
 # under the License.
 
 import argparse
-import em
 import getpass
 import os
-import unittest
-from pathlib import Path
 import pwd
-import pytest
+import unittest
 from io import BytesIO as StringIO
+from pathlib import Path
 
+import em
+import pytest
 
-from rocker.core import DockerImageGenerator
-from rocker.core import docker_build
-from rocker.core import list_plugins
+from rocker.core import DockerImageGenerator, docker_build, list_plugins
 from rocker.extensions import name_to_argument
 
 

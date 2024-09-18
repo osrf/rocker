@@ -15,17 +15,14 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import em
 import os
 import unittest
+
+import em
 import pytest
-
-
-from rocker.core import DockerImageGenerator
-from rocker.core import list_plugins
-
 from test_extension import plugin_load_parser_correctly
 
+from rocker.core import DockerImageGenerator, list_plugins
 from rocker.rmw_extension import RMW
 
 

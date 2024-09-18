@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from argparse import ArgumentTypeError
 import os
 import pkgutil
+from argparse import ArgumentTypeError
+
+from rocker.extensions import RockerExtension, name_to_argument
 
 from .em import empy_expand
-from rocker.extensions import RockerExtension
-from rocker.extensions import name_to_argument
 
 
 class RMW(RockerExtension):

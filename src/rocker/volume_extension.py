@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from argparse import ArgumentParser
-from argparse import ArgumentTypeError
 import os
+from argparse import ArgumentParser, ArgumentTypeError
+
 from rocker.extensions import RockerExtension
 
 

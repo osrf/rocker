@@ -16,21 +16,20 @@
 # under the License.
 
 import argparse
-import em
 import getpass
 import os
-import unittest
-from pathlib import Path
 import pwd
 import shlex
+import unittest
+from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from rocker.core import list_plugins
-from rocker.core import write_files
-from rocker.extensions import name_to_argument
-from rocker.extensions import RockerExtension
-
+import em
 from test_extension import plugin_load_parser_correctly
+
+from rocker.core import list_plugins, write_files
+from rocker.extensions import RockerExtension, name_to_argument
+
 
 class ExtensionsTest(unittest.TestCase):
     def test_name_to_argument(self):

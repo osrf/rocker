@@ -12,21 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import getpass
-import tempfile
-from packaging.version import Version
+import os
 import pkgutil
-from pathlib import Path
 import subprocess
 import sys
+import tempfile
+from pathlib import Path
 
-from .os_detector import detect_os
+from packaging.version import Version
 
-from .extensions import name_to_argument
-from .core import get_docker_client
-from .core import RockerExtension
+from .core import RockerExtension, get_docker_client
 from .em import empy_expand
+from .extensions import name_to_argument
+from .os_detector import detect_os
 
 
 def has_nvidia_driver():

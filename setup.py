@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+
 from setuptools import setup
 
 # importlib-metadata dependency can be removed when RHEL8 and other 3.6 based systems are not in support cycles

@@ -15,23 +15,19 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import docker
-import em
 import unittest
-import pexpect
-import pytest
+from io import BytesIO as StringIO
 from unittest import mock
 
-
-from io import BytesIO as StringIO
+import docker
+import em
+import pexpect
+import pytest
 from packaging.version import Version
-
-from rocker.core import DockerImageGenerator
-from rocker.core import list_plugins
-from rocker.core import get_docker_client
-from rocker.nvidia_extension import get_docker_version
-from rocker.nvidia_extension import has_nvidia_driver
 from test_extension import plugin_load_parser_correctly
+
+from rocker.core import DockerImageGenerator, get_docker_client, list_plugins
+from rocker.nvidia_extension import get_docker_version, has_nvidia_driver
 
 
 @pytest.mark.docker

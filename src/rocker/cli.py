@@ -16,17 +16,11 @@ import argparse
 import os
 import sys
 
-from .core import DockerImageGenerator
-from .core import get_rocker_version
-from .core import RockerExtensionManager
-from .core import DependencyMissing
-from .core import ExtensionError
-from .core import base_image_exists
-from .core import OPERATIONS_DRY_RUN
-from .core import OPERATIONS_INTERACTIVE
-from .core import OPERATIONS_NON_INTERACTIVE
-from .core import OPERATION_MODES
-
+from .core import (OPERATION_MODES, OPERATIONS_DRY_RUN, OPERATIONS_INTERACTIVE,
+                   OPERATIONS_NON_INTERACTIVE, DependencyMissing,
+                   DockerImageGenerator, ExtensionError,
+                   RockerExtensionManager, base_image_exists,
+                   get_rocker_version)
 from .os_detector import detect_os
 
 
