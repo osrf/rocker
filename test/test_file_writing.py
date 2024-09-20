@@ -58,7 +58,7 @@ class TestFileInjection(RockerExtension):
 
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument('--test-file-injection',
             action='store_true',
             default=defaults.get('test_file_injection', False),
