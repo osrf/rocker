@@ -72,7 +72,7 @@ class RMW(RockerExtension):
         return empy_expand(snippet, data)
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument(name_to_argument(RMW.get_name()),
             default=defaults.get('rmw', None),
             nargs=1,

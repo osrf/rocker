@@ -54,7 +54,7 @@ class Devices(RockerExtension):
         return args
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument('--devices',
             default=defaults.get('devices', None),
             nargs='*',
@@ -84,7 +84,7 @@ class DevHelpers(RockerExtension):
         return empy_expand(snippet, self.get_environment_subs())
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument(name_to_argument(DevHelpers.get_name()),
             action='store_true',
             default=defaults.get('dev_helpers', None),
@@ -136,7 +136,7 @@ class Hostname(RockerExtension):
         return args
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument('--hostname', default=defaults.get('hostname', ''),
                             help='Hostname of the container.')
 
@@ -182,7 +182,7 @@ class Name(RockerExtension):
         return args
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument('--name', default=defaults.get('name', ''),
                             help='Name of the container.')
 
@@ -205,7 +205,7 @@ class Network(RockerExtension):
         return args
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         client = get_docker_client()
         parser.add_argument('--network', choices=[n['Name'] for n in client.networks()],
             default=defaults.get('network', None),
@@ -231,7 +231,7 @@ class Port(RockerExtension):
         return ' '.join(args)
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument('--port',
             default=defaults.get('port', None),
             action='append',
@@ -269,7 +269,7 @@ class PulseAudio(RockerExtension):
         return args % self.get_environment_subs()
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument(name_to_argument(PulseAudio.get_name()),
             action='store_true',
             default=defaults.get(PulseAudio.get_name(), None),
@@ -288,7 +288,7 @@ class HomeDir(RockerExtension):
         return ' -v %s:%s ' % (Path.home(), Path.home())
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument(name_to_argument(HomeDir.get_name()),
             action='store_true',
             default=defaults.get(HomeDir.get_name(), None),
@@ -344,7 +344,7 @@ class User(RockerExtension):
         return empy_expand(snippet, substitutions)
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument(name_to_argument(User.get_name()),
             action='store_true',
             default=defaults.get('user', None),
@@ -400,7 +400,7 @@ class Environment(RockerExtension):
         return ' '.join(args)
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument('--env', '-e',
             metavar='NAME[=VALUE]',
             type=str,
@@ -436,7 +436,7 @@ class Privileged(RockerExtension):
         return ' --privileged'
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument(name_to_argument(Privileged.get_name()),
                             action='store_true',
                             default=defaults.get(Privileged.get_name(), None),
@@ -463,7 +463,7 @@ class GroupAdd(RockerExtension):
         return ' '.join(args)
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument(name_to_argument(GroupAdd.get_name()),
             default=defaults.get(GroupAdd.get_name(), None),
             action='append',
