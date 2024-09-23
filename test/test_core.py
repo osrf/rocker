@@ -251,8 +251,6 @@ class RockerCoreTest(unittest.TestCase):
         user_snippet_content = "RUN echo run as user"
 
         class UserSnippet(RockerExtension):
-            def __init__(self):
-                self.name = 'usersnippet'
 
             @staticmethod
             def get_name():
