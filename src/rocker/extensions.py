@@ -51,7 +51,7 @@ class Devices(RockerExtension):
         return args
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument('--devices',
             default=defaults.get('devices', None),
             nargs='*',
@@ -79,74 +79,11 @@ class DevHelpers(RockerExtension):
         return empy_expand(snippet, self.get_environment_subs())
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument(name_to_argument(DevHelpers.get_name()),
             action='store_true',
             default=defaults.get('dev_helpers', None),
             help="add development tools emacs and byobu to your environment")
-
-
-class Hostname(RockerExtension):
-    @staticmethod
-    def get_name():
-        return 'hostname'
-
-    def get_preamble(self, cliargs):
-        return ''
-
-    def get_docker_args(self, cliargs):
-        args = ''
-        hostname = cliargs.get('hostname', None)
-        if hostname:
-            args += ' --hostname %s ' % hostname
-        return args
-
-    @staticmethod
-    def register_arguments(parser, defaults={}):
-        parser.add_argument('--hostname', default=defaults.get('hostname', ''),
-                            help='Hostname of the container.')
-
-class Name(RockerExtension):
-    @staticmethod
-    def get_name():
-        return 'name'
-
-    def get_preamble(self, cliargs):
-        return ''
-
-    def get_docker_args(self, cliargs):
-        args = ''
-        name = cliargs.get('name', None)
-        if name:
-            args += ' --name %s ' % name
-        return args
-
-    @staticmethod
-    def register_arguments(parser, defaults={}):
-        parser.add_argument('--name', default=defaults.get('name', ''),
-                            help='Name of the container.')
-
-
-class Network(RockerExtension):
-    @staticmethod
-    def get_name():
-        return 'network'
-
-    def get_preamble(self, cliargs):
-        return ''
-
-    def get_docker_args(self, cliargs):
-        args = ''
-        network = cliargs.get('network', None)
-        args += ' --network %s ' % network
-        return args
-
-    @staticmethod
-    def register_arguments(parser, defaults={}):
-        client = get_docker_client()
-        parser.add_argument('--network', choices=[n['Name'] for n in client.networks()],
-            default=defaults.get('network', None),
-            help="What network configuration to use.")
 
 
 class Expose(RockerExtension):
@@ -171,6 +108,99 @@ class Expose(RockerExtension):
             action='append',
             help="Exposes a port from the container to host machine.")
 
+    @staticmethod
+    def register_arguments(parser, defaults={}):
+        parser.add_argument('--expose',
+            default=defaults.get('expose', None),
+            action='append',
+            help="Exposes a port from the container to host machine.")
+
+
+class Hostname(RockerExtension):
+    @staticmethod
+    def get_name():
+        return 'hostname'
+
+    def get_preamble(self, cliargs):
+        return ''
+
+    def get_docker_args(self, cliargs):
+        args = ''
+        hostname = cliargs.get('hostname', None)
+        if hostname:
+            args += ' --hostname %s ' % hostname
+        return args
+
+    @staticmethod
+    def register_arguments(parser, defaults):
+        parser.add_argument('--hostname', default=defaults.get('hostname', ''),
+                            help='Hostname of the container.')
+
+
+class Ipc(RockerExtension):
+    @staticmethod
+    def get_name():
+        return 'ipc'
+    def __init__(self):
+        self.name = Ipc.get_name()
+
+    def get_preamble(self, cliargs):
+        return ''
+    
+    def get_docker_args(self, cliargs):
+        args = ''
+        ipc = cliargs.get('ipc', None)
+        args += ' --ipc %s ' % ipc
+        return args
+    
+    @staticmethod
+    def register_arguments(parser, defaults={}):
+        parser.add_argument('--ipc', default=defaults.get('ipc', None),
+                            help='IPC namespace to use. To share ipc with the host use host. More details can be found at https://docs.docker.com/reference/cli/docker/container/run/#ipc')
+
+
+class Name(RockerExtension):
+    @staticmethod
+    def get_name():
+        return 'name'
+
+    def get_preamble(self, cliargs):
+        return ''
+
+    def get_docker_args(self, cliargs):
+        args = ''
+        name = cliargs.get('name', None)
+        if name:
+            args += ' --name %s ' % name
+        return args
+
+    @staticmethod
+    def register_arguments(parser, defaults):
+        parser.add_argument('--name', default=defaults.get('name', ''),
+                            help='Name of the container.')
+
+
+class Network(RockerExtension):
+    @staticmethod
+    def get_name():
+        return 'network'
+
+    def get_preamble(self, cliargs):
+        return ''
+
+    def get_docker_args(self, cliargs):
+        args = ''
+        network = cliargs.get('network', None)
+        args += ' --network %s ' % network
+        return args
+
+    @staticmethod
+    def register_arguments(parser, defaults):
+        client = get_docker_client()
+        parser.add_argument('--network', choices=[n['Name'] for n in client.networks()],
+            default=defaults.get('network', None),
+            help="What network configuration to use.")
+
 
 class Port(RockerExtension):
     @staticmethod
@@ -188,7 +218,7 @@ class Port(RockerExtension):
         return ' '.join(args)
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument('--port',
             default=defaults.get('port', None),
             action='append',
@@ -224,7 +254,7 @@ class PulseAudio(RockerExtension):
         return args % self.get_environment_subs()
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument(name_to_argument(PulseAudio.get_name()),
             action='store_true',
             default=defaults.get(PulseAudio.get_name(), None),
@@ -240,7 +270,7 @@ class HomeDir(RockerExtension):
         return ' -v %s:%s ' % (Path.home(), Path.home())
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument(name_to_argument(HomeDir.get_name()),
             action='store_true',
             default=defaults.get(HomeDir.get_name(), None),
@@ -295,7 +325,7 @@ class User(RockerExtension):
         return empy_expand(snippet, substitutions)
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument(name_to_argument(User.get_name()),
             action='store_true',
             default=defaults.get('user', None),
@@ -348,7 +378,7 @@ class Environment(RockerExtension):
         return ' '.join(args)
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument('--env', '-e',
             metavar='NAME[=VALUE]',
             type=str,
@@ -381,7 +411,7 @@ class Privileged(RockerExtension):
         return ' --privileged'
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument(name_to_argument(Privileged.get_name()),
                             action='store_true',
                             default=defaults.get(Privileged.get_name(), None),
@@ -405,7 +435,7 @@ class GroupAdd(RockerExtension):
         return ' '.join(args)
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument(name_to_argument(GroupAdd.get_name()),
             default=defaults.get(GroupAdd.get_name(), None),
             action='append',

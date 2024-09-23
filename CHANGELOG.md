@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v0.2.17](https://github.com/osrf/rocker/releases/tag/v0.2.17) - 2024-08-28
+
+<small>[Compare with v0.2.16](https://github.com/osrf/rocker/compare/v0.2.16...v0.2.17)</small>
+
+### Added
+- [nvidia_extension] add 24.04 to supported_versions (#279)
+
+## [v0.2.16](https://github.com/osrf/rocker/releases/tag/v0.2.16) - 2024-04-01
+
+<small>[Compare with v0.2.15](https://github.com/osrf/rocker/compare/v0.2.15...v0.2.16)</small>
+
+### Fixed
+
+- Fix --user arg when using empy 4 (#276) ([4078d22](https://github.com/osrf/rocker/commit/4078d223a2158e9a6fea31d8871dc7df7ee094f0) by Gary Servin).
+
 ## [v0.2.15](https://github.com/osrf/rocker/releases/tag/v0.2.15) - 2024-03-01
 
 <small>[Compare with v0.2.14](https://github.com/osrf/rocker/compare/v0.2.14...v0.2.15)</small>
@@ -286,4 +301,3 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - remove legacy test function ([4c1466a](https://github.com/osrf/rocker/commit/4c1466a217e4e150aa722836b3768abcd2efe425) by Tully Foote).
 - remove legacy comments ([38b5903](https://github.com/osrf/rocker/commit/38b59034eb373ff12619529383dc8812446890ad) by Tully Foote).
-

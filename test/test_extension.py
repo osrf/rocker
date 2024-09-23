@@ -36,7 +36,7 @@ def plugin_load_parser_correctly(plugin):
     """A helper function to test that the plugins at least
     register an option for their own name."""
     parser = argparse.ArgumentParser(description='test_parser')
-    plugin.register_arguments(parser)
+    plugin.register_arguments(parser, {})
     argument_name = name_to_argument(plugin.get_name())
     for action in parser._actions:
         option_strings = getattr(action, 'option_strings', [])
@@ -113,6 +113,40 @@ class HomeExtensionTest(unittest.TestCase):
         self.assertEqual(p.get_preamble(mock_cliargs), '')
         args = p.get_docker_args(mock_cliargs)
         self.assertTrue('-v %s:%s' % (Path.home(), Path.home()) in args)
+
+
+class IpcExtensionTest(unittest.TestCase):
+
+    def setUp(self):
+        # Work around interference between empy Interpreter
+        # stdout proxy and test runner. empy installs a proxy on stdout
+        # to be able to capture the information.
+        # And the test runner creates a new stdout object for each test.
+        # This breaks empy as it assumes that the proxy has persistent
+        # between instances of the Interpreter class
+        # empy will error with the exception
+        # "em.Error: interpreter stdout proxy lost"
+        em.Interpreter._wasProxyInstalled = False
+
+    @pytest.mark.docker
+    def test_ipc_extension(self):
+        plugins = list_plugins()
+        ipc_plugin = plugins['ipc']
+        self.assertEqual(ipc_plugin.get_name(), 'ipc')
+
+        p = ipc_plugin()
+        self.assertTrue(plugin_load_parser_correctly(ipc_plugin))
+        
+        mock_cliargs = {'ipc': 'none'}
+        self.assertEqual(p.get_snippet(mock_cliargs), '')
+        self.assertEqual(p.get_preamble(mock_cliargs), '')
+        args = p.get_docker_args(mock_cliargs)
+        self.assertTrue('--ipc none' in args)
+
+        mock_cliargs = {'ipc': 'host'}
+        args = p.get_docker_args(mock_cliargs)
+        self.assertTrue('--ipc host' in args)
+
 
 class NetworkExtensionTest(unittest.TestCase):
 
