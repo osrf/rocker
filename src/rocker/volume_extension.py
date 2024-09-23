@@ -21,11 +21,10 @@ class Volume(RockerExtension):
 
     ARG_DOCKER_VOLUME = "-v"
     ARG_ROCKER_VOLUME = "--volume"
-    name = 'volume'
 
-    @classmethod
-    def get_name(cls):
-        return cls.name
+    @staticmethod
+    def get_name():
+        return 'volume'
 
     def get_docker_args(self, cli_args):
         """
@@ -40,7 +39,7 @@ class Volume(RockerExtension):
         args = ['']
 
         # flatten cli_args['volume']
-        volumes = [ x for sublist in cli_args[self.name] for x in sublist]
+        volumes = [ x for sublist in cli_args[self.get_name()] for x in sublist]
 
         for volume in volumes:
             elems = volume.split(':')
