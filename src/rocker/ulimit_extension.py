@@ -21,15 +21,13 @@ class Ulimit(RockerExtension):
 
     ARG_DOCKER_ULIMIT = "--ulimit"
     ARG_ROCKER_VOLUME = "--ulimit"
-    name = 'ulimit'
 
-    @classmethod
-    def get_name(cls):
-        return cls.name
+    @staticmethod
+    def get_name():
+        return 'ulimit'
 
     def get_docker_args(self, cliargs):
-        args = ['']
-        return ' '.join(args)
+        return ''
 
     @staticmethod
     def register_arguments(parser, defaults):
