@@ -14,13 +14,11 @@
 
 from argparse import ArgumentTypeError
 import os
-from rocker.extensions import RockerExtension
+from rocker.extensions import RockerExtension, name_to_argument
 
 
 class Ulimit(RockerExtension):
-
-    ARG_DOCKER_ULIMIT = "--ulimit"
-    ARG_ROCKER_VOLUME = "--ulimit"
+    EXPECTED_FORMAT = "TYPE=SOFT_LIMIT[:HARD_LIMIT]"
 
     @staticmethod
     def get_name():
@@ -31,8 +29,10 @@ class Ulimit(RockerExtension):
 
     @staticmethod
     def register_arguments(parser, defaults):
-        parser.add_argument(Ulimit.ARG_ROCKER_VOLUME,
+        parser.add_argument(name_to_argument(Ulimit.get_name()),
                             type=str,
                             nargs='+',
                             action='append',
+                            metavar=Ulimit.EXPECTED_FORMAT,
+                            default=defaults.get(Ulimit.get_name(), None),
                             help='ulimit options to add into the container.')
