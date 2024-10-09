@@ -43,7 +43,7 @@ kwargs = {
         'console_scripts': [
             'rocker = rocker.cli:main',
             'detect_docker_image_os = rocker.cli:detect_image_os',
-	    ],
+        ],
         'rocker.extensions': [
             'cuda = rocker.nvidia_extension:Cuda',
             'devices = rocker.extensions:Devices',
@@ -66,8 +66,9 @@ kwargs = {
             'user = rocker.extensions:User',
             'volume = rocker.volume_extension:Volume',
             'x11 = rocker.nvidia_extension:X11',
+            'ulimit = rocker.ulimit_extension:Ulimit',
         ]
-	},
+    },
     'author': 'Tully Foote',
     'author_email': 'tfoote@osrfoundation.org',
     'keywords': ['Docker'],
@@ -91,4 +92,3 @@ kwargs = {
 }
 
 setup(**kwargs)
-
