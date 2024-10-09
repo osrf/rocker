@@ -15,7 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import os
 import unittest
 
 from rocker.ulimit_extension import Ulimit
@@ -26,8 +25,6 @@ class UlimitTest(unittest.TestCase):
 
     def setUp(self):
         self._instance = Ulimit()
-        self._curr_path = os.path.abspath(os.path.curdir)
-        self._virtual_path = "/path/in/container"
 
     def _is_arg_translation_ok(self, mock_cliargs, expected):
         docker_args = self._instance.get_docker_args({self._instance.get_name(): [mock_cliargs]})
