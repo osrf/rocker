@@ -13,11 +13,17 @@
 # limitations under the License.
 
 from argparse import ArgumentTypeError
-import os
+import re
 from rocker.extensions import RockerExtension, name_to_argument
 
 
 class Ulimit(RockerExtension):
+    """
+    A RockerExtension to handle ulimit settings for Docker containers.
+
+    This extension allows specifying ulimit options in the format TYPE=SOFT_LIMIT[:HARD_LIMIT]
+    and validates the format before passing them as Docker arguments.
+    """
     EXPECTED_FORMAT = "TYPE=SOFT_LIMIT[:HARD_LIMIT]"
 
     @staticmethod
@@ -25,7 +31,30 @@ class Ulimit(RockerExtension):
         return 'ulimit'
 
     def get_docker_args(self, cliargs):
-        return ''
+        args = ['']
+        ulimits = [x for sublist in cliargs[Ulimit.get_name()] for x in sublist]
+        for ulimit in ulimits:
+            if self.arg_format_is_valid(ulimit):
+                args.append(f"--ulimit {ulimit}")
+            else:
+                raise ArgumentTypeError(
+                    f"Error processing {Ulimit.get_name()} flag '{ulimit}': expected format"
+                    f" {Ulimit.EXPECTED_FORMAT}")
+        return ' '.join(args)
+
+    def arg_format_is_valid(self, arg: str):
+        """
+        Validate the format of the ulimit argument.
+
+        Args:
+            arg (str): The ulimit argument to validate.
+
+        Returns:
+            bool: True if the format is valid, False otherwise.
+        """
+        ulimit_format = r'(\w+)=(\w+)(:\w+)?$'
+        match = re.match(ulimit_format, arg)
+        return match is not None
 
     @staticmethod
     def register_arguments(parser, defaults):
