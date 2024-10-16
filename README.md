@@ -48,8 +48,20 @@ Here's a list of public repositories with extensions.
 - mp_rocker: https://github.com/miguelprada/mp_rocker
 - ghrocker: https://github.com/tfoote/ghrocker
 - novnc_rocker: https://github.com/tfoote/novnc-rocker
+- template_rocker: https://github.com/blooop/template_rocker
+- deps_rocker: https://github.com/blooop/deps_rocker
+- pixi_rocker: https://github.com/blooop/pixi_rocker
+- conda_rocker: https://github.com/blooop/conda_rocker
+- palanteer_rocker: https://github.com/blooop/palanteer_rocker
+- lazygit_rocker: https://github.com/blooop/lazygit_rocker
 
 
+### Externally maintained rocker wrappers
+
+Here is a list of public repositories that wrap rocker and extend its functionality.  These tools are meant to be a drop in replacement of rocker so that all the existing behavior stays the same.
+
+- rockerc: https://github.com/blooop/rockerc wraps rocker to enable putting rocker commands into a yaml config file.
+- rockervsc: https://github.com/blooop/rockervsc wraps rocker so that a vscode instance attaches to the launched container.
 
 # Prerequisites
 
