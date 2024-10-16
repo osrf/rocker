@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from argparse import ArgumentParser
 from argparse import ArgumentTypeError
 import os
 from rocker.extensions import RockerExtension
@@ -61,7 +62,7 @@ class Volume(RockerExtension):
         return ' '.join(args)
 
     @staticmethod
-    def register_arguments(parser, defaults):
+    def register_arguments(parser: ArgumentParser, defaults: dict):
         parser.add_argument(Volume.ARG_ROCKER_VOLUME,
             metavar='HOST-DIR[:CONTAINER-DIR[:OPTIONS]]',
             type=str,
