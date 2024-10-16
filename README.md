@@ -48,9 +48,12 @@ Here's a list of public repositories with extensions.
 - mp_rocker: https://github.com/miguelprada/mp_rocker
 - ghrocker: https://github.com/tfoote/ghrocker
 - novnc_rocker: https://github.com/tfoote/novnc-rocker
+- template_rocker: https://github.com/blooop/template_rocker
+- deps_rocker: https://github.com/blooop/deps_rocker
 - pixi_rocker: https://github.com/blooop/pixi_rocker
-
-
+- conda_rocker: https://github.com/blooop/conda_rocker
+- palanteer_rocker: https://github.com/blooop/palanteer_rocker
+- lazygit_rocker: https://github.com/blooop/lazygit_rocker
 
 # Prerequisites
 
