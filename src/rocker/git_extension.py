@@ -46,7 +46,7 @@ class Git(RockerExtension):
         return args
 
     @staticmethod
-    def register_arguments(parser, defaults={}):
+    def register_arguments(parser, defaults):
         parser.add_argument('--git',
             action='store_true',
             default=defaults.get(Git.get_name(), None),

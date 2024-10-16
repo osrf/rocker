@@ -36,7 +36,7 @@ def plugin_load_parser_correctly(plugin):
     """A helper function to test that the plugins at least
     register an option for their own name."""
     parser = argparse.ArgumentParser(description='test_parser')
-    plugin.register_arguments(parser)
+    plugin.register_arguments(parser, {})
     argument_name = name_to_argument(plugin.get_name())
     for action in parser._actions:
         option_strings = getattr(action, 'option_strings', [])

@@ -61,7 +61,7 @@ class Volume(RockerExtension):
         return ' '.join(args)
 
     @staticmethod
-    def register_arguments(parser: ArgumentParser, defaults: dict=None):
+    def register_arguments(parser: ArgumentParser, defaults: dict):
         parser.add_argument(Volume.ARG_ROCKER_VOLUME,
             metavar='HOST-DIR[:CONTAINER-DIR[:OPTIONS]]',
             type=str,
