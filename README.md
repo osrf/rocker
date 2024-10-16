@@ -55,6 +55,14 @@ Here's a list of public repositories with extensions.
 - palanteer_rocker: https://github.com/blooop/palanteer_rocker
 - lazygit_rocker: https://github.com/blooop/lazygit_rocker
 
+
+### Externally maintained rocker wrappers
+
+Here is a list of public repositories that wrap rocker and extend its functionality.  These tools are meant to be a drop in replacement of rocker so that all the existing behavior stays the same.
+
+- rockerc: https://github.com/blooop/rockerc wraps rocker to enable putting rocker commands into a yaml config file.
+- rockervsc: https://github.com/blooop/rockervsc wraps rocker so that a vscode instance attaches to the launched container.
+
 # Prerequisites
 
 This should work on most systems using with a recent docker version available.
