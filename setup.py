@@ -63,10 +63,10 @@ kwargs = {
             'pulse = rocker.extensions:PulseAudio',
             'rmw = rocker.rmw_extension:RMW',
             'ssh = rocker.ssh_extension:Ssh',
+            'ulimit = rocker.ulimit_extension:Ulimit',
             'user = rocker.extensions:User',
             'volume = rocker.volume_extension:Volume',
             'x11 = rocker.nvidia_extension:X11',
-            'ulimit = rocker.ulimit_extension:Ulimit',
         ]
     },
     'author': 'Tully Foote',
