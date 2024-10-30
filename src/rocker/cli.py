@@ -33,7 +33,10 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('image')
     parser.add_argument('command', nargs='*', default='')
-    parser.add_argument('--config', help='Optional yaml file to handle command line arguments (except positional args) as a config file. This config will override any other command line arguments of the same name as the yaml keys (e.g. "--user-override-name" would have the key "user_override_name" in the config file)')
+    parser.add_argument('--config', help='''Optional yaml file to handle command line arguments 
+        (except positional args) as a config file. This config will override any other command line 
+        arguments of the same name as the yaml keys (e.g. "--user-override-name" would have the key 
+        "user_override_name" in the config file)''')
     parser.add_argument('--noexecute', action='store_true', help='Deprecated')
     parser.add_argument('--nocache', action='store_true')
     parser.add_argument('--nocleanup', action='store_true', help='do not remove the docker container when stopped')
