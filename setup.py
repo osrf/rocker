@@ -11,6 +11,7 @@ install_requires = [
     'pexpect',
     'packaging',
     'urllib3',
+    'pyyaml',
 ]
 
 # docker API used to be in a package called `docker-py` before the 2.0 release
