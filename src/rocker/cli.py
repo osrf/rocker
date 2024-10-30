@@ -15,6 +15,7 @@
 import argparse
 import os
 import sys
+import yaml
 
 from .core import DockerImageGenerator
 from .core import get_rocker_version
@@ -32,6 +33,7 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('image')
     parser.add_argument('command', nargs='*', default='')
+    parser.add_argument('--config', help='Optional yaml file to handle command line arguments as a config file. This config will override any other command line arguments of the same name as the yaml keys')
     parser.add_argument('--noexecute', action='store_true', help='Deprecated')
     parser.add_argument('--nocache', action='store_true')
     parser.add_argument('--nocleanup', action='store_true', help='do not remove the docker container when stopped')
@@ -49,6 +51,12 @@ def main():
 
     args = parser.parse_args()
     args_dict = vars(args)
+
+    # Load config file if provided
+    if args.config:
+        with open(args.config, 'r') as f:
+            config = yaml.safe_load(f)
+        args_dict.update(config)
 
     if args.noexecute:
         from .core import OPERATIONS_DRY_RUN
