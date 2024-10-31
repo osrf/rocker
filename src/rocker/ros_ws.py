@@ -43,7 +43,7 @@ class RosWs(RockerExtension):
         """
         workspace = cli_args[self.name]
         if RosWs.is_workspace_volume(workspace):
-            args = Volume.get_volume_args([[workspace + ":" + os.path.join(RosWs.get_home_dir(cli_args), self.name, 'src')]])
+            args = Volume.get_volume_args([[os.path.expanduser(workspace) + ":" + os.path.join(RosWs.get_home_dir(cli_args), self.name, 'src')]])
             return ' '.join(args)
         else:
             return ''
