@@ -18,18 +18,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN \
   @[if download_osstring == 'ubuntu']@
-  wget https://developer.download.nvidia.com/compute/cuda/repos/@(download_osstring)@(download_verstring)/x86_64/cuda-@(download_osstring)@(download_verstring).pin \
-  && mv cuda-@(download_osstring)@(download_verstring).pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
-  add-apt-repository restricted && \
-  @[else]@  
+  wget https://developer.download.nvidia.com/compute/cuda/repos/@(download_osstring)@(download_verstring)/x86_64/cuda-keyring_1.1-1_all.deb && \
+  dpkg -i cuda-keyring_1.1-1_all.deb && \
+  rm cuda-keyring_1.1-1_all.deb && \
+  @[else]@
   add-apt-repository contrib && \
   add-apt-repository non-free && \
+  apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/@(download_osstring)@(download_verstring)/x86_64/@(download_keyid).pub && \
+  && add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/@(download_osstring)@(download_verstring)/x86_64/ /" && \
   @[end if]@
-  apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/@(download_osstring)@(download_verstring)/x86_64/@(download_keyid).pub \
-  && add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/@(download_osstring)@(download_verstring)/x86_64/ /" \
-  && apt-get update \
-  && apt-get -y install cuda \
-  && rm -rf /var/lib/apt/lists/*
+  apt-get update && \
+  apt-get -y install cuda-toolkit && \
+  rm -rf /var/lib/apt/lists/*
 
 # File conflict problem with libnvidia-ml.so.1 and libcuda.so.1
 # https://github.com/NVIDIA/nvidia-docker/issues/1551
