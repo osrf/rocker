@@ -255,10 +255,16 @@ class CudaTest(unittest.TestCase):
     def setUpClass(self):
         client = get_docker_client()
         self.dockerfile_tags = []
-        for distro_version in ['focal', 'jammy']:
+        for (distro_name, distro_version) in [
+            ('ubuntu','focal'),
+            ('ubuntu','jammy'),
+            ('ubuntu','noble'),
+            ('debian','bookworm'),
+            ('debian','bullseye'),
+            ]:
             dockerfile = """
-FROM ubuntu:%(distro_version)s
-CMD dpkg -s cuda
+FROM %(distro_name)s:%(distro_version)s
+CMD dpkg -s cuda-toolkit
 """
             dockerfile_tag = 'testfixture_%s_cuda' % distro_version
             iof = StringIO((dockerfile % locals()).encode())
