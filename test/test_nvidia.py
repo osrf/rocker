@@ -292,6 +292,7 @@ CMD dpkg -s cuda-toolkit
             dig = DockerImageGenerator([], {}, tag)
             self.assertEqual(dig.build(), 0)
             self.assertNotEqual(dig.run(), 0)
+            dig.clear_image()
 
     @pytest.mark.docker
     def test_cuda_install(self):
@@ -302,6 +303,7 @@ CMD dpkg -s cuda-toolkit
             dig = DockerImageGenerator(active_extensions, {}, tag)
             self.assertEqual(dig.build(), 0)
             self.assertEqual(dig.run(), 0)
+            dig.clear_image()
 
     def test_cuda_env_subs(self):
         plugins = list_plugins()
