@@ -251,6 +251,12 @@ def docker_build(docker_client = None, output_callback = None, **kwargs):
         print("no more output and success not detected")
         return None
 
+def docker_remove_image(image_id, docker_client = None, output_callback = None, **kwargs):
+
+    if not docker_client:
+        docker_client = get_docker_client()
+
+    docker_client.remove_image(image_id)
 
 class SIGWINCHPassthrough(object):
     def __init__ (self, process):
@@ -413,6 +419,11 @@ class DockerImageGenerator(object):
                 print("Docker run failed\n", ex)
                 return ex.returncode
 
+    def clear_image(self):
+        if self.image_id:
+            docker_remove_image(self.image_id)
+            self.image_id = None
+            self.built = False
 
 def write_files(extensions, args_dict, target_directory):
     all_files = {}

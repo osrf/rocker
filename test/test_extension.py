@@ -454,6 +454,7 @@ RUN useradd test -u{uid}
         self.assertTrue(exit_code == 0, f"Build failed with exit code {exit_code}")
         run_exit_code = dig.run(**build_args)
         self.assertTrue(run_exit_code == 0, f"Run failed with exit code {run_exit_code}")
+        dig.clear_image()
 
 
         # Test colliding UID and name
@@ -464,6 +465,7 @@ RUN useradd test -u{uid}
         self.assertTrue(exit_code == 0, f"Build failed with exit code {exit_code}")
         run_exit_code = dig.run(**build_args)
         self.assertTrue(run_exit_code == 0, f"Run failed with exit code {run_exit_code}")
+        dig.clear_image()
 
 
 class PulseExtensionTest(unittest.TestCase):

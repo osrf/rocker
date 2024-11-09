@@ -92,3 +92,4 @@ class rmwRuntimeExtensionTest(unittest.TestCase):
         self.assertEqual(dig.build(), 0)
         self.assertEqual(dig.run(command='dpkg -l ros-rolling-rmw-cyclonedds-cpp'), 0)
         self.assertIn('-e RMW_IMPLEMENTATION=rmw_cyclonedds_cpp', dig.generate_docker_cmd('', mode='dry-run'))
+        dig.clear_image()
