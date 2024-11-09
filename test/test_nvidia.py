@@ -293,12 +293,10 @@ CMD dpkg -s cuda-toolkit
             self.assertEqual(dig.build(), 0)
             self.assertNotEqual(dig.run(), 0)
 
-    @pytest.mark.nvidia
-    @pytest.mark.x11
     @pytest.mark.docker
-    def test_cuda(self):
+    def test_cuda_install(self):
         plugins = list_plugins()
-        desired_plugins = ['x11', 'nvidia', 'cuda'] #TODO(Tfoote) encode the x11 dependency into the plugin and remove from test here
+        desired_plugins = ['cuda']
         active_extensions = [e() for e in plugins.values() if e.get_name() in desired_plugins]
         for tag in self.dockerfile_tags:
             dig = DockerImageGenerator(active_extensions, {}, tag)
