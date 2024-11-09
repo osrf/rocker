@@ -13,20 +13,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Enable contrib on debian to get required
 # https://packages.debian.org/bullseye/glx-alternative-nvidia
-# Enable non-free for nvidia-cuda-dev
-# https://packages.debian.org/bullseye/nvidia-cuda-dev
 
 RUN \
-  @[if download_osstring == 'ubuntu']@
-  wget https://developer.download.nvidia.com/compute/cuda/repos/@(download_osstring)@(download_verstring)/x86_64/cuda-keyring_1.1-1_all.deb && \
+  wget -q https://developer.download.nvidia.com/compute/cuda/repos/@(download_osstring)@(download_verstring)/x86_64/cuda-keyring_1.1-1_all.deb && \
   dpkg -i cuda-keyring_1.1-1_all.deb && \
   rm cuda-keyring_1.1-1_all.deb && \
-  @[else]@
+  \@[if download_osstring == 'debian']@
   add-apt-repository contrib && \
-  add-apt-repository non-free && \
-  apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/@(download_osstring)@(download_verstring)/x86_64/@(download_keyid).pub && \
-  && add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/@(download_osstring)@(download_verstring)/x86_64/ /" && \
-  @[end if]@
+  \@[end if]@
   apt-get update && \
   apt-get -y install cuda-toolkit && \
   rm -rf /var/lib/apt/lists/*
