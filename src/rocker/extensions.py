@@ -300,6 +300,11 @@ class User(RockerExtension):
     def get_name():
         return 'user'
 
+    def get_docker_args(self, cliargs):
+        if cliargs.get('use_podman', False):
+           return ' --userns=keep-id '
+        return ''
+
     def get_environment_subs(self):
         if not self._env_subs:
             user_vars = ['name', 'uid', 'gid', 'gecos','dir', 'shell']
