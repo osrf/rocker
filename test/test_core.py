@@ -239,6 +239,7 @@ class RockerCoreTest(unittest.TestCase):
         username_detected =  getattr(userinfo, 'pw_' + 'name')
         self.assertEqual(username_detected, get_user_name())
 
+    @pytest.mark.docker
     def test_docker_user_setting(self):
         parser = argparse.ArgumentParser()
         extension_manager = RockerExtensionManager()
