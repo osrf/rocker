@@ -250,6 +250,7 @@ CMD glmark2 --validate
             p.get_environment_subs(mock_cliargs)
         self.assertEqual(cm.exception.code, 1)
 
+@pytest.mark.docker
 class CudaTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
@@ -286,7 +287,6 @@ CMD dpkg -s cuda-toolkit
         em.Interpreter._wasProxyInstalled = False
 
 
-    @pytest.mark.docker
     def test_no_cuda(self):
         for tag in self.dockerfile_tags:
             dig = DockerImageGenerator([], {}, tag)
@@ -294,7 +294,6 @@ CMD dpkg -s cuda-toolkit
             self.assertNotEqual(dig.run(), 0)
             dig.clear_image()
 
-    @pytest.mark.docker
     def test_cuda_install(self):
         plugins = list_plugins()
         desired_plugins = ['cuda']
