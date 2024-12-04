@@ -6,3 +6,4 @@ deb_dist
 .coverage
 build
 rocker_venv
+.vscode
