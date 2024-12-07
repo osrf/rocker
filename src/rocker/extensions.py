@@ -484,7 +484,7 @@ class ShmSize(RockerExtension):
         args = ''
         shm_size = cliargs.get('shm_size', None)
         if shm_size:
-            args += f' --shm-size={shm_size} '
+            args += f' --shm-size {shm_size} '
         return args
 
     @staticmethod
