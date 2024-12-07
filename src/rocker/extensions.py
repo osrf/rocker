@@ -507,9 +507,9 @@ class Gpus(RockerExtension):
 
     def get_docker_args(self, cliargs):
         args = ''
-        shm_size = cliargs.get('gpus', None)
-        if shm_size:
-            args += f' --gpus {shm_size} '
+        gpus = cliargs.get('gpus', None)
+        if gpus:
+            args += f' --gpus {gpus} '
         return args
 
     @staticmethod
