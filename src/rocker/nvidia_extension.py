@@ -152,12 +152,15 @@ class Nvidia(RockerExtension):
 
     def get_docker_args(self, cliargs):
         force_flag = cliargs.get('nvidia', None)
+        gpus_ids_flag = cliargs.get('gpus', None)
+        if gpus_ids_flag is None:
+            gpus_ids_flag = 'all'
         if force_flag == 'runtime':
             return "  --runtime=nvidia"
         if force_flag == 'gpus':
-            return "  --gpus all"
+            return f"  --gpus {gpus_ids_flag}"
         if get_docker_version() >= Version("19.03"):
-            return "  --gpus all"
+            return f"  --gpus {gpus_ids_flag}"
         return "  --runtime=nvidia"
 
     @staticmethod

@@ -506,6 +506,9 @@ class Gpus(RockerExtension):
         return ''
 
     def get_docker_args(self, cliargs):
+        # The gpu ids will be set in the nvidia extension, if the nvidia argument is passed.
+        if cliargs.get('nvidia', None):
+            return ''
         args = ''
         gpus = cliargs.get('gpus', None)
         if gpus:
