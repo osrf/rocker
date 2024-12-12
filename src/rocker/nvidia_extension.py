@@ -239,3 +239,30 @@ class Cuda(RockerExtension):
             action='store_true',
             default=defaults.get('cuda', None),
             help="Install cuda and nvidia-cuda-dev into the container")
+        
+class Gpus(RockerExtension):
+    @staticmethod
+    def get_name():
+        return 'gpus'
+
+    def __init__(self):
+        self.name = Gpus.get_name()
+
+    def get_preamble(self, cliargs):
+        return ''
+
+    def get_docker_args(self, cliargs):
+        # The gpu ids will be set in the nvidia extension, if the nvidia argument is passed.
+        if cliargs.get('nvidia', None):
+            return ''
+        args = ''
+        gpus = cliargs.get('gpus', None)
+        if gpus:
+            args += f' --gpus {gpus} '
+        return args
+
+    @staticmethod
+    def register_arguments(parser, defaults={}):
+        parser.add_argument('--gpus',
+                            default=defaults.get('gpus', None),
+                            help="Set the indices of GPUs to use")
