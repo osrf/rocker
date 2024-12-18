@@ -30,6 +30,29 @@ jobs:
     strategy:
       matrix:
         python-version: [3.8, '3.x']
+        executable_name: [rocker, rodman]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install Dependencies And Self
+      run: |
+        python -m pip install --upgrade pip setuptools wheel
+        python -m pip install -e .
+    - name: Check main runs
+      run: |
+        ${{ matrix.executable_name }} ubuntu 'true'
+    - name: Check rocker help
+      run: |
+        ${{ matrix.executable_name }} -h
+  test_helper_functions:
+    name: Test Helper Functions
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        python-version: [3.8, '3.x']
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
@@ -46,10 +69,3 @@ jobs:
     - name: Check detector help
       run: |
         detect_docker_image_os ubuntu -h
-    - name: Check main runs
-      run: |
-        rocker ubuntu 'true'
-    - name: Check rocker help
-      run: |
-        rocker -h
-
