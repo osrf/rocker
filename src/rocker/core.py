@@ -229,9 +229,12 @@ def get_user_name():
 
 def docker_build(docker_client = None, output_callback = None, **kwargs):
     image_id = None
+    build_success = False
+    error_message = []
 
     if not docker_client:
         docker_client = get_docker_client()
+
     kwargs['decode'] = True
     for line in docker_client.build(**kwargs):
         output = line.get('stream', '').rstrip()
@@ -244,12 +247,16 @@ def docker_build(docker_client = None, output_callback = None, **kwargs):
         match = re.match(r'Successfully built ([a-z0-9]{12})', output)
         if match:
             image_id = match.group(1)
-
-    if image_id:
+            build_success = True
+        elif "error" in output.lower():
+            error_message.append(output)
+    
+            
+    if build_success:
         return image_id
     else:
-        print("no more output and success not detected")
-        return None
+        error_msg = "\n".join(error_message)
+        raise Exception(f"Build failed:\n{error_msg}")
 
 def docker_remove_image(image_id, docker_client = None, output_callback = None, **kwargs):
 
