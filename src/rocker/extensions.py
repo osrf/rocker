@@ -468,3 +468,27 @@ class GroupAdd(RockerExtension):
             default=defaults.get(GroupAdd.get_name(), None),
             action='append',
             help="Add additional groups to join.")
+
+class ShmSize(RockerExtension):
+    @staticmethod
+    def get_name():
+        return 'shm_size'
+
+    def __init__(self):
+        self.name = ShmSize.get_name()
+
+    def get_preamble(self, cliargs):
+        return ''
+
+    def get_docker_args(self, cliargs):
+        args = ''
+        shm_size = cliargs.get('shm_size', None)
+        if shm_size:
+            args += f' --shm-size {shm_size} '
+        return args
+
+    @staticmethod
+    def register_arguments(parser, defaults={}):
+        parser.add_argument('--shm-size',
+                            default=defaults.get('shm_size', None),
+                            help="Set the size of the shared memory for the container (e.g., 512m, 1g).")
