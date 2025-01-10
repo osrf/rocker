@@ -62,6 +62,7 @@ kwargs = {
             'privileged = rocker.extensions:Privileged',
             'pulse = rocker.extensions:PulseAudio',
             'rmw = rocker.rmw_extension:RMW',
+            'shm_size = rocker.extensions:ShmSize',
             'ssh = rocker.ssh_extension:Ssh',
             'ulimit = rocker.ulimit_extension:Ulimit',
             'user = rocker.extensions:User',

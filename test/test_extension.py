@@ -617,3 +617,35 @@ class GroupAddExtensionTest(unittest.TestCase):
         args = p.get_docker_args(mock_cliargs)
         self.assertIn('--group-add sudo', args)
         self.assertIn('--group-add docker', args)
+
+class ShmSizeExtensionTest(unittest.TestCase):
+
+    def setUp(self):
+        # Work around interference between empy Interpreter
+        # stdout proxy and test runner. empy installs a proxy on stdout
+        # to be able to capture the information.
+        # And the test runner creates a new stdout object for each test.
+        # This breaks empy as it assumes that the proxy has persistent
+        # between instances of the Interpreter class
+        # empy will error with the exception
+        # "em.Error: interpreter stdout proxy lost"
+        em.Interpreter._wasProxyInstalled = False
+
+    @pytest.mark.docker
+    def test_shm_size_extension(self):
+        plugins = list_plugins()
+        shm_size_plugin = plugins['shm_size']
+        self.assertEqual(shm_size_plugin.get_name(), 'shm_size')
+
+        p = shm_size_plugin()
+        self.assertTrue(plugin_load_parser_correctly(shm_size_plugin))
+
+        mock_cliargs = {}
+        self.assertEqual(p.get_snippet(mock_cliargs), '')
+        self.assertEqual(p.get_preamble(mock_cliargs), '')
+        args = p.get_docker_args(mock_cliargs)
+        self.assertNotIn('--shm-size', args)
+
+        mock_cliargs = {'shm_size': '12g'}
+        args = p.get_docker_args(mock_cliargs)
+        self.assertIn('--shm-size 12g', args)
