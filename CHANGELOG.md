@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v0.2.18](https://github.com/osrf/rocker/releases/tag/v0.2.18) - 2025-01-10
+
+<small>[Compare with v0.2.17](https://github.com/osrf/rocker/compare/v0.2.17...v0.2.18)</small>
+
+### Added
+
+- Add UI feedback that image is being cleaned up, and how to avoid. ([3b21f78](https://github.com/osrf/rocker/commit/3b21f78fd4372a5451611a2a3e607f6941bcc398) by Tully Foote).
+- Add clear_image to ImageGenerator to enable non-persistence and not taking up all disk space. Especially for the tests. ([24dd5e1](https://github.com/osrf/rocker/commit/24dd5e1e7a6387e6c9b6c1df3644bf493f04b5c5) by Tully Foote).
+- Add support for ulimit flag (#291) ([cff5cb2](https://github.com/osrf/rocker/commit/cff5cb27c04f4db8d115493c2e2704c6a10726df) by Felipe Padula Sanches).
+- Add support for --shm-size flag (#306)
+
+### Fixed
+
+- fix test for new cuda installation package ([3449afa](https://github.com/osrf/rocker/commit/3449afabd700c4723d21c22163e73f9cbf9b358d) by Tully Foote).
+- Removed deprecation warning from volume extensino (#292)
+- Updated and simplified CUDA installation (#299 by jonazpiazu)
+
+### Removed
+
+- Remove default value for defaults (#289) ([3f02bdc](https://github.com/osrf/rocker/commit/3f02bdcc542c786eb08bdb3b324887bfa21698a2) by Tully Foote).
+
 ## [v0.2.17](https://github.com/osrf/rocker/releases/tag/v0.2.17) - 2024-08-28
 
 <small>[Compare with v0.2.16](https://github.com/osrf/rocker/compare/v0.2.16...v0.2.17)</small>
