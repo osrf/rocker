@@ -267,12 +267,24 @@ def docker_build(docker_client = None, output_callback = None, **kwargs):
         print('Output stream from docker_build finished but no image_id detected')
         return None
 
-def docker_remove_image(image_id, docker_client = None, output_callback = None, **kwargs):
+def docker_remove_image(
+        image_id,
+        docker_client = None,
+        output_callback = None,
+        fail_on_error = False,
+        force = False,
+        **kwargs):
 
     if not docker_client:
         docker_client = get_docker_client()
 
-    docker_client.remove_image(image_id)
+    try:
+        docker_client.remove_image(image_id, force=force)
+    except docker.errors.APIError as ex:
+        ## removing the image can fail if there's child images
+        if fail_on_error:
+            return False
+    return True
 
 class SIGWINCHPassthrough(object):
     def __init__ (self, process):
@@ -437,7 +449,8 @@ class DockerImageGenerator(object):
 
     def clear_image(self):
         if self.image_id:
-            docker_remove_image(self.image_id)
+            if not docker_remove_image(self.image_id):
+                print(f'Failed to clear image {self.image_id} it likely has child images.')
             self.image_id = None
             self.built = False
 
