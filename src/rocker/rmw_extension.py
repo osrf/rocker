@@ -25,6 +25,7 @@ class RMW(RockerExtension):
     rmw_map = {
         'cyclonedds': ['ros-${ROS_DISTRO}-rmw-cyclonedds-cpp'],
         'fastrtps'  : ['ros-${ROS_DISTRO}-rmw-fastrtps-cpp'],
+        'zenoh'  : ['ros-${ROS_DISTRO}-rmw-zenoh-cpp'],
         # TODO(tfoote) Enable connext with license acceptance method
         # 'connextdds': ['ros-${ROS_DISTRO}-rmw-connextdds'],
     }
