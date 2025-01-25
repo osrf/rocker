@@ -272,15 +272,7 @@ def docker_remove_image(
         docker_client = None,
         output_callback = None,
         fail_on_error = False,
-        force = False, Setting up cuda-toolkit-12-8 (12.8.0-1) ...
-14573
-building > Setting up cuda-toolkit (12.8.0-1) ...
-14574
-building > Setting alternatives
-14575
-Output stream from docker_build finished but no image_id detected
-14576
-FAILED
+        force = False,
         **kwargs):
 
     if not docker_client:
@@ -308,15 +300,7 @@ class SIGWINCHPassthrough(object):
             # We're not interacting with a real stdout, don't do the resize
             # This happens when we're in something like unit tests.
             return
-        if not self.process.closed: Setting up cuda-toolkit-12-8 (12.8.0-1) ...
-14573
-building > Setting up cuda-toolkit (12.8.0-1) ...
-14574
-building > Setting alternatives
-14575
-Output stream from docker_build finished but no image_id detected
-14576
-FAILED
+        if not self.process.closed:
             self.process.setwinsize(a[0],a[1])
 
 
@@ -396,15 +380,8 @@ class DockerImageGenerator(object):
         if operating_mode == OPERATIONS_INTERACTIVE and not os.isatty(sys.__stdin__.fileno()):
             operating_mode = OPERATIONS_NON_INTERACTIVE
             print("No tty detected for stdin forcing non-interactive")
-        return operating_mode Setting up cuda-toolkit-12-8 (12.8.0-1) ...
-14573
-building > Setting up cuda-toolkit (12.8.0-1) ...
-14574
-building > Setting alternatives
-14575
-Output stream from docker_build finished but no image_id detected
-14576
-FAILED
+        return operating_mode
+
 
     def generate_docker_cmd(self, command='', **kwargs):
         docker_args = ''
@@ -450,15 +427,7 @@ FAILED
             print(cmd)
             return 0
         elif operating_mode == OPERATIONS_NON_INTERACTIVE:
-            try: Setting up cuda-toolkit-12-8 (12.8.0-1) ...
-14573
-building > Setting up cuda-toolkit (12.8.0-1) ...
-14574
-building > Setting alternatives
-14575
-Output stream from docker_build finished but no image_id detected
-14576
-FAILED
+            try:
                 print("Executing command: ")
                 print(cmd)
                 p = subprocess.run(shlex.split(cmd), check=True, stderr=subprocess.STDOUT)
@@ -548,15 +517,7 @@ def list_plugins(extension_point='rocker.extensions'):
     if hasattr(all_entry_points, 'select'):
         rocker_extensions = all_entry_points.select(group=extension_point)
     else:
-        rocker_extensions = all_ent Setting up cuda-toolkit-12-8 (12.8.0-1) ...
-14573
-building > Setting up cuda-toolkit (12.8.0-1) ...
-14574
-building > Setting alternatives
-14575
-Output stream from docker_build finished but no image_id detected
-14576
-FAILEDry_points.get(extension_point, [])
+        rocker_extensions = all_entry_points.get(extension_point, [])
 
     unordered_plugins = {
     entry_point.name: entry_point.load()
