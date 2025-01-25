@@ -277,7 +277,7 @@ def docker_build(docker_client = None, output_callback = None, **kwargs):
     if image_id:
         return canonicalize_image_id(image_id, docker_client=docker_client)
     else:
-        print('Output stream from docker_build finished but no image_id detected')
+        print('Docker Build Failed: Output stream from docker_build finished but no image_id detected.')
         return None
 
 def docker_remove_image(
@@ -380,6 +380,8 @@ class DockerImageGenerator(object):
                     self.built = True
                     return 0
                 else:
+                    print(f'Failed to build dockerfile:\n"""\n{self.dockerfile}\n"""')
+                    print(f'Arguments were: {arguments}')
                     return 2
 
             except docker.errors.APIError as ex:
