@@ -365,6 +365,7 @@ class DockerImageGenerator(object):
             arguments['rm'] = True
             arguments['nocache'] = kwargs.get('nocache', False)
             arguments['pull'] = kwargs.get('pull', False)
+            arguments['forcerm'] = not kwargs.get('persist_image', False)
             image_name = kwargs.get('image_name', None)
             if image_name:
                 print(f"Running docker tag {self.image_id} {image_name}")
