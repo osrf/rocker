@@ -20,6 +20,14 @@ RUN \
   add-apt-repository contrib && \
   \@[end if]@
   DEBIAN_FRONTEND=noninteractive apt-get update -q && \
+  DEBIAN_FRONTEND=noninteractive apt-get -qy install --no-install-recommends \
+  binutils binutils-common binutils-x86-64-linux-gnu build-essential \
+  ca-certificates-java cpp cpp-9 \
+  default-jre default-jre-headless dpkg-dev fontconfig-config \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN \
+  DEBIAN_FRONTEND=noninteractive apt-get update -q && \
   DEBIAN_FRONTEND=noninteractive apt-get -qy install cuda-toolkit  --no-install-recommends && \
   rm -rf /var/lib/apt/lists/* && \
   echo "Successfully installed cuda-toolkit"
