@@ -4,7 +4,8 @@
 
 
 # Prerequisites
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN DEBIAN_FRONTEND=noninteractive apt-get update -q && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -qy --no-install-recommends \
     wget software-properties-common gnupg2 \
     && rm -rf /var/lib/apt/lists/*
 
