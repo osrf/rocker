@@ -231,7 +231,7 @@ def canonicalize_image_id(image_id, docker_client=None):
     if not docker_client:
         docker_client = get_docker_client()
     inspect_info = docker_client.inspect_image(image_id)
-    print("image info ", inspect_info)
+    # print("image info ", inspect_info)
     #TODO(tfoote) Consider canonicalizing this long instead of truncated especially with podman support
     return inspect_info['Id'].split(':')[1][0:12]
 
