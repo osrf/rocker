@@ -20,7 +20,7 @@ RUN \
   add-apt-repository contrib && \
   \@[end if]@
   DEBIAN_FRONTEND=noninteractive apt-get update -q && \
-  DEBIAN_FRONTEND=noninteractive apt-get -qy install cuda-toolkit && \
+  DEBIAN_FRONTEND=noninteractive apt-get -qy install cuda-toolkit  --no-install-recommends && \
   rm -rf /var/lib/apt/lists/* && \
   echo "Successfully installed cuda-toolkit"
 
@@ -32,3 +32,5 @@ RUN rm -rf /usr/lib/x86_64-linux-gnu/libcuda*
 # TODO(tfoote) Add documentation of why these are required
 ENV PATH /usr/local/cuda/bin${PATH:+:${PATH}}
 ENV LD_LIBRARY_PATH /usr/local/cuda/lib64/stubs:/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+
+RUN echo "Completed cuda snippet" && env | grep PATH && dpkg -s cuda-toolkit
