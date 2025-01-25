@@ -32,6 +32,8 @@ RUN \
   rm -rf /var/lib/apt/lists/* && \
   echo "Successfully installed cuda-toolkit"
 
+RUN echo "Next step Successfully installed cuda-toolkit"
+
 # File conflict problem with libnvidia-ml.so.1 and libcuda.so.1
 # https://github.com/NVIDIA/nvidia-docker/issues/1551
 RUN rm -rf /usr/lib/x86_64-linux-gnu/libnv* && echo Cleaned out libnm
