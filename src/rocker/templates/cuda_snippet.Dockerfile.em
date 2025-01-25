@@ -23,10 +23,8 @@ RUN \
   DEBIAN_FRONTEND=noninteractive apt-get -qy install --no-install-recommends \
   binutils binutils-common binutils-x86-64-linux-gnu build-essential \
   ca-certificates-java cpp cpp-9 \
-  default-jre default-jre-headless dpkg-dev fontconfig-config cuda-toolkit-config-common libcusparse-dev-12-8 libcufft-12-8\
+  default-jre default-jre-headless dpkg-dev fontconfig-config cuda-toolkit-config-common\
   && rm -rf /var/lib/apt/lists/*
-  #TODO Hard coded 12-8 here. For debugging if large image sizes is the problem
-  # Github has a potential 10GB limit which we're bumping close to.
 
 RUN \
   DEBIAN_FRONTEND=noninteractive apt-get update -q && \
