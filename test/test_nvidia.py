@@ -251,6 +251,7 @@ CMD glmark2 --validate
         self.assertEqual(cm.exception.code, 1)
 
 @pytest.mark.docker
+@pytest.mark.nvidia # Technically not needing nvidia but too resource intensive for main runs
 class CudaTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
