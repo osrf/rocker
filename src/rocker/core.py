@@ -237,19 +237,28 @@ def canonicalize_image_id(image_id, docker_client=None):
 
 def docker_build(docker_client = None, output_callback = None, **kwargs):
     image_id = None
+    aux_image_id = None
 
     if not docker_client:
         docker_client = get_docker_client()
     kwargs['decode'] = True
     for line in docker_client.build(**kwargs):
         # print("line is ", line)
-        if not image_id:
-            # Undocumented way to get image_id from alternative element from stream
-            # example seen {'aux': {'ID': 'sha256:e328328fb3297a7c0f6cc5c2bf460d976f8e69e87a0706e6b8a211f42afa025c'}}
-            image_id = line.get('aux', {}).get('ID')
-            # if image_id:
-            #     print("from aux image id", image_id)
+        # Undocumented way to get image_id from alternative element from stream
+        # example seen {'aux': {'ID': 'sha256:e328328fb3297a7c0f6cc5c2bf460d976f8e69e87a0706e6b8a211f42afa025c'}}
+        found_aux_image_id = None
+        found_aux_image_id = line.get('aux', {}).get('ID')
+        if found_aux_image_id:
+            aux_image_id = found_aux_image_id
+            print("from aux image id", aux_image_id, line)
+
         output = line.get('stream', '').rstrip()
+
+        #Reset aux_image_id if a new layer is detected
+        if aux_image_id and output.startswith('Step '):
+            aux_image_id = None
+            print("resetting aux id for new step: ", output[0:15], "...")
+
         if not output:
             # print("non stream data", line)
             continue
@@ -260,6 +269,10 @@ def docker_build(docker_client = None, output_callback = None, **kwargs):
             match = re.match(r'Successfully built ([a-z0-9]{12})', output)
             if match:
                 image_id = match.group(1)
+
+    # Fallback to aux based image id if found
+    if not image_id and aux_image_id:
+        image_id = aux_image_id
 
     if image_id:
         return canonicalize_image_id(image_id, docker_client=docker_client)
