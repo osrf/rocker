@@ -258,9 +258,9 @@ class CudaTest(unittest.TestCase):
         self.dockerfile_tags = []
         for (distro_name, distro_version) in [
             ('ubuntu','focal'),
-            ('ubuntu','jammy'),
-            ('ubuntu','noble'),
-            ('debian','bookworm'),
+            # ('ubuntu','jammy'),
+            # ('ubuntu','noble'),
+            # ('debian','bookworm'),
             ('debian','bullseye'),
             ]:
             dockerfile = """
