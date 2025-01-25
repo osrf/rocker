@@ -227,6 +227,14 @@ def get_user_name():
     userinfo = pwd.getpwuid(os.getuid())
     return getattr(userinfo, 'pw_' + 'name')
 
+def canonicalize_image_id(image_id, docker_client=None):
+    if not docker_client:
+        docker_client = get_docker_client()
+    inspect_info = docker_client.inspect_image(image_id)
+    print("image info ", inspect_info)
+    #TODO(tfoote) Consider canonicalizing this long instead of truncated especially with podman support
+    return inspect_info['Id'].split(':')[1][0:12]
+
 def docker_build(docker_client = None, output_callback = None, **kwargs):
     image_id = None
 
@@ -234,21 +242,29 @@ def docker_build(docker_client = None, output_callback = None, **kwargs):
         docker_client = get_docker_client()
     kwargs['decode'] = True
     for line in docker_client.build(**kwargs):
+        # print("line is ", line)
+        if not image_id and False:
+            # Undocumented way to get image_id from alternative element from stream
+            # example seen {'aux': {'ID': 'sha256:e328328fb3297a7c0f6cc5c2bf460d976f8e69e87a0706e6b8a211f42afa025c'}}
+            image_id = line.get('aux', {}).get('ID')
+            # if image_id:
+            #     print("from aux image id", image_id)
         output = line.get('stream', '').rstrip()
         if not output:
             # print("non stream data", line)
             continue
         if output_callback is not None:
             output_callback(output)
-
-        match = re.match(r'Successfully built ([a-z0-9]{12})', output)
-        if match:
-            image_id = match.group(1)
+        # Fallback detect image_id via string matching
+        if not image_id:
+            match = re.match(r'Successfully built ([a-z0-9]{12})', output)
+            if match:
+                image_id = match.group(1)
 
     if image_id:
-        return image_id
+        return canonicalize_image_id(image_id, docker_client=docker_client)
     else:
-        print("no more output and success not detected")
+        print('Output stream from docker_build finished but no image_id detected')
         return None
 
 def docker_remove_image(image_id, docker_client = None, output_callback = None, **kwargs):
