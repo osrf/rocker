@@ -251,6 +251,7 @@ CMD glmark2 --validate
         self.assertEqual(cm.exception.code, 1)
 
 @pytest.mark.docker
+@pytest.mark.nvidia # Technically not needing nvidia but too resource intensive for main runs
 class CudaTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
@@ -258,9 +259,9 @@ class CudaTest(unittest.TestCase):
         self.dockerfile_tags = []
         for (distro_name, distro_version) in [
             ('ubuntu','focal'),
-            # ('ubuntu','jammy'),
-            # ('ubuntu','noble'),
-            # ('debian','bookworm'),
+            ('ubuntu','jammy'),
+            ('ubuntu','noble'),
+            ('debian','bookworm'),
             ('debian','bullseye'),
             ]:
             dockerfile = """
@@ -298,8 +299,9 @@ CMD dpkg -s cuda-toolkit
         plugins = list_plugins()
         desired_plugins = ['cuda']
         active_extensions = [e() for e in plugins.values() if e.get_name() in desired_plugins]
+        mock_cliargs = {'persist_image': 'True'}
         for tag in self.dockerfile_tags:
-            dig = DockerImageGenerator(active_extensions, {}, tag)
+            dig = DockerImageGenerator(active_extensions, mock_cliargs, tag)
             self.assertEqual(dig.build(), 0)
             self.assertEqual(dig.run(), 0)
             dig.clear_image()
