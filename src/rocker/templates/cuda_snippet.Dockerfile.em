@@ -2,9 +2,6 @@
 # https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Debian&target_version=11&target_type=deb_network
 # https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_network
 
-# Keep the dockerfile non-interactive
-# TODO(tfoote) make this more generic/shared across instances
-ARG DEBIAN_FRONTEND=noninteractive
 
 # Prerequisites
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -21,8 +18,8 @@ RUN \
   \@[if download_osstring == 'debian']@
   add-apt-repository contrib && \
   \@[end if]@
-  apt-get update && \
-  apt-get -qy install cuda-toolkit && \
+  DEBIAN_FRONTEND=noninteractive apt-get update -q && \
+  DEBIAN_FRONTEND=noninteractive apt-get -qy install cuda-toolkit && \
   rm -rf /var/lib/apt/lists/* && \
   echo "Successfully installed cuda-toolkit"
 
