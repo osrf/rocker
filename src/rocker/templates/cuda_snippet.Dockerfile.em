@@ -22,8 +22,9 @@ RUN \
   add-apt-repository contrib && \
   \@[end if]@
   apt-get update && \
-  apt-get -y install cuda-toolkit && \
-  rm -rf /var/lib/apt/lists/*
+  apt-get -qy install cuda-toolkit && \
+  rm -rf /var/lib/apt/lists/* && \
+  echo "Successfully installed cuda-toolkit"
 
 # File conflict problem with libnvidia-ml.so.1 and libcuda.so.1
 # https://github.com/NVIDIA/nvidia-docker/issues/1551
