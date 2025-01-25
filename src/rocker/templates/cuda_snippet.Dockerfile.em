@@ -23,7 +23,7 @@ RUN \
   DEBIAN_FRONTEND=noninteractive apt-get -qy install --no-install-recommends \
   binutils binutils-common binutils-x86-64-linux-gnu build-essential \
   ca-certificates-java cpp cpp-9 \
-  default-jre default-jre-headless dpkg-dev fontconfig-config \
+  default-jre default-jre-headless dpkg-dev fontconfig-config cuda-toolkit-config-common\
   && rm -rf /var/lib/apt/lists/*
 
 RUN \
@@ -34,8 +34,8 @@ RUN \
 
 # File conflict problem with libnvidia-ml.so.1 and libcuda.so.1
 # https://github.com/NVIDIA/nvidia-docker/issues/1551
-RUN rm -rf /usr/lib/x86_64-linux-gnu/libnv*
-RUN rm -rf /usr/lib/x86_64-linux-gnu/libcuda*
+RUN rm -rf /usr/lib/x86_64-linux-gnu/libnv* && echo Cleaned out libnm
+RUN rm -rf /usr/lib/x86_64-linux-gnu/libcuda* && echo Cleaned out libcuda
 
 # TODO(tfoote) Add documentation of why these are required
 ENV PATH /usr/local/cuda/bin${PATH:+:${PATH}}
