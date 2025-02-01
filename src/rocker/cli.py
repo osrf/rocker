@@ -69,13 +69,13 @@ def main():
     exit_code = dig.build(**vars(args))
     if exit_code != 0:
         print("Build failed exiting")
-        if not args_dict['persist_image']:
+        if not (args_dict['persist_image'] or args_dict.get('image_name')):
             dig.clear_image()
         return exit_code
     # Convert command into string
     args.command = ' '.join(args.command)
     result = dig.run(**args_dict)
-    if not args_dict['persist_image']:
+    if not (args_dict['persist_image'] or args_dict.get('image_name')):
         print(f'Clearing Image: {dig.image_id}s\nTo not clean up use --persist-images')
         dig.clear_image()
     return result
