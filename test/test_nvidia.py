@@ -328,3 +328,41 @@ CMD dpkg -s cuda-toolkit
         with self.assertRaises(SystemExit) as cm:
             p.get_environment_subs(mock_cliargs)
         self.assertEqual(cm.exception.code, 1)
+
+class GpusExtensionTest(unittest.TestCase):
+
+    def setUp(self):
+        # Work around interference between empy Interpreter
+        # stdout proxy and test runner. empy installs a proxy on stdout
+        # to be able to capture the information.
+        # And the test runner creates a new stdout object for each test.
+        # This breaks empy as it assumes that the proxy has persistent
+        # between instances of the Interpreter class
+        # empy will error with the exception
+        # "em.Error: interpreter stdout proxy lost"
+        em.Interpreter._wasProxyInstalled = False
+
+    @pytest.mark.docker
+    def test_gpus_extension(self):
+        plugins = list_plugins()
+        gpus_plugin = plugins['gpus']
+        self.assertEqual(gpus_plugin.get_name(), 'gpus')
+
+        p = gpus_plugin()
+        self.assertTrue(plugin_load_parser_correctly(gpus_plugin))
+
+        # Test when no GPUs are specified
+        mock_cliargs = {}
+        self.assertEqual(p.get_snippet(mock_cliargs), '')
+        self.assertEqual(p.get_preamble(mock_cliargs), '')
+        args = p.get_docker_args(mock_cliargs)
+        self.assertNotIn('--gpus', args)
+
+        # Test when GPUs are specified
+        mock_cliargs = {'gpus': 'all'}
+        args = p.get_docker_args(mock_cliargs)
+        self.assertIn('--gpus all', args)
+
+        mock_cliargs = {'gpus': '0,1'}
+        args = p.get_docker_args(mock_cliargs)
+        self.assertIn('--gpus 0,1', args)
