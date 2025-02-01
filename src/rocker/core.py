@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from collections import OrderedDict
+from contextlib import nullcontext
 import io
 import os
 import pwd
@@ -391,6 +392,7 @@ class DockerImageGenerator(object):
 
         cmd = self.generate_docker_cmd(command, **kwargs)
         operating_mode = self.get_operating_mode(kwargs)
+        console_output_file = kwargs.get('console_output_file')
 
         #   $DOCKER_OPTS \
         if operating_mode == OPERATIONS_DRY_RUN:
@@ -399,10 +401,13 @@ class DockerImageGenerator(object):
             return 0
         elif operating_mode == OPERATIONS_NON_INTERACTIVE:
             try:
-                print("Executing command: ")
-                print(cmd)
-                p = subprocess.run(shlex.split(cmd), check=True, stderr=subprocess.STDOUT)
-                return p.returncode
+                with open(console_output_file, 'a') if console_output_file else nullcontext() as consoleout_fh:
+                    if console_output_file:
+                        print(f"Logging output to file {console_output_file}")
+                    print("Executing command: ")
+                    print(cmd)
+                    p = subprocess.run(shlex.split(cmd), check=True, stdout=consoleout_fh if console_output_file else None, stderr=subprocess.STDOUT)
+                    return p.returncode
             except subprocess.CalledProcessError as ex:
                 print("Non-interactive Docker run failed\n", ex)
                 return ex.returncode
