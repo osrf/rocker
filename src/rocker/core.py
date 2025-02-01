@@ -254,7 +254,6 @@ def docker_build(docker_client = None, output_callback = None, **kwargs):
 def docker_remove_image(
         image_id,
         docker_client = None,
-        output_callback = None,
         fail_on_error = False,
         force = False,
         **kwargs):
