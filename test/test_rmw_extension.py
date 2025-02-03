@@ -26,6 +26,7 @@ from rocker.core import list_plugins
 
 from test_extension import plugin_load_parser_correctly
 
+from rocker.rmw_extension import RMW
 
 
 class rmwExtensionTest(unittest.TestCase):
@@ -84,7 +85,7 @@ class rmwRuntimeExtensionTest(unittest.TestCase):
         plugins = list_plugins()
         rmw_plugin = plugins['rmw']
 
-        rmws_to_test = ['fastrtps', 'cyclonedds', 'zenoh']
+        rmws_to_test = RMW.rmw_map.keys()
 
         p = rmw_plugin()
         self.assertTrue(plugin_load_parser_correctly(rmw_plugin))
