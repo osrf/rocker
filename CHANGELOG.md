@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v0.2.19](https://github.com/osrf/rocker/releases/tag/v0.2.19) - 2025-02-06
+
+<small>[Compare with v0.2.18](https://github.com/osrf/rocker/compare/v0.2.18...v0.2.19)</small>
+
+### Added
+
+- add rmw zenoh support to rmw plugin (#315) ([5c6e8e7](https://github.com/osrf/rocker/commit/5c6e8e7fe45b34868bb74a40610c69b293341505) by Tully Foote).
+
+- Improve robustness of image cleanup (#313) ([149d4ef
+](https://github.com/osrf/rocker/commit/149d4ef86ab5b42e7373066ba84ca1e985555011))
+
+- Enable redirecting non-interactive run console output to file (#317) ([66fe159](https://github.com/osrf/rocker/commit/66fe159e3be5a80d3ba189320bf064da84371e73))
+
 ## [v0.2.18](https://github.com/osrf/rocker/releases/tag/v0.2.18) - 2025-01-10
 
 <small>[Compare with v0.2.17](https://github.com/osrf/rocker/compare/v0.2.17...v0.2.18)</small>

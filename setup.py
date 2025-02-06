@@ -35,7 +35,7 @@ install_requires.append(docker_package)
 
 kwargs = {
     'name': 'rocker',
-    'version': '0.2.18',
+    'version': '0.2.19',
     'packages': ['rocker'],
     'package_dir': {'': 'src'},
     'package_data': {'rocker': ['templates/*.em']},
