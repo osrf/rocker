@@ -188,6 +188,21 @@ class Cuda(RockerExtension):
         self.supported_distros = ['Ubuntu', 'Debian GNU/Linux']
         self.supported_versions = ['20.04', '22.04', '24.04', '11', '12'] # Debian 11 and 12
 
+# ADDED: Function to check if CUDA is installed
+        def is_cuda_installed(self):
+            """Check if CUDA is already installed on the system."""
+        try:
+            result = subprocess.run(
+                ["nvidia-smi"],  # Use `nvidia-smi` to check for CUDA
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True
+            )
+            return result.returncode == 0  # Return True if CUDA is installed
+        except (FileNotFoundError, subprocess.CalledProcessError):
+            # If `nvidia-smi` is not found or fails, CUDA is not installed
+            return False
+
     def get_environment_subs(self, cliargs={}):
         if not self._env_subs:
             self._env_subs = {}
@@ -222,7 +237,14 @@ class Cuda(RockerExtension):
         # preamble = pkgutil.get_data('rocker', 'templates/%s_preamble.Dockerfile.em' % self.name).decode('utf-8')
         # return empy_expand(preamble, self.get_environment_subs(cliargs))
 
+# CHANGED: Modified `get_snippet()` to skip installation if CUDA is detected
     def get_snippet(self, cliargs):
+        """Generate Dockerfile snippet for installing CUDA."""
+        if self.is_cuda_installed():
+            # ADDED: Skip installation if CUDA is already installed
+            print("CUDA is already installed. Skipping installation.")
+            return ""  # No Dockerfile snippet if CUDA is installed
+        print("CUDA not found. Proceeding with installation.")
         snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
         return empy_expand(snippet, self.get_environment_subs(cliargs))
 
