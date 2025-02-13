@@ -320,6 +320,7 @@ class DockerImageGenerator(object):
 
         self.dockerfile = generate_dockerfile(active_extensions, self.cliargs, base_image)
         self.image_id = None
+        self.run_subprocesses = []
 
     def build(self, **kwargs):
         with tempfile.TemporaryDirectory() as td:
@@ -417,7 +418,10 @@ class DockerImageGenerator(object):
                         print(f"Logging output to file {console_output_file}")
                     print("Executing command: ")
                     print(cmd)
-                    p = subprocess.run(shlex.split(cmd), check=True, stdout=consoleout_fh if console_output_file else None, stderr=subprocess.STDOUT)
+                    p = subprocess.Popen(shlex.split(cmd), stdout=consoleout_fh if console_output_file else None, stderr=subprocess.STDOUT)
+                    self.run_subprocesses.append(p)
+                    p.wait()
+                    self.run_subprocesses.remove(p)
                     return p.returncode
             except subprocess.CalledProcessError as ex:
                 print("Non-interactive Docker run failed\n", ex)
@@ -427,9 +431,11 @@ class DockerImageGenerator(object):
                 print("Executing command: ")
                 print(cmd)
                 p = pexpect.spawn(cmd)
+                self.run_subprocesses.append(p)
                 with SIGWINCHPassthrough(p):
                     p.interact()
                 p.close(force=True)
+                self.run_subprocesses.remove(p)
                 return p.exitstatus
             except pexpect.ExceptionPexpect as ex:
                 print("Docker run failed\n", ex)
