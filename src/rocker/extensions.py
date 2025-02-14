@@ -186,6 +186,29 @@ class Name(RockerExtension):
         parser.add_argument('--name', default=defaults.get('name', ''),
                             help='Name of the container.')
 
+class Detach(RockerExtension):
+    @staticmethod
+    def get_name():
+        return 'detach'
+    
+    def __init__(self):
+        self.name = Detach.get_name()
+    
+    def get_docker_args(self, cliargs):
+        args = ''
+        detach = cliargs.get('detach', False)
+        if detach:
+            args += ' --detach'
+        return args
+    
+    @staticmethod
+    def register_arguments(parser, defaults):
+        parser.add_argument(
+            '--detach',
+            action='store_true',
+            default=defaults.get('detach', False),
+            help='Run the container in the background.'
+        )
 
 class Network(RockerExtension):
     @staticmethod
