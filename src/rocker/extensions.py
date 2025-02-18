@@ -12,11 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import grp
 import os
 import docker
 import getpass
-import pwd
 import pkgutil
 from pathlib import Path
 from shlex import quote
@@ -249,6 +247,7 @@ class PulseAudio(RockerExtension):
 
 
     def get_environment_subs(self):
+        import grp
         if not self._env_subs:
             self._env_subs = {}
             self._env_subs['user_id'] = os.getuid()
