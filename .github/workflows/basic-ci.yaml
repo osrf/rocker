@@ -4,10 +4,11 @@ on: [push, pull_request]
 jobs:
   basic_ci:
     name: Basic CI
-    runs-on: ubuntu-22.04
     strategy:
       matrix:
         python-version: ['3.8', 3.x]
+        os: [ubuntu-22.04, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
@@ -26,10 +27,11 @@ jobs:
       uses: codecov/codecov-action@v3
   cli_smoke_tests:
     name: CLI smoke tests
-    runs-on: ubuntu-22.04
     strategy:
       matrix:
         python-version: [3.8, '3.x']
+        os: [ubuntu-22.04, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
