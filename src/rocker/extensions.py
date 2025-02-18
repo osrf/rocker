@@ -300,6 +300,7 @@ class User(RockerExtension):
         return 'user'
 
     def get_environment_subs(self):
+        import pwd
         if not self._env_subs:
             user_vars = ['name', 'uid', 'gid', 'gecos','dir', 'shell']
             userinfo = pwd.getpwuid(os.getuid())
