@@ -226,11 +226,11 @@ class RockerCoreTest(unittest.TestCase):
 
         # TODO(tfoote) mock this appropriately
         # google actions tests don't have a tty, local tests do
-        import os, sys
-        if os.isatty(sys.__stdin__.fileno()):
-            self.assertIn('-it', dig.generate_docker_cmd(mode='interactive'))
-        else:
-            self.assertNotIn('-it', dig.generate_docker_cmd(mode='interactive'))
+        # import os, sys
+        # if os.isatty(sys.__stdin__.fileno()):
+        #     self.assertIn('-it', dig.generate_docker_cmd(mode='interactive'))
+        # else:
+        self.assertIn('-it', dig.generate_docker_cmd(mode='interactive'))
 
         self.assertNotIn('-it', dig.generate_docker_cmd(mode='non-interactive'))
 
