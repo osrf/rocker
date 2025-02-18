@@ -38,7 +38,6 @@ import pexpect
 from pathlib import Path
 import signal
 import struct
-import termios
 import typing
 
 SYS_STDOUT = sys.stdout
@@ -276,6 +275,7 @@ class SIGWINCHPassthrough(object):
 
     def set_window_size(self):
         import fcntl
+        import termios
         s = struct.pack("HHHH", 0, 0, 0, 0)
         try:
             a = struct.unpack('hhhh', fcntl.ioctl(SYS_STDOUT.fileno(),
