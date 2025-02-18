@@ -35,7 +35,6 @@ import tempfile
 import docker
 import pexpect
 
-import fcntl
 from pathlib import Path
 import signal
 import struct
@@ -276,6 +275,7 @@ class SIGWINCHPassthrough(object):
         self.active = os.isatty(sys.__stdout__.fileno())
 
     def set_window_size(self):
+        import fcntl
         s = struct.pack("HHHH", 0, 0, 0, 0)
         try:
             a = struct.unpack('hhhh', fcntl.ioctl(SYS_STDOUT.fileno(),
