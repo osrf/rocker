@@ -16,7 +16,6 @@ from collections import OrderedDict
 from contextlib import nullcontext
 import io
 import os
-import pwd
 import re
 import sys
 
@@ -225,6 +224,7 @@ def get_docker_client():
             ' The underlying error was:\n"""\n%s\n"""\n' % ex)
 
 def get_user_name():
+    import pwd
     userinfo = pwd.getpwuid(os.getuid())
     return getattr(userinfo, 'pw_' + 'name')
 

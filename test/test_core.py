@@ -18,7 +18,6 @@
 import argparse
 import em
 import os
-import pwd
 import pytest
 import unittest
 
@@ -234,7 +233,9 @@ class RockerCoreTest(unittest.TestCase):
 
         self.assertNotIn('-it', dig.generate_docker_cmd(mode='non-interactive'))
 
+    @pytest.mark.linux
     def test_docker_user_detection(self):
+        import pwd
         userinfo = pwd.getpwuid(os.getuid())
         username_detected =  getattr(userinfo, 'pw_' + 'name')
         self.assertEqual(username_detected, get_user_name())

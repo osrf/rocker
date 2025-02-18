@@ -21,7 +21,6 @@ import getpass
 import os
 import unittest
 from pathlib import Path
-import pwd
 import tempfile
 
 

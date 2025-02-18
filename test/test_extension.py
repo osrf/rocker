@@ -21,7 +21,6 @@ import getpass
 import os
 import unittest
 from pathlib import Path
-import pwd
 import pytest
 from io import BytesIO as StringIO
 
@@ -351,7 +350,10 @@ class UserExtensionTest(unittest.TestCase):
         # "em.Error: interpreter stdout proxy lost"
         em.Interpreter._wasProxyInstalled = False
 
+    @pytest.mark.linux
     def test_user_extension(self):
+        import pwd
+
         plugins = list_plugins()
         user_plugin = plugins['user']
         self.assertEqual(user_plugin.get_name(), 'user')
