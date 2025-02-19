@@ -23,6 +23,7 @@ import unittest
 from pathlib import Path
 import pytest
 from io import BytesIO as StringIO
+import sys
 
 
 from rocker.core import DockerImageGenerator
@@ -350,7 +351,7 @@ class UserExtensionTest(unittest.TestCase):
         # "em.Error: interpreter stdout proxy lost"
         em.Interpreter._wasProxyInstalled = False
 
-    @pytest.mark.linux
+    @pytest.mark.skipif(sys.platform.startswith("win"), "User mapping not supported on Windows")
     def test_user_extension(self):
         import pwd
 

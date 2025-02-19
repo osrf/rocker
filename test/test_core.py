@@ -19,6 +19,7 @@ import argparse
 import em
 import os
 import pytest
+import sys
 import unittest
 
 from itertools import chain
@@ -233,7 +234,7 @@ class RockerCoreTest(unittest.TestCase):
 
         self.assertNotIn('-it', dig.generate_docker_cmd(mode='non-interactive'))
 
-    @pytest.mark.linux
+    @pytest.mark.skipif(sys.platform.startswith("win"), "User detection not supported on Windows")
     def test_docker_user_detection(self):
         import pwd
         userinfo = pwd.getpwuid(os.getuid())
