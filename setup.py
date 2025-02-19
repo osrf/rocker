@@ -46,6 +46,7 @@ kwargs = {
         ],
         'rocker.extensions': [
             'cuda = rocker.nvidia_extension:Cuda',
+            'detach = rocker.extensions:Detach',
             'devices = rocker.extensions:Devices',
             'dev_helpers = rocker.extensions:DevHelpers',
             'env = rocker.extensions:Environment',
