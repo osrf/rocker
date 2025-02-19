@@ -33,6 +33,7 @@ from test_extension import plugin_load_parser_correctly
 
 
 @pytest.mark.docker
+@pytest.mark.skipif(sys.platform.startswith("win"), "X11 not supported on Windows")
 class X11Test(unittest.TestCase):
     @classmethod
     def setUpClass(self):
@@ -93,7 +94,7 @@ CMD xdpyinfo
         # TODO(tfoote) do more to check that it doesn't actually clean up.
         # This is more of a smoke test
 
-
+    @pytest.mark.skipif(sys.platform.startswith("win"), "X11 not supported on Windows")
     def test_no_x11_xpdyinfo(self):
         for tag in self.dockerfile_tags:
             dig = DockerImageGenerator([], {}, tag)
@@ -112,6 +113,7 @@ CMD xdpyinfo
 
 
 @pytest.mark.docker
+@pytest.mark.skipif(sys.platform.startswith("win"), "NVIDIA not supported on Windows")
 class NvidiaTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
