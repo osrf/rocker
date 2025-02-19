@@ -7,7 +7,7 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.8', 3.x]
-        os: [ubuntu-22.04, windows-latest]
+        os: [windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
@@ -30,7 +30,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.8, '3.x']
-        os: [ubuntu-22.04, windows-latest]
+        os: [windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
@@ -42,12 +42,12 @@ jobs:
       run: |
         python -m pip install --upgrade pip setuptools wheel
         python -m pip install -e .
-    - name: Check os_detector script
-      run: |
-        detect_docker_image_os ubuntu
     - name: Check detector help
       run: |
         detect_docker_image_os ubuntu -h
+    - name: Check os_detector script
+      run: |
+        detect_docker_image_os ubuntu
     - name: Check main runs
       run: |
         rocker ubuntu 'true'
