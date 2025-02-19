@@ -47,7 +47,7 @@ jobs:
         detect_docker_image_os ubuntu -h
     - name: Check os_detector script
       run: |
-        detect_docker_image_os ubuntu
+        detect_docker_image_os ubuntu --verbose
     - name: Check main runs
       run: |
         rocker ubuntu 'true'
