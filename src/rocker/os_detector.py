@@ -22,7 +22,7 @@ from .core import docker_build, get_docker_client
 
 DETECTION_TEMPLATE="""
 FROM golang:1.19 as detector
-
+SHELL ["/bin/sh", "-c"]
 # For reliability, pin a distro-detect commit instead of targeting a branch.
 RUN git clone -q https://github.com/dekobon/distro-detect.git && \
     cd distro-detect && \
