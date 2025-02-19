@@ -20,6 +20,7 @@ import em
 import unittest
 import pexpect
 import pytest
+import sys
 
 
 from io import BytesIO as StringIO
