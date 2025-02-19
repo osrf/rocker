@@ -337,7 +337,7 @@ class PrivilegedExtensionTest(unittest.TestCase):
         args = p.get_docker_args(mock_cliargs)
         self.assertTrue('--privileged' in args)
 
-
+@pytest.mark.skipif(sys.platform.startswith("win"), reason="User mapping not supported on Windows")
 class UserExtensionTest(unittest.TestCase):
 
     def setUp(self):
@@ -351,7 +351,6 @@ class UserExtensionTest(unittest.TestCase):
         # "em.Error: interpreter stdout proxy lost"
         em.Interpreter._wasProxyInstalled = False
 
-    @pytest.mark.skipif(sys.platform.startswith("win"), "User mapping not supported on Windows")
     def test_user_extension(self):
         import pwd
 
@@ -471,6 +470,7 @@ RUN useradd test -u{uid}
         dig.clear_image()
 
 
+@pytest.mark.skipif(sys.platform.startswith("win"), reason="Pulse not supported on Windows")
 class PulseExtensionTest(unittest.TestCase):
 
     def setUp(self):
@@ -519,6 +519,7 @@ RUN apt-get update \\
  && apt-get clean
 """
 
+@pytest.mark.skipif(sys.platform.startswith("win"), reason="DevHelper not supported on Windows")
 class DevHelpersExtensionTest(unittest.TestCase):
 
     def setUp(self):
