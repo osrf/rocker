@@ -134,8 +134,7 @@ class RockerExtensionManager:
                 print("Extension %s doesn't support default arguments. Please extend it." % p.get_name())
                 p.register_arguments(parser)
         parser.add_argument('--mode', choices=OPERATION_MODES,
-            default=OPERATIONS_INTERACTIVE,
-            help="Choose mode of operation for rocker")
+            help="Choose mode of operation for rocker, default interactive unless detached.")
         parser.add_argument('--image-name', default=None,
             help='Tag the final image, useful with dry-run')
         parser.add_argument('--extension-blacklist', nargs='*',
@@ -361,9 +360,6 @@ class DockerImageGenerator(object):
         # Default to non-interactive if unset
         if operating_mode not in OPERATION_MODES:
             operating_mode = OPERATIONS_NON_INTERACTIVE
-        if operating_mode == OPERATIONS_INTERACTIVE and not os.isatty(sys.__stdin__.fileno()):
-            operating_mode = OPERATIONS_NON_INTERACTIVE
-            print("No tty detected for stdin forcing non-interactive")
         return operating_mode
 
     def generate_docker_cmd(self, command='', **kwargs):

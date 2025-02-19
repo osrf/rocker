@@ -21,6 +21,10 @@ from .core import get_rocker_version
 from .core import RockerExtensionManager
 from .core import DependencyMissing
 from .core import ExtensionError
+from .core import OPERATIONS_DRY_RUN
+from .core import OPERATIONS_INTERACTIVE
+from .core import OPERATIONS_NON_INTERACTIVE
+from .core import OPERATION_MODES
 
 from .os_detector import detect_os
 
@@ -32,7 +36,7 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('image')
     parser.add_argument('command', nargs='*', default='')
-    parser.add_argument('--noexecute', action='store_true', help='Deprecated')
+    parser.add_argument('--noexecute', action='store_true', help='Deprecated') # TODO(tfoote) add when 3.13 is minimum supported, deprecated=True 
     parser.add_argument('--nocache', action='store_true')
     parser.add_argument('--nocleanup', action='store_true', help='do not remove the docker container when stopped')
     parser.add_argument('--persist-image', action='store_true', help='do not remove the docker image when stopped', default=False) #TODO(tfoote) Add a name to it if persisting
@@ -56,6 +60,34 @@ def main():
         args_dict['mode'] = OPERATIONS_DRY_RUN
         print('DEPRECATION Warning: --noexecute is deprecated for --mode dry-run please switch your usage by December 2020')
     
+    # validate_operating_mode
+    operating_mode = args_dict.get('mode')
+    # Don't try to be interactive if there's no tty
+    if not os.isatty(sys.__stdin__.fileno()):
+        if operating_mode == OPERATIONS_INTERACTIVE:
+            parser.error("No tty detected cannot operate in interactive mode")
+        elif not operating_mode:
+            print("No tty detected for stdin defaulting mode to non-interactive")
+            args_dict['mode'] = OPERATIONS_NON_INTERACTIVE
+    
+    # Check if detach extension is active and deconflict with interactive
+    detach_active = args_dict.get('detach')
+    operating_mode = args_dict.get('mode')
+    if detach_active:
+        if operating_mode == OPERATIONS_INTERACTIVE:
+            parser.error("Command line option --mode=interactive and --detach are mutually exclusive")
+        elif not operating_mode:
+            print(f"Detach extension active, defaulting mode to {OPERATIONS_NON_INTERACTIVE}")
+            args_dict['mode'] = OPERATIONS_NON_INTERACTIVE
+    # TODO(tfoote) Deal with the case of dry-run + detach
+    # Right now the printed results will include '-it'
+    # But based on testing the --detach overrides -it in docker so it's ok.
+
+    # Default to non-interactive if unset
+    if args_dict.get('mode') not in OPERATION_MODES:
+        print("Mode unset, defaulting to interactive")
+        args_dict['mode'] = OPERATIONS_NON_INTERACTIVE
+
     try:
         active_extensions = extension_manager.get_active_extensions(args_dict)
     except ExtensionError as e:
