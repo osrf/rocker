@@ -45,6 +45,7 @@ kwargs = {
             'detect_docker_image_os = rocker.cli:detect_image_os',
         ],
         'rocker.extensions': [
+            'bashrc_extensions = rocker.bashrc_extension:BashrcExtensions',
             'cuda = rocker.nvidia_extension:Cuda',
             'detach = rocker.extensions:Detach',
             'devices = rocker.extensions:Devices',
