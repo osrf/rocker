@@ -26,6 +26,7 @@ from rocker.core import list_plugins
 
 from test_extension import plugin_load_parser_correctly
 
+from rocker.rmw_extension import RMW
 
 
 class rmwExtensionTest(unittest.TestCase):
@@ -84,11 +85,16 @@ class rmwRuntimeExtensionTest(unittest.TestCase):
         plugins = list_plugins()
         rmw_plugin = plugins['rmw']
 
+        rmws_to_test = RMW.rmw_map.keys()
+
         p = rmw_plugin()
         self.assertTrue(plugin_load_parser_correctly(rmw_plugin))
 
-        mock_cliargs = {'rmw': ['cyclonedds']}
-        dig = DockerImageGenerator([rmw_plugin()], mock_cliargs, 'ros:rolling')
-        self.assertEqual(dig.build(), 0)
-        self.assertEqual(dig.run(command='dpkg -l ros-rolling-rmw-cyclonedds-cpp'), 0)
-        self.assertIn('-e RMW_IMPLEMENTATION=rmw_cyclonedds_cpp', dig.generate_docker_cmd('', mode='dry-run'))
+
+        for rmw_name in rmws_to_test:
+            mock_cliargs = {'rmw': [rmw_name]}
+            dig = DockerImageGenerator([rmw_plugin()], mock_cliargs, 'ros:rolling')
+            self.assertEqual(dig.build(), 0, msg=f'dig.build for rmw {rmw_name} failed')
+            self.assertEqual(dig.run(command=f'dpkg -l ros-rolling-rmw-{rmw_name}-cpp'), 0)
+            self.assertIn(f'-e RMW_IMPLEMENTATION=rmw_{rmw_name}_cpp', dig.generate_docker_cmd('', mode='dry-run'))
+            dig.clear_image()

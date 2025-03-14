@@ -68,6 +68,7 @@ class RockerCoreTest(unittest.TestCase):
         self.assertEqual(dig.run('true'), 1)
         self.assertEqual(dig.build(), 0)
         self.assertEqual(dig.run('true'), 0)
+        dig.clear_image()
 
     @pytest.mark.docker
     def test_return_code_no_extensions(self):
@@ -75,6 +76,7 @@ class RockerCoreTest(unittest.TestCase):
         self.assertEqual(dig.build(), 0)
         self.assertEqual(dig.run('true'), 0)
         self.assertEqual(dig.run('false'), 1)
+        dig.clear_image()
 
     @pytest.mark.docker
     def test_return_code_multiple_extensions(self):
@@ -85,12 +87,14 @@ class RockerCoreTest(unittest.TestCase):
         self.assertEqual(dig.build(), 0)
         self.assertEqual(dig.run('true'), 0)
         self.assertEqual(dig.run('false'), 1)
+        dig.clear_image()
 
     @pytest.mark.docker
     def test_noexecute(self):
         dig = DockerImageGenerator([], {}, 'ubuntu:bionic')
         self.assertEqual(dig.build(), 0)
         self.assertEqual(dig.run('true', noexecute=True), 0)
+        dig.clear_image()
 
     @pytest.mark.docker
     def test_dry_run(self):
@@ -98,6 +102,7 @@ class RockerCoreTest(unittest.TestCase):
         self.assertEqual(dig.build(), 0)
         self.assertEqual(dig.run('true', mode='dry-run'), 0)
         self.assertEqual(dig.run('false', mode='dry-run'), 0)
+        dig.clear_image()
 
     @pytest.mark.docker
     def test_non_interactive(self):
@@ -105,6 +110,7 @@ class RockerCoreTest(unittest.TestCase):
         self.assertEqual(dig.build(), 0)
         self.assertEqual(dig.run('true', mode='non-interactive'), 0)
         self.assertEqual(dig.run('false', mode='non-interactive'), 1)
+        dig.clear_image()
 
     @pytest.mark.docker
     def test_device(self):
@@ -112,6 +118,7 @@ class RockerCoreTest(unittest.TestCase):
         self.assertEqual(dig.build(), 0)
         self.assertEqual(dig.run('true', devices=['/dev/random']), 0)
         self.assertEqual(dig.run('true', devices=['/dev/does_not_exist']), 0)
+        dig.clear_image()
 
     @pytest.mark.docker
     def test_network(self):
@@ -120,6 +127,7 @@ class RockerCoreTest(unittest.TestCase):
         networks = ['bridge', 'host', 'none']
         for n in networks:
             self.assertEqual(dig.run('true', network=n), 0)
+        dig.clear_image()
 
     @pytest.mark.docker
     def test_extension_manager(self):
@@ -218,11 +226,11 @@ class RockerCoreTest(unittest.TestCase):
 
         # TODO(tfoote) mock this appropriately
         # google actions tests don't have a tty, local tests do
-        import os, sys
-        if os.isatty(sys.__stdin__.fileno()):
-            self.assertIn('-it', dig.generate_docker_cmd(mode='interactive'))
-        else:
-            self.assertNotIn('-it', dig.generate_docker_cmd(mode='interactive'))
+        # import os, sys
+        # if os.isatty(sys.__stdin__.fileno()):
+        #     self.assertIn('-it', dig.generate_docker_cmd(mode='interactive'))
+        # else:
+        self.assertIn('-it', dig.generate_docker_cmd(mode='interactive'))
 
         self.assertNotIn('-it', dig.generate_docker_cmd(mode='non-interactive'))
 
@@ -231,6 +239,7 @@ class RockerCoreTest(unittest.TestCase):
         username_detected =  getattr(userinfo, 'pw_' + 'name')
         self.assertEqual(username_detected, get_user_name())
 
+    @pytest.mark.docker
     def test_docker_user_setting(self):
         parser = argparse.ArgumentParser()
         extension_manager = RockerExtensionManager()

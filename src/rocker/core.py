@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from collections import OrderedDict
+from contextlib import nullcontext
 import io
 import os
 import pwd
@@ -133,8 +134,7 @@ class RockerExtensionManager:
                 print("Extension %s doesn't support default arguments. Please extend it." % p.get_name())
                 p.register_arguments(parser)
         parser.add_argument('--mode', choices=OPERATION_MODES,
-            default=OPERATIONS_INTERACTIVE,
-            help="Choose mode of operation for rocker")
+            help="Choose mode of operation for rocker, default interactive unless detached.")
         parser.add_argument('--image-name', default=None,
             help='Tag the final image, useful with dry-run')
         parser.add_argument('--extension-blacklist', nargs='*',
@@ -251,6 +251,23 @@ def docker_build(docker_client = None, output_callback = None, **kwargs):
         print("no more output and success not detected")
         return None
 
+def docker_remove_image(
+        image_id,
+        docker_client = None,
+        fail_on_error = False,
+        force = False,
+        **kwargs):
+
+    if not docker_client:
+        docker_client = get_docker_client()
+
+    try:
+        docker_client.remove_image(image_id, force=force)
+    except docker.errors.APIError as ex:
+        ## removing the image can fail if there's child images
+        if fail_on_error:
+            return False
+    return True
 
 class SIGWINCHPassthrough(object):
     def __init__ (self, process):
@@ -343,9 +360,6 @@ class DockerImageGenerator(object):
         # Default to non-interactive if unset
         if operating_mode not in OPERATION_MODES:
             operating_mode = OPERATIONS_NON_INTERACTIVE
-        if operating_mode == OPERATIONS_INTERACTIVE and not os.isatty(sys.__stdin__.fileno()):
-            operating_mode = OPERATIONS_NON_INTERACTIVE
-            print("No tty detected for stdin forcing non-interactive")
         return operating_mode
 
     def generate_docker_cmd(self, command='', **kwargs):
@@ -385,6 +399,7 @@ class DockerImageGenerator(object):
 
         cmd = self.generate_docker_cmd(command, **kwargs)
         operating_mode = self.get_operating_mode(kwargs)
+        console_output_file = kwargs.get('console_output_file')
 
         #   $DOCKER_OPTS \
         if operating_mode == OPERATIONS_DRY_RUN:
@@ -393,10 +408,13 @@ class DockerImageGenerator(object):
             return 0
         elif operating_mode == OPERATIONS_NON_INTERACTIVE:
             try:
-                print("Executing command: ")
-                print(cmd)
-                p = subprocess.run(shlex.split(cmd), check=True, stderr=subprocess.STDOUT)
-                return p.returncode
+                with open(console_output_file, 'a') if console_output_file else nullcontext() as consoleout_fh:
+                    if console_output_file:
+                        print(f"Logging output to file {console_output_file}")
+                    print("Executing command: ")
+                    print(cmd)
+                    p = subprocess.run(shlex.split(cmd), check=True, stdout=consoleout_fh if console_output_file else None, stderr=subprocess.STDOUT)
+                    return p.returncode
             except subprocess.CalledProcessError as ex:
                 print("Non-interactive Docker run failed\n", ex)
                 return ex.returncode
@@ -413,6 +431,12 @@ class DockerImageGenerator(object):
                 print("Docker run failed\n", ex)
                 return ex.returncode
 
+    def clear_image(self):
+        if self.image_id:
+            if not docker_remove_image(self.image_id):
+                print(f'Failed to clear image {self.image_id} it likely has child images.')
+            self.image_id = None
+            self.built = False
 
 def write_files(extensions, args_dict, target_directory):
     all_files = {}

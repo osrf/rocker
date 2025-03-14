@@ -36,7 +36,7 @@ install_requires.append(docker_package)
 
 kwargs = {
     'name': 'rocker',
-    'version': '0.2.17',
+    'version': '0.2.19',
     'packages': ['rocker'],
     'package_dir': {'': 'src'},
     'package_data': {'rocker': ['templates/*.em']},
@@ -47,6 +47,7 @@ kwargs = {
         ],
         'rocker.extensions': [
             'cuda = rocker.nvidia_extension:Cuda',
+            'detach = rocker.extensions:Detach',
             'devices = rocker.extensions:Devices',
             'dev_helpers = rocker.extensions:DevHelpers',
             'env = rocker.extensions:Environment',
@@ -63,6 +64,7 @@ kwargs = {
             'privileged = rocker.extensions:Privileged',
             'pulse = rocker.extensions:PulseAudio',
             'rmw = rocker.rmw_extension:RMW',
+            'shm_size = rocker.extensions:ShmSize',
             'ssh = rocker.ssh_extension:Ssh',
             'ulimit = rocker.ulimit_extension:Ulimit',
             'user = rocker.extensions:User',
