@@ -52,6 +52,7 @@ kwargs = {
             'env = rocker.extensions:Environment',
             'expose = rocker.extensions:Expose',
             'git = rocker.git_extension:Git',
+            'gpus = rocker.nvidia_extension:Gpus',
             'group_add = rocker.extensions:GroupAdd',
             'home = rocker.extensions:HomeDir',
             'hostname = rocker.extensions:Hostname',
