@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import argparse
+import configargparse
 import os
 import sys
 
@@ -31,11 +32,14 @@ from .os_detector import detect_os
 
 def main():
 
-    parser = argparse.ArgumentParser(
+    parser = configargparse.ArgumentParser(
+        config_file_parser_class=configargparse.TomlConfigParser(['rocker.config']),
         description='A tool for running docker with extra options',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        default_config_files=['config.toml', 'config.ini'],
+        formatter_class=configargparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('image')
     parser.add_argument('command', nargs='*', default='')
+    parser.add_argument('--config', is_config_file=True)
     parser.add_argument('--noexecute', action='store_true', help='Deprecated') # TODO(tfoote) add when 3.13 is minimum supported, deprecated=True 
     parser.add_argument('--nocache', action='store_true')
     parser.add_argument('--nocleanup', action='store_true', help='do not remove the docker container when stopped')
