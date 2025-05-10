@@ -302,6 +302,24 @@ class PulseAudio(RockerExtension):
             help="mount pulse audio devices")
 
 
+class WorkDir(RockerExtension):
+    @staticmethod
+    def get_name():
+        return 'workdir'
+
+    def __init__(self):
+        self.name = WorkDir.get_name()
+
+    def get_docker_args(self, cliargs):
+        return ' --workdir %s ' % cliargs.get('workdir', None)
+
+    @staticmethod
+    def register_arguments(parser, defaults):
+        parser.add_argument('--workdir',
+            default=defaults.get('workdir', None),
+            help="change the workdir")
+
+
 class HomeDir(RockerExtension):
     @staticmethod
     def get_name():
