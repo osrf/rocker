@@ -307,16 +307,24 @@ class WorkDir(RockerExtension):
     def get_name():
         return 'workdir'
 
+    def get_user_snippet(self, cliargs):
+        return 'WORKDIR %s' % os.getcwd()
+
     def __init__(self):
         self.name = WorkDir.get_name()
 
     def get_docker_args(self, cliargs):
-        return ' --workdir %s ' % cliargs.get('workdir', None)
+        if isinstance(cliargs.get('workdir'), str):
+            return ' --workdir %s ' % cliargs.get('workdir')
+        else:
+            return ''
 
     @staticmethod
     def register_arguments(parser, defaults):
         parser.add_argument('--workdir',
-            default=defaults.get('workdir', None),
+            nargs='?',
+            const=True,
+            default=False,
             help="change the workdir")
 
 
