@@ -110,6 +110,10 @@ class RockerExtension(object):
     def get_docker_args(self, cliargs):
         return ''
 
+    def get_build_args(self, cliargs):
+        """Get additional docker build arguments"""
+        return {}
+
     @classmethod
     def check_args_for_activation(cls, cli_args):
         """ Returns true if the arguments indicate that this extension should be activated otherwise false.
@@ -339,6 +343,11 @@ class DockerImageGenerator(object):
             if image_name:
                 print(f"Running docker tag {self.image_id} {image_name}")
                 arguments['tag'] = image_name
+            
+            # Collect build arguments from extensions
+            for e in self.active_extensions:
+                build_args = e.get_build_args(self.cliargs)
+                arguments.update(build_args)
             print("Building docker file with arguments: ", arguments)
             try:
                 self.image_id = docker_build(

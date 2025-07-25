@@ -45,6 +45,7 @@ kwargs = {
             'detect_docker_image_os = rocker.cli:detect_image_os',
         ],
         'rocker.extensions': [
+            'cpu_limits = rocker.extensions:CpuLimits',
             'cuda = rocker.nvidia_extension:Cuda',
             'detach = rocker.extensions:Detach',
             'devices = rocker.extensions:Devices',
@@ -56,6 +57,7 @@ kwargs = {
             'home = rocker.extensions:HomeDir',
             'hostname = rocker.extensions:Hostname',
             'ipc = rocker.extensions:Ipc',
+            'memory_limits = rocker.extensions:MemoryLimits',
             'name = rocker.extensions:Name',
             'network = rocker.extensions:Network',
             'nvidia = rocker.nvidia_extension:Nvidia',
