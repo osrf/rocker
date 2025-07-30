@@ -683,3 +683,68 @@ class ShmSizeExtensionTest(unittest.TestCase):
         mock_cliargs = {'shm_size': '12g'}
         args = p.get_docker_args(mock_cliargs)
         self.assertIn('--shm-size 12g', args)
+
+        # Test build args
+        mock_cliargs = {'shm_size_build': '2g'}
+        build_args = p.get_build_args(mock_cliargs)
+        self.assertEqual(build_args, {'shm_size': '2g'})
+
+
+class CpuLimitsExtensionTest(unittest.TestCase):
+
+    def setUp(self):
+        em.Interpreter._wasProxyInstalled = False
+
+    @pytest.mark.docker
+    def test_cpu_limits_extension(self):
+        plugins = list_plugins()
+        cpu_limits_plugin = plugins['cpu_limits']
+        self.assertEqual(cpu_limits_plugin.get_name(), 'cpu_limits')
+
+        p = cpu_limits_plugin()
+        # Check that it registers the --cpus argument
+        parser = argparse.ArgumentParser(description='test_parser')
+        cpu_limits_plugin.register_arguments(parser, {})
+        cpus_registered = any('--cpus' in getattr(action, 'option_strings', []) 
+                             for action in parser._actions)
+        self.assertTrue(cpus_registered)
+
+        mock_cliargs = {}
+        self.assertEqual(p.get_snippet(mock_cliargs), '')
+        self.assertEqual(p.get_preamble(mock_cliargs), '')
+        args = p.get_docker_args(mock_cliargs)
+        self.assertNotIn('--cpus', args)
+
+        mock_cliargs = {'cpus': '2.5'}
+        args = p.get_docker_args(mock_cliargs)
+        self.assertIn('--cpus 2.5', args)
+
+
+class MemoryLimitsExtensionTest(unittest.TestCase):
+
+    def setUp(self):
+        em.Interpreter._wasProxyInstalled = False
+
+    @pytest.mark.docker
+    def test_memory_limits_extension(self):
+        plugins = list_plugins()
+        memory_limits_plugin = plugins['memory_limits']
+        self.assertEqual(memory_limits_plugin.get_name(), 'memory_limits')
+
+        p = memory_limits_plugin()
+        # Check that it registers the --memory argument
+        parser = argparse.ArgumentParser(description='test_parser')
+        memory_limits_plugin.register_arguments(parser, {})
+        memory_registered = any('--memory' in getattr(action, 'option_strings', []) 
+                               for action in parser._actions)
+        self.assertTrue(memory_registered)
+
+        mock_cliargs = {}
+        self.assertEqual(p.get_snippet(mock_cliargs), '')
+        self.assertEqual(p.get_preamble(mock_cliargs), '')
+        args = p.get_docker_args(mock_cliargs)
+        self.assertNotIn('--memory', args)
+
+        mock_cliargs = {'memory': '4g'}
+        args = p.get_docker_args(mock_cliargs)
+        self.assertIn('--memory 4g', args)
