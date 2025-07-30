@@ -108,7 +108,7 @@ def main():
     args.command = ' '.join(args.command)
     result = dig.run(**args_dict)
     if not (args_dict['persist_image'] or args_dict.get('image_name')):
-        print(f'Clearing Image: {dig.image_id}s\nTo not clean up use --persist-images')
+        print(f'Clearing Image: {dig.image_id}s\nTo not clean up use --persist-image')
         dig.clear_image()
     return result
 
