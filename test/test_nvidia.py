@@ -38,7 +38,7 @@ class X11Test(unittest.TestCase):
     def setUpClass(self):
         client = get_docker_client()
         self.dockerfile_tags = []
-        for distro, distro_version in [('ubuntu', 'xenial'), ('ubuntu', 'bionic'), ('ubuntu', 'focal'), ('debian', 'buster')]:
+        for distro, distro_version in [('ubuntu', 'jammy'), ('ubuntu', 'noble'), ('debian', 'bookworm')]:
             dockerfile = """
 FROM %(distro)s:%(distro_version)s
 
