@@ -41,6 +41,7 @@ def main():
     parser.add_argument('--nocleanup', action='store_true', help='do not remove the docker container when stopped')
     parser.add_argument('--persist-image', action='store_true', help='do not remove the docker image when stopped', default=False) #TODO(tfoote) Add a name to it if persisting
     parser.add_argument('--pull', action='store_true')
+    parser.add_argument('--dive', action='store_true', help='Run Dive for introspection after building the image') # 310
     parser.add_argument('--version', action='version',
         version='%(prog)s ' + get_rocker_version())
 
