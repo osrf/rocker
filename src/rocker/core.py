@@ -345,9 +345,12 @@ class DockerImageGenerator(object):
                 arguments['tag'] = image_name
             
             # Collect build arguments from extensions
+            build_args = {}
             for e in self.active_extensions:
-                build_args = e.get_build_args(self.cliargs)
-                arguments.update(build_args)
+                extension_build_args = e.get_build_args(self.cliargs)
+                build_args.update(extension_build_args)
+            if build_args:
+                arguments['buildargs'] = build_args
             print("Building docker file with arguments: ", arguments)
             try:
                 self.image_id = docker_build(
