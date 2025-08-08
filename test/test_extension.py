@@ -683,3 +683,8 @@ class ShmSizeExtensionTest(unittest.TestCase):
         mock_cliargs = {'shm_size': '12g'}
         args = p.get_docker_args(mock_cliargs)
         self.assertIn('--shm-size 12g', args)
+
+        # Test build args
+        mock_cliargs = {'shm_size_build': '2g'}
+        build_args = p.get_build_args(mock_cliargs)
+        self.assertEqual(build_args, {'shm_size': '2g'})
