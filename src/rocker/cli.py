@@ -86,7 +86,7 @@ def main():
     # Default to non-interactive if unset
     if args_dict.get('mode') not in OPERATION_MODES:
         print("Mode unset, defaulting to interactive")
-        args_dict['mode'] = OPERATIONS_NON_INTERACTIVE
+        args_dict['mode'] = OPERATIONS_INTERACTIVE
 
     try:
         active_extensions = extension_manager.get_active_extensions(args_dict)
