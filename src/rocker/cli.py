@@ -83,10 +83,10 @@ def main():
     # Right now the printed results will include '-it'
     # But based on testing the --detach overrides -it in docker so it's ok.
 
-    # Default to non-interactive if unset
+    # Default to interactive if unset
     if args_dict.get('mode') not in OPERATION_MODES:
         print("Mode unset, defaulting to interactive")
-        args_dict['mode'] = OPERATIONS_NON_INTERACTIVE
+        args_dict['mode'] = OPERATIONS_INTERACTIVE
 
     try:
         active_extensions = extension_manager.get_active_extensions(args_dict)
