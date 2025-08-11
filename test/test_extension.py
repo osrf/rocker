@@ -121,6 +121,34 @@ class DevicesExtensionTest(unittest.TestCase):
         self.assertFalse('--device' in args)
 
 
+class WorkDirExtensionTest(unittest.TestCase):
+
+    def setUp(self):
+        # Work around interference between empy Interpreter
+        # stdout proxy and test runner. empy installs a proxy on stdout
+        # to be able to capture the information.
+        # And the test runner creates a new stdout object for each test.
+        # This breaks empy as it assumes that the proxy has persistent
+        # between instances of the Interpreter class
+        # empy will error with the exception
+        # "em.Error: interpreter stdout proxy lost"
+        em.Interpreter._wasProxyInstalled = False
+
+    def test_workdir_extension(self):
+        plugins = list_plugins()
+        workdir_plugin = plugins['workdir']
+        self.assertEqual(workdir_plugin.get_name(), 'workdir')
+
+        p = workdir_plugin()
+        self.assertTrue(plugin_load_parser_correctly(workdir_plugin))
+        
+        mock_cliargs = {}
+        self.assertEqual(p.get_snippet(mock_cliargs), '')
+        self.assertEqual(p.get_preamble(mock_cliargs), '')
+        args = p.get_docker_args(mock_cliargs)
+        self.assertTrue('--workdir %s' % mock_cliargs.get('workdir', None) in args)
+
+
 class HomeExtensionTest(unittest.TestCase):
 
     def setUp(self):
