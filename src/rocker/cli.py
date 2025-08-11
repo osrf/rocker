@@ -20,6 +20,7 @@ from .core import DockerImageGenerator
 from .core import get_rocker_version
 from .core import RockerExtensionManager
 from .core import DependencyMissing
+from .core import DockerPermissionError
 from .core import ExtensionError
 from .core import OPERATIONS_DRY_RUN
 from .core import OPERATIONS_INTERACTIVE
@@ -48,6 +49,12 @@ def main():
         extension_manager = RockerExtensionManager()
         default_args = {}
         extension_manager.extend_cli_parser(parser, default_args)
+    except DockerPermissionError as ex:
+        # Handle Docker permission issues with user-friendly messages
+        print("ERROR: %s" % ex)
+        if ex.suggested_fix:
+            print("\n%s" % ex.suggested_fix)
+        return 1
     except DependencyMissing as ex:
         # Catch errors if docker is missing or inaccessible.
         parser.error("DependencyMissing encountered: %s" % ex)

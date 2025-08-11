@@ -59,6 +59,13 @@ class ExtensionError(RuntimeError):
     pass
 
 
+class DockerPermissionError(DependencyMissing):
+    """Specific error for Docker permission issues"""
+    def __init__(self, message, suggested_fix=None):
+        super().__init__(message)
+        self.suggested_fix = suggested_fix
+
+
 class RockerExtension(object):
     """The base class for Rocker extension points"""
 
@@ -209,6 +216,91 @@ class RockerExtensionManager:
 
         return sort_extensions(active_extensions, cli_args)
 
+def detect_docker_permission_issue(exception):
+    """
+    Analyze Docker exceptions to detect permission-related issues and provide helpful solutions.
+    
+    Args:
+        exception: The Docker exception to analyze
+        
+    Returns:
+        tuple: (is_permission_issue: bool, error_message: str, suggested_fix: str)
+    """
+    error_str = str(exception).lower()
+    
+    # Check for common permission-related error patterns
+    permission_indicators = [
+        'permission denied',
+        'access denied', 
+        'connect: permission denied',
+        '/var/run/docker.sock: permission denied',
+        'got permission denied while trying to connect to the docker daemon socket'
+    ]
+    
+    for indicator in permission_indicators:
+        if indicator in error_str:
+            error_message = (
+                "Docker permission denied. Your user account does not have permission to access Docker."
+            )
+            suggested_fix = (
+                "To fix this issue:\n"
+                "1. Add your user to the docker group: sudo usermod -aG docker $USER\n"
+                "2. Log out and log back in (or run: newgrp docker)\n"
+                "3. Verify Docker access: docker ps\n"
+                "\nAlternatively, you can run rocker with sudo, but this is not recommended."
+            )
+            return True, error_message, suggested_fix
+    
+    # Check for Docker daemon not running
+    daemon_indicators = [
+        'connection refused',
+        'is the docker daemon running?',
+        'cannot connect to the docker daemon',
+        'dial unix /var/run/docker.sock: connect: connection refused'
+    ]
+    
+    for indicator in daemon_indicators:
+        if indicator in error_str:
+            error_message = "Docker daemon is not running or not accessible."
+            suggested_fix = (
+                "To fix this issue:\n"
+                "1. Start Docker service: sudo systemctl start docker (Linux) or start Docker Desktop (Mac/Windows)\n"
+                "2. Enable Docker to start on boot: sudo systemctl enable docker (Linux)\n"
+                "3. Verify Docker is running: docker ps"
+            )
+            return True, error_message, suggested_fix
+    
+    # Check for Docker not installed or socket access issues
+    not_found_indicators = [
+        'docker: command not found',
+        'no such file or directory'
+    ]
+    
+    # Special case: FileNotFoundError for Docker socket might be permission or daemon issue
+    if 'filenotfounderror' in error_str and ('docker' in error_str or 'socket' in error_str):
+        error_message = "Cannot access Docker daemon. Docker may not be running or you may lack permission."
+        suggested_fix = (
+            "To fix this issue:\n"
+            "1. Check if Docker is running: docker ps\n"
+            "2. If Docker is not running: sudo systemctl start docker (Linux) or start Docker Desktop (Mac/Windows)\n"
+            "3. If Docker is running, check permissions: sudo usermod -aG docker $USER\n"
+            "4. Log out and log back in after adding to docker group"
+        )
+        return True, error_message, suggested_fix
+    
+    for indicator in not_found_indicators:
+        if indicator in error_str:
+            error_message = "Docker is not installed or not in your PATH."
+            suggested_fix = (
+                "To fix this issue:\n"
+                "1. Install Docker from https://docs.docker.com/get-docker/\n"
+                "2. Ensure Docker is in your PATH\n"
+                "3. Restart your terminal after installation"
+            )
+            return True, error_message, suggested_fix
+    
+    return False, None, None
+
 def get_docker_client():
     """Simple helper function for pre 2.0 imports"""
     try:
@@ -221,11 +313,18 @@ def get_docker_client():
         docker_client.ping()
         return docker_client
     except (docker.errors.DockerException, docker.errors.APIError, ConnectionError) as ex:
-        raise DependencyMissing('Docker Client failed to connect to docker daemon.'
-            ' Please verify that docker is installed and running.'
-            ' As well as that you have permission to access the docker daemon.'
-            ' This is usually by being a member of the docker group.'
-            ' The underlying error was:\n"""\n%s\n"""\n' % ex)
+        # Use enhanced permission detection to provide specific error messages
+        is_permission_issue, error_message, suggested_fix = detect_docker_permission_issue(ex)
+        
+        if is_permission_issue:
+            raise DockerPermissionError(error_message, suggested_fix)
+        else:
+            # Fall back to generic error for unrecognized issues
+            raise DependencyMissing('Docker Client failed to connect to docker daemon.'
+                ' Please verify that docker is installed and running.'
+                ' As well as that you have permission to access the docker daemon.'
+                ' This is usually by being a member of the docker group.'
+                ' The underlying error was:\n"""\n%s\n"""\n' % ex)
 
 def get_user_name():
     userinfo = pwd.getpwuid(os.getuid())

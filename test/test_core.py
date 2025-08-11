@@ -25,7 +25,9 @@ import unittest
 from itertools import chain
 
 from rocker.core import DockerImageGenerator
+from rocker.core import DockerPermissionError
 from rocker.core import ExtensionError
+from rocker.core import detect_docker_permission_issue
 from rocker.core import list_plugins
 from rocker.core import get_docker_client
 from rocker.core import get_rocker_version
@@ -300,3 +302,85 @@ class RockerCoreTest(unittest.TestCase):
         self.assertIn('--rm', dig.generate_docker_cmd(nocleanup=''))
 
         self.assertNotIn('--rm', dig.generate_docker_cmd(nocleanup='true'))
+
+    def test_detect_docker_permission_issue_permission_denied(self):
+        """Test detection of permission denied errors"""
+        # Test various permission denied error messages
+        test_cases = [
+            "Got permission denied while trying to connect to the Docker daemon socket",
+            "Permission denied",
+            "connect: permission denied",
+            "/var/run/docker.sock: permission denied",
+            "access denied"
+        ]
+        
+        for error_msg in test_cases:
+            with self.subTest(error_msg=error_msg):
+                mock_exception = Exception(error_msg)
+                is_permission, message, fix = detect_docker_permission_issue(mock_exception)
+                
+                self.assertTrue(is_permission)
+                self.assertIn("permission", message.lower())
+                self.assertIn("docker group", fix)
+                self.assertIn("sudo usermod -aG docker", fix)
+
+    def test_detect_docker_permission_issue_daemon_not_running(self):
+        """Test detection of Docker daemon not running errors"""
+        test_cases = [
+            "dial unix /var/run/docker.sock: connect: connection refused",
+            "Is the docker daemon running?",
+            "Cannot connect to the Docker daemon",
+            "connection refused"
+        ]
+        
+        for error_msg in test_cases:
+            with self.subTest(error_msg=error_msg):
+                mock_exception = Exception(error_msg)
+                is_permission, message, fix = detect_docker_permission_issue(mock_exception)
+                
+                self.assertTrue(is_permission)
+                self.assertIn("daemon", message.lower())
+                self.assertIn("systemctl start docker", fix)
+
+    def test_detect_docker_permission_issue_not_installed(self):
+        """Test detection of Docker not installed errors"""
+        test_cases = [
+            "docker: command not found",
+            "No such file or directory"
+        ]
+        
+        for error_msg in test_cases:
+            with self.subTest(error_msg=error_msg):
+                mock_exception = Exception(error_msg)
+                is_permission, message, fix = detect_docker_permission_issue(mock_exception)
+                
+                self.assertTrue(is_permission)
+                self.assertIn("not installed", message.lower())
+                self.assertIn("https://docs.docker.com/get-docker/", fix)
+
+    def test_detect_docker_permission_issue_unrecognized_error(self):
+        """Test handling of unrecognized Docker errors"""
+        mock_exception = Exception("Some random unrelated error")
+        is_permission, message, fix = detect_docker_permission_issue(mock_exception)
+        
+        self.assertFalse(is_permission)
+        self.assertIsNone(message)
+        self.assertIsNone(fix)
+
+    def test_docker_permission_error_creation(self):
+        """Test DockerPermissionError exception class"""
+        error_msg = "Test error message"
+        suggested_fix = "Test suggested fix"
+        
+        # Test creation with suggested fix
+        error = DockerPermissionError(error_msg, suggested_fix)
+        self.assertEqual(str(error), error_msg)
+        self.assertEqual(error.suggested_fix, suggested_fix)
+        
+        # Test creation without suggested fix
+        error = DockerPermissionError(error_msg)
+        self.assertEqual(str(error), error_msg)
+        self.assertIsNone(error.suggested_fix)
+        
+        # Test inheritance from DependencyMissing
+        self.assertIsInstance(error, Exception)
