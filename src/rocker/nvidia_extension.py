@@ -176,6 +176,22 @@ class Nvidia(RockerExtension):
             choices=[GLVND_VERSION_POLICY_LATEST_LTS],
             default=defaults.get('nvidia-glvnd-policy', GLVND_VERSION_POLICY_LATEST_LTS),
             help="Set an nvidia glvnd version policy if version is unset")
+        
+    def check_preconditions(self, cliargs):
+        try:
+            detected_os = detect_os(cliargs['base_image'], print, nocache=cliargs.get('nocache', False))
+            if not detected_os:
+                return (False, f"could not detect OS from base image '{cliargs['base_image']}'.")
+            
+            dist, ver, codename = detected_os
+            if dist not in self.supported_distros:
+                return (False, f"distro '{dist}' is not supported.")
+            if ver not in self.supported_versions:
+                return (False, f"distro version '{ver}' is not supported.")
+            
+            return (True, "") 
+        except Exception as e:
+            return (False, f"an error occurred during precondition check: {e}")    
 
 class Cuda(RockerExtension):
     @staticmethod
@@ -223,12 +239,42 @@ class Cuda(RockerExtension):
         # return empy_expand(preamble, self.get_environment_subs(cliargs))
 
     def get_snippet(self, cliargs):
-        snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
-        return empy_expand(snippet, self.get_environment_subs(cliargs))
+        subs = self.get_environment_subs(cliargs)
+        # NOTE: This assumes a specific CUDA version. A more advanced implementation
+        snippet = f"""
+RUN if ! command -v nvcc &> /dev/null; then \\
+        echo "CUDA not found, proceeding with installation."; \\
+        apt-get update && apt-get install -y --no-install-recommends gnupg && \\
+        apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/{subs['download_osstring']}{subs['download_verstring']}/x86_64/{subs['download_keyid']}.pub && \\
+        echo "deb https://developer.download.nvidia.com/compute/cuda/repos/{subs['download_osstring']}{subs['download_verstring']}/x86_64/ /" > /etc/apt/sources.list.d/cuda.list && \\
+        apt-get update && \\
+        apt-get install -y --no-install-recommends cuda-toolkit-12-2 && \\
+        rm -rf /var/lib/apt/lists/*; \\
+    else \\
+        echo "CUDA found, skipping installation."; \\
+    fi
+"""
+        return snippet
 
     def get_docker_args(self, cliargs):
         return ""
         # Runtime requires --nvidia option too
+
+    def check_preconditions(self, cliargs):
+        try:
+            detected_os = detect_os(cliargs['base_image'], print, nocache=cliargs.get('nocache', False))
+            if not detected_os:
+                return (False, f"could not detect OS from base image '{cliargs['base_image']}'.")
+
+            dist, ver, codename = detected_os
+            if dist not in self.supported_distros:
+                return (False, f"distro '{dist}' is not supported.")
+            if ver not in self.supported_versions:
+                return (False, f"distro version '{ver}' is not supported.")
+            
+            return (True, "") # All checks passed
+        except Exception as e:
+            return (False, f"an error occurred during precondition check: {e}")    
 
     @staticmethod
     def register_arguments(parser, defaults):
