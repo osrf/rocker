@@ -238,22 +238,36 @@ class Cuda(RockerExtension):
         # preamble = pkgutil.get_data('rocker', 'templates/%s_preamble.Dockerfile.em' % self.name).decode('utf-8')
         # return empy_expand(preamble, self.get_environment_subs(cliargs))
 
-    def get_snippet(self, cliargs):
+    def get_snippet(self, cliargs, detected_os):
+        
         subs = self.get_environment_subs(cliargs)
-        # NOTE: This assumes a specific CUDA version. A more advanced implementation
+        dist, ver, codename = detected_os
+        if dist == 'ubuntu' and ver == '22.04':
+            download_osstring = 'ubuntu2204'
+        elif dist == 'ubuntu' and ver == '20.04':
+            download_osstring = 'ubuntu2004'
+        elif dist == 'debian' and ver == '11':
+            download_osstring = 'debian11'
+        elif dist == 'debian' and ver == '12':
+            download_osstring = 'debian12'
+        elif dist in ['rhel', 'rocky'] and ver.startswith('9'):
+            download_osstring = 'rhel9'
+        elif dist in ['rhel', 'rocky'] and ver.startswith('8'):
+            download_osstring = 'rhel8'
+        elif dist == 'sles' and ver.startswith('15'):
+            download_osstring = 'sles15'
+        else:
+            download_osstring = f"{dist}{ver.replace('.', '')}"
+
         snippet = f"""
-RUN if ! command -v nvcc &> /dev/null; then \\
-        echo "CUDA not found, proceeding with installation."; \\
-        apt-get update && apt-get install -y --no-install-recommends gnupg && \\
-        apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/{subs['download_osstring']}{subs['download_verstring']}/x86_64/{subs['download_keyid']}.pub && \\
-        echo "deb https://developer.download.nvidia.com/compute/cuda/repos/{subs['download_osstring']}{subs['download_verstring']}/x86_64/ /" > /etc/apt/sources.list.d/cuda.list && \\
-        apt-get update && \\
-        apt-get install -y --no-install-recommends cuda-toolkit-12-2 && \\
-        rm -rf /var/lib/apt/lists/*; \\
-    else \\
-        echo "CUDA found, skipping installation."; \\
-    fi
-"""
+            RUN echo "Proceeding with CUDA installation for {dist} {ver}..." && \\
+                apt-get update && apt-get install -y --no-install-recommends gnupg && \\
+                apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/{download_osstring}/x86_64/{subs['download_keyid']}.pub && \\
+                echo "deb https://developer.download.nvidia.com/compute/cuda/repos/{download_osstring}/x86_64/ /" > /etc/apt/sources.list.d/cuda.list && \\
+                apt-get update && \\
+                apt-get install -y --no-install-recommends cuda-toolkit-12-2 && \\
+                rm -rf /var/lib/apt/lists/*
+        """
         return snippet
 
     def get_docker_args(self, cliargs):
@@ -262,6 +276,9 @@ RUN if ! command -v nvcc &> /dev/null; then \\
 
     def check_preconditions(self, cliargs):
         try:
+            if os.path.exists('/dev/nvidia0'):
+                return (False, "NVIDIA driver already present on host. Skipping installation.")
+            
             detected_os = detect_os(cliargs['base_image'], print, nocache=cliargs.get('nocache', False))
             if not detected_os:
                 return (False, f"could not detect OS from base image '{cliargs['base_image']}'.")
@@ -271,8 +288,9 @@ RUN if ! command -v nvcc &> /dev/null; then \\
                 return (False, f"distro '{dist}' is not supported.")
             if ver not in self.supported_versions:
                 return (False, f"distro version '{ver}' is not supported.")
-            
-            return (True, "") # All checks passed
+            print("Preconditions met.")
+            install_script = self.get_snippet(cliargs,detected_os)
+            return (True,install_script) # All checks passed
         except Exception as e:
             return (False, f"an error occurred during precondition check: {e}")    
 
