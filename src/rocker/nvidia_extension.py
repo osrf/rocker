@@ -203,6 +203,7 @@ class Cuda(RockerExtension):
         self.name = Cuda.get_name()
         self.supported_distros = ['Ubuntu', 'Debian GNU/Linux']
         self.supported_versions = ['20.04', '22.04', '24.04', '11', '12'] # Debian 11 and 12
+        self._detected_os = None
 
     def get_environment_subs(self, cliargs={}):
         if not self._env_subs:
@@ -211,7 +212,10 @@ class Cuda(RockerExtension):
             self._env_subs['username'] = getpass.getuser()
 
         # non static elements test every time
-        detected_os = detect_os(cliargs['base_image'], print, nocache=cliargs.get('nocache', False))
+        if not self._detected_os:
+            detected_os = self._detected_os
+        else:
+            detected_os = detect_os(cliargs['base_image'], print, nocache=cliargs.get('nocache', False))
         if detected_os is None:
             print("WARNING unable to detect os for base image '%s', maybe the base image does not exist" % cliargs['base_image'])
             sys.exit(1)
@@ -238,37 +242,23 @@ class Cuda(RockerExtension):
         # preamble = pkgutil.get_data('rocker', 'templates/%s_preamble.Dockerfile.em' % self.name).decode('utf-8')
         # return empy_expand(preamble, self.get_environment_subs(cliargs))
 
-    def get_snippet(self, cliargs, detected_os):
-        
-        subs = self.get_environment_subs(cliargs)
-        dist, ver, codename = detected_os
-        if dist == 'ubuntu' and ver == '22.04':
-            download_osstring = 'ubuntu2204'
-        elif dist == 'ubuntu' and ver == '20.04':
-            download_osstring = 'ubuntu2004'
-        elif dist == 'debian' and ver == '11':
-            download_osstring = 'debian11'
-        elif dist == 'debian' and ver == '12':
-            download_osstring = 'debian12'
-        elif dist in ['rhel', 'rocky'] and ver.startswith('9'):
-            download_osstring = 'rhel9'
-        elif dist in ['rhel', 'rocky'] and ver.startswith('8'):
-            download_osstring = 'rhel8'
-        elif dist == 'sles' and ver.startswith('15'):
-            download_osstring = 'sles15'
-        else:
-            download_osstring = f"{dist}{ver.replace('.', '')}"
-
-        snippet = f"""
-            RUN echo "Proceeding with CUDA installation for {dist} {ver}..." && \\
-                apt-get update && apt-get install -y --no-install-recommends gnupg && \\
-                apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/{download_osstring}/x86_64/{subs['download_keyid']}.pub && \\
-                echo "deb https://developer.download.nvidia.com/compute/cuda/repos/{download_osstring}/x86_64/ /" > /etc/apt/sources.list.d/cuda.list && \\
-                apt-get update && \\
-                apt-get install -y --no-install-recommends cuda-toolkit-12-2 && \\
-                rm -rf /var/lib/apt/lists/*
-        """
-        return snippet
+    def get_snippet(self, cliargs):
+         detected_os = self._detected_os
+         status = True # Assume True if preconditions were already checked
+         
+         if not self._detected_os:
+              # FIX 1: Capture the status and message returned from the check
+              status, message = self.check_preconditions(cliargs)
+         
+         if not self._detected_os:
+             raise RuntimeError("OS detection failed or was not run.")
+         
+         # FIX 2: If status is False (e.g., "skip installation"), return an empty snippet
+         if not status:
+             return ""
+             
+         snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
+         return empy_expand(snippet, self.get_environment_subs(cliargs))
 
     def get_docker_args(self, cliargs):
         return ""
@@ -276,12 +266,17 @@ class Cuda(RockerExtension):
 
     def check_preconditions(self, cliargs):
         try:
-            if os.path.exists('/dev/nvidia0'):
-                return (False, "NVIDIA driver already present on host. Skipping installation.")
-            
+            # FIX 1: Run OS detection first and store the result
             detected_os = detect_os(cliargs['base_image'], print, nocache=cliargs.get('nocache', False))
             if not detected_os:
                 return (False, f"could not detect OS from base image '{cliargs['base_image']}'.")
+            
+            # Store the result immediately
+            self._detected_os = detected_os 
+
+            # FIX 2: Now check for existing drivers
+            if os.path.exists('/dev/nvidia0'):
+                return (False, "NVIDIA driver already present on host. Skipping installation.")
 
             dist, ver, codename = detected_os
             if dist not in self.supported_distros:
@@ -289,11 +284,10 @@ class Cuda(RockerExtension):
             if ver not in self.supported_versions:
                 return (False, f"distro version '{ver}' is not supported.")
             print("Preconditions met.")
-            install_script = self.get_snippet(cliargs,detected_os)
-            return (True,install_script) # All checks passed
+            # self._detected_os = detected_os # <-- This is now done at the top
+            return (True,"CUDA installation prerequisites met.") # All checks passed
         except Exception as e:
-            return (False, f"an error occurred during precondition check: {e}")    
-
+            return (False, f"an error occurred during precondition check: {e}")
     @staticmethod
     def register_arguments(parser, defaults):
         parser.add_argument(name_to_argument(Cuda.get_name()),
