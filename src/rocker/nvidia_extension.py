@@ -143,6 +143,17 @@ class Nvidia(RockerExtension):
 
         return self._env_subs
 
+    def check_preconditions(self, cliargs):
+        """
+        Check if NVIDIA drivers/hardware are available on the host.
+        Provides user-facing warnings or errors for better UX.
+        Note: Container-side NVIDIA detection happens in the Dockerfile snippet.
+        """
+        if cliargs.get('nvidia'):
+            if not has_nvidia_driver():
+                print("WARNING: --nvidia was specified, but no NVIDIA drivers or devices were detected on the host.")
+                print("         The container may not have access to GPU hardware.")
+
     def get_preamble(self, cliargs):
         preamble = pkgutil.get_data('rocker', 'templates/%s_preamble.Dockerfile.em' % self.name).decode('utf-8')
         return empy_expand(preamble, self.get_environment_subs(cliargs))
@@ -216,12 +227,18 @@ class Cuda(RockerExtension):
             sys.exit(1)
             # TODO(tfoote) add a standard mechanism for checking preconditions and disabling plugins
 
-        # Check if host has NVIDIA drivers already installed.
-        # If so, skip CUDA installation in the container to avoid reinstalling.
-        # This addresses issue #316 where CUDA was being reinstalled unnecessarily.
-        self._env_subs['skip_cuda_install'] = has_nvidia_driver()
-
         return self._env_subs
+
+    def check_preconditions(self, cliargs):
+        """
+        Check if NVIDIA drivers/hardware are available on the host.
+        Provides user-facing warnings for better UX when --cuda is specified.
+        Note: Container-side NVIDIA detection happens in the Dockerfile snippet.
+        """
+        if cliargs.get('cuda'):
+            if not has_nvidia_driver():
+                print("WARNING: --cuda was specified, but no NVIDIA drivers or devices were detected on the host.")
+                print("         The container may not have access to GPU hardware.")
 
     def get_preamble(self, cliargs):
         return ''

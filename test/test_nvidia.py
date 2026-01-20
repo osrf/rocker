@@ -254,10 +254,10 @@ CMD glmark2 --validate
 
 
 class CudaSkipInstallTest(unittest.TestCase):
-    """Tests for CUDA installation skip logic when host has NVIDIA drivers.
+    """Tests for CUDA installation skip logic at container build time.
     
-    These tests verify that issue #316 is fixed: when the host already has
-    NVIDIA drivers, the CUDA extension skips reinstalling CUDA in the container.
+    These tests verify that issue #316 is fixed: the container-side NVIDIA
+    detection skips CUDA installation if NVIDIA is already present in the base image.
     """
 
     def setUp(self):
@@ -271,9 +271,40 @@ class CudaSkipInstallTest(unittest.TestCase):
         # "em.Error: interpreter stdout proxy lost"
         em.Interpreter._wasProxyInstalled = False
 
+    def test_cuda_snippet_contains_nvidia_detection(self):
+        """Test that CUDA snippet contains shell-based NVIDIA detection logic."""
+        plugins = list_plugins()
+        cuda_plugin = plugins['cuda']
+        p = cuda_plugin()
+
+        mock_cliargs = {'base_image': 'ubuntu:jammy'}
+
+        with mock.patch('rocker.nvidia_extension.detect_os', return_value=('Ubuntu', '22.04', 'jammy')):
+            snippet = p.get_snippet(mock_cliargs)
+            
+            # Verify the shell-based detection is present
+            self.assertIn('ldconfig -p | grep -q libcuda.so', snippet)
+            self.assertIn('NVIDIA detected inside container', snippet)
+            self.assertIn('NVIDIA not detected inside container', snippet)
+
+    def test_cuda_snippet_includes_installation_commands(self):
+        """Test that CUDA snippet includes the actual CUDA installation commands."""
+        plugins = list_plugins()
+        cuda_plugin = plugins['cuda']
+        p = cuda_plugin()
+
+        mock_cliargs = {'base_image': 'ubuntu:jammy'}
+
+        with mock.patch('rocker.nvidia_extension.detect_os', return_value=('Ubuntu', '22.04', 'jammy')):
+            snippet = p.get_snippet(mock_cliargs)
+            
+            # Verify installation commands are present (they run if NVIDIA is not detected)
+            self.assertIn('cuda-toolkit', snippet)
+            self.assertIn('cuda-keyring', snippet)
+
     def test_has_nvidia_driver_function(self):
-        """Test has_nvidia_driver() helper function in isolation."""
-        # Mock os.path.exists to simulate presence of NVIDIA devices
+        """Test has_nvidia_driver() helper function for host-side detection."""
+        # This function is now used only for UX warnings in check_preconditions()
         with mock.patch('os.path.exists') as mock_exists:
             # Test when /dev/nvidia0 exists
             mock_exists.return_value = True
@@ -283,54 +314,6 @@ class CudaSkipInstallTest(unittest.TestCase):
             mock_exists.return_value = False
             self.assertFalse(has_nvidia_driver())
 
-    def test_cuda_skip_install_when_nvidia_driver_present(self):
-        """Test that CUDA snippet skips installation when host has NVIDIA drivers."""
-        plugins = list_plugins()
-        cuda_plugin = plugins['cuda']
-        p = cuda_plugin()
-
-        mock_cliargs = {'base_image': 'ubuntu:jammy'}
-
-        # Mock has_nvidia_driver to return True (drivers present)
-        # Apply patch at the test level so it persists through get_snippet call
-        with mock.patch('rocker.validation.os.path.exists', return_value=True):
-            with mock.patch('rocker.nvidia_extension.detect_os', return_value=('Ubuntu', '22.04', 'jammy')):
-                # This will make has_nvidia_driver() return True
-                from rocker.validation import has_nvidia_driver
-                self.assertTrue(has_nvidia_driver())
-                
-                env_subs = p.get_environment_subs(mock_cliargs)
-                self.assertTrue(env_subs['skip_cuda_install'])
-
-                # Verify template behaves correctly when skip_cuda_install is True
-                snippet = p.get_snippet(mock_cliargs)
-                # When skipping, we should see the skip message, not cuda-toolkit
-                self.assertIn('installation skipped', snippet.lower())
-                self.assertNotIn('cuda-toolkit', snippet)
-
-    def test_cuda_installs_when_nvidia_driver_absent(self):
-        """Test that CUDA snippet includes installation when host lacks NVIDIA drivers."""
-        plugins = list_plugins()
-        cuda_plugin = plugins['cuda']
-        p = cuda_plugin()
-
-        mock_cliargs = {'base_image': 'ubuntu:jammy'}
-
-        # Mock has_nvidia_driver to return False (drivers not present)
-        # Apply patch at the test level so it persists through get_snippet call
-        with mock.patch('rocker.validation.os.path.exists', return_value=False):
-            with mock.patch('rocker.nvidia_extension.detect_os', return_value=('Ubuntu', '22.04', 'jammy')):
-                # This will make has_nvidia_driver() return False
-                from rocker.validation import has_nvidia_driver
-                self.assertFalse(has_nvidia_driver())
-                
-                env_subs = p.get_environment_subs(mock_cliargs)
-                self.assertFalse(env_subs['skip_cuda_install'])
-
-                # Verify template behaves correctly when skip_cuda_install is False
-                snippet = p.get_snippet(mock_cliargs)
-                self.assertIn("cuda-toolkit", snippet)
-                self.assertNotIn("installation skipped", snippet.lower())
 
 
 @pytest.mark.docker
