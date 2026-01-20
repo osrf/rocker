@@ -19,14 +19,14 @@ RUN if ldconfig -p | grep -q libcuda.so || [ -f /proc/driver/nvidia/version ]; t
       add-apt-repository contrib && \
       apt-get update && \
       apt-get -y install cuda-toolkit && \
-      rm -rf /var/lib/apt/lists/*;
+      rm -rf /var/lib/apt/lists/*; \
       @[else]@
       wget -q https://developer.download.nvidia.com/compute/cuda/repos/@(download_osstring)@(download_verstring)/x86_64/cuda-keyring_1.1-1_all.deb && \
       dpkg -i cuda-keyring_1.1-1_all.deb && \
       rm cuda-keyring_1.1-1_all.deb && \
       apt-get update && \
       apt-get -y install cuda-toolkit && \
-      rm -rf /var/lib/apt/lists/*;
+      rm -rf /var/lib/apt/lists/*; \
       @[end if]@
       rm -rf /usr/lib/x86_64-linux-gnu/libnv*; \
       rm -rf /usr/lib/x86_64-linux-gnu/libcuda*; \
