@@ -22,6 +22,7 @@ import subprocess
 import sys
 
 from .os_detector import detect_os
+from .validation import has_nvidia_driver
 
 from .extensions import name_to_argument
 from .core import get_docker_client
@@ -214,6 +215,11 @@ class Cuda(RockerExtension):
             print("WARNING distro %s version %s not in supported list by Nvidia supported versions" % (dist, ver), self.supported_versions)
             sys.exit(1)
             # TODO(tfoote) add a standard mechanism for checking preconditions and disabling plugins
+
+        # Check if host has NVIDIA drivers already installed.
+        # If so, skip CUDA installation in the container to avoid reinstalling.
+        # This addresses issue #316 where CUDA was being reinstalled unnecessarily.
+        self._env_subs['skip_cuda_install'] = has_nvidia_driver()
 
         return self._env_subs
 
