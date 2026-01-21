@@ -22,12 +22,30 @@ import subprocess
 import sys
 
 from .os_detector import detect_os
-from .validation import has_nvidia_driver
 
 from .extensions import name_to_argument
 from .core import get_docker_client
 from .core import RockerExtension
 from .em import empy_expand
+
+
+def has_nvidia_driver():
+    """
+    Detect if NVIDIA drivers are installed on the host system.
+
+    This checks for the presence of /dev/nvidia0 or /dev/nvidiactl, which indicate
+    that NVIDIA drivers are installed and functional on the host.
+
+    We check these device files rather than searching for libraries or executables
+    because:
+    - /dev/nvidia0 and /dev/nvidiactl are created by nvidia-modprobe or nvidia driver
+    - Their presence indicates the kernel driver is loaded and ready
+    - This avoids false positives from stale installations
+
+    Returns:
+        bool: True if NVIDIA driver devices are detected, False otherwise.
+    """
+    return os.path.exists('/dev/nvidia0') or os.path.exists('/dev/nvidiactl')
 
 GLVND_VERSION_POLICY_LATEST_LTS='latest_lts'
 
@@ -143,16 +161,16 @@ class Nvidia(RockerExtension):
 
         return self._env_subs
 
-    def check_preconditions(self, cliargs):
+    def validate_environment(self, cliargs, parser):
         """
         Check if NVIDIA drivers/hardware are available on the host.
-        Provides user-facing warnings or errors for better UX.
+        Provides user-facing errors for better UX.
         Note: Container-side NVIDIA detection happens in the Dockerfile snippet.
         """
         if cliargs.get('nvidia'):
             if not has_nvidia_driver():
-                print("WARNING: --nvidia was specified, but no NVIDIA drivers or devices were detected on the host.")
-                print("         The container may not have access to GPU hardware.")
+                parser.error("--nvidia was specified, but no NVIDIA drivers or devices were detected on the host.\n"
+                           "         The container may not have access to GPU hardware.")
 
     def get_preamble(self, cliargs):
         preamble = pkgutil.get_data('rocker', 'templates/%s_preamble.Dockerfile.em' % self.name).decode('utf-8')
@@ -229,16 +247,16 @@ class Cuda(RockerExtension):
 
         return self._env_subs
 
-    def check_preconditions(self, cliargs):
+    def validate_environment(self, cliargs, parser):
         """
         Check if NVIDIA drivers/hardware are available on the host.
-        Provides user-facing warnings for better UX when --cuda is specified.
+        Provides user-facing errors for better UX when --cuda is specified.
         Note: Container-side NVIDIA detection happens in the Dockerfile snippet.
         """
         if cliargs.get('cuda'):
             if not has_nvidia_driver():
-                print("WARNING: --cuda was specified, but no NVIDIA drivers or devices were detected on the host.")
-                print("         The container may not have access to GPU hardware.")
+                parser.error("--cuda was specified, but no NVIDIA drivers or devices were detected on the host.\n"
+                           "         The container may not have access to GPU hardware.")
 
     def get_preamble(self, cliargs):
         return ''

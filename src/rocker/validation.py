@@ -12,23 +12,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
-
-def has_nvidia_driver():
-    """
-    Detect if NVIDIA drivers are installed on the host system.
-
-    This checks for the presence of /dev/nvidia0 or /dev/nvidiactl, which indicate
-    that NVIDIA drivers are installed and functional on the host.
-
-    We check these device files rather than searching for libraries or executables
-    because:
-    - /dev/nvidia0 and /dev/nvidiactl are created by nvidia-modprobe or nvidia driver
-    - Their presence indicates the kernel driver is loaded and ready
-    - This avoids false positives from stale installations
-
-    Returns:
-        bool: True if NVIDIA driver devices are detected, False otherwise.
-    """
-    return os.path.exists('/dev/nvidia0') or os.path.exists('/dev/nvidiactl')
