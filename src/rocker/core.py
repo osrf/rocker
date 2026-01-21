@@ -66,10 +66,11 @@ class RockerExtension(object):
         """Modify the local environment such as setup tempfiles"""
         pass
 
-    def validate_environment(self, cliargs):
+    def validate_environment(self, cliargs, parser):
         """ Check that the environment is something that can be used.
         This will check that we're on the right base OS and that the 
-        necessary resources are available, like hardware."""
+        necessary resources are available, like hardware.
+        If the environment is not valid call parser.error with the useful message. """
         pass
 
     def invoke_after(self, cliargs) -> typing.Set[str]:

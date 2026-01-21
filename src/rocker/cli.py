@@ -95,6 +95,10 @@ def main():
         return 1
     print("Active extensions %s" % [e.get_name() for e in active_extensions])
 
+    # Give active extensions a chance to validate the arguments
+    for e in active_extensions:
+        e.validate_environment(args_dict, parser)
+
     base_image = args.image
 
     dig = DockerImageGenerator(active_extensions, args_dict, base_image)
