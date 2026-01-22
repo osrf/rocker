@@ -28,6 +28,8 @@ RUN if ldconfig -p | grep -q libcuda.so || [ -f /proc/driver/nvidia/version ]; t
       apt-get -y install cuda-toolkit && \
       rm -rf /var/lib/apt/lists/*; \
       @[end if]@
+      @# File conflict problem with libnvidia-ml.so.1 and libcuda.so.
+      @# https://github.com/NVIDIA/nvidia-docker/issues/1551
       rm -rf /usr/lib/x86_64-linux-gnu/libnv*; \
       rm -rf /usr/lib/x86_64-linux-gnu/libcuda*; \
     fi
