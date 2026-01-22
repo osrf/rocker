@@ -13,6 +13,8 @@ RUN if ldconfig -p | grep -q libcuda.so || [ -f /proc/driver/nvidia/version ]; t
       apt-get update && apt-get install -y --no-install-recommends \
         wget software-properties-common gnupg2 && \
       @[if download_osstring == 'debian']@
+      @# Enable contrib on debian to get required
+      @# https://packages.debian.org/bullseye/glx-alternative-nvidia
       wget -q https://developer.download.nvidia.com/compute/cuda/repos/@(download_osstring)@(download_verstring)/x86_64/cuda-keyring_1.1-1_all.deb && \
       dpkg -i cuda-keyring_1.1-1_all.deb && \
       rm cuda-keyring_1.1-1_all.deb && \
