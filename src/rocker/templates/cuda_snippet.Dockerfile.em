@@ -36,5 +36,6 @@ RUN if ldconfig -p | grep -q libcuda.so || [ -f /proc/driver/nvidia/version ]; t
       rm -rf /usr/lib/x86_64-linux-gnu/libcuda*; \
     fi
 
+@# TODO(tfoote) Add documentation of why these are required
 ENV PATH /usr/local/cuda/bin${PATH:+:${PATH}}
 ENV LD_LIBRARY_PATH /usr/local/cuda/lib64/stubs:/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
