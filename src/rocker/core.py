@@ -221,12 +221,30 @@ def get_docker_client():
         docker_client.ping()
         return docker_client
     except (docker.errors.DockerException, docker.errors.APIError, ConnectionError) as ex:
-        raise DependencyMissing('Docker Client failed to connect to docker daemon.'
+        err_str = str(ex).lower()
+        hint = ""
+        
+        if "permission denied" in err_str:
+            hint = (
+                "\nHint: Your user may not have permission to access the Docker daemon.\n"
+                "Try adding your user to the docker group and log out:\n"
+                "  sudo usermod -aG docker $USER\n"
+            )
+        elif "no such file or directory" in err_str:
+            hint = (
+                "\nHint: The Docker daemon may not be running.\n"
+                "Try starting it with:\n"
+                "  sudo systemctl start docker\n"
+            )
+        
+        raise DependencyMissing(
+            'Docker Client failed to connect to docker daemon.'
             ' Please verify that docker is installed and running.'
             ' As well as that you have permission to access the docker daemon.'
             ' This is usually by being a member of the docker group.'
-            ' The underlying error was:\n"""\n%s\n"""\n' % ex)
-
+            f'{hint}'
+            ' The underlying error was:\n"""\n%s\n"""\n' % ex
+        )
 def get_user_name():
     userinfo = pwd.getpwuid(os.getuid())
     return getattr(userinfo, 'pw_' + 'name')
