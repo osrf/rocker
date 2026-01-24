@@ -208,24 +208,66 @@ class RockerExtensionManager:
                     find_reqs = find_reqs.union(missing_reqs)
 
         return sort_extensions(active_extensions, cli_args)
+def _docker_binary_exists():
+    import shutil
+    return shutil.which("docker") is not None
+
+
+def _docker_socket_exists():
+    return os.path.exists("/var/run/docker.sock")
+
+
+def _docker_socket_accessible():
+    return os.access("/var/run/docker.sock", os.R_OK | os.W_OK)
+
+
 
 def get_docker_client():
-    """Simple helper function for pre 2.0 imports"""
+    """Create and validate a Docker client with actionable diagnostics."""
+
+    if not _docker_binary_exists():
+        raise DependencyMissing(
+            "Docker is not installed.\n"
+            "Install instructions:\n"
+            "  https://docs.docker.com/engine/install/"
+        )
+
+    if not _docker_socket_exists():
+        raise DependencyMissing(
+            "Docker daemon is not running.\n\n"
+            "Fix:\n"
+            "  sudo systemctl start docker"
+        )
+
+    if not _docker_socket_accessible():
+        user = os.getenv("USER", "<your-user>")
+        raise DependencyMissing(
+            "Docker permission error.\n"
+            f"User '{user}' does not have access to the Docker socket.\n\n"
+            "Fix:\n"
+            f"  sudo usermod -aG docker {user}\n"
+            "  log out and log back in"
+        )
+
     try:
         try:
-            docker_client = docker.from_env().api
+            client = docker.from_env().api
         except AttributeError:
-            # docker-py pre 2.0
-            docker_client = docker.Client()
-        # Validate that the server is available
-        docker_client.ping()
-        return docker_client
-    except (docker.errors.DockerException, docker.errors.APIError, ConnectionError) as ex:
-        raise DependencyMissing('Docker Client failed to connect to docker daemon.'
-            ' Please verify that docker is installed and running.'
-            ' As well as that you have permission to access the docker daemon.'
-            ' This is usually by being a member of the docker group.'
-            ' The underlying error was:\n"""\n%s\n"""\n' % ex)
+            client = docker.Client()
+
+        client.ping()
+        return client
+
+    except (docker.errors.DockerException,
+            docker.errors.APIError,
+            ConnectionError) as ex:
+        raise DependencyMissing(
+            "Docker daemon is not responding.\n\n"
+            "Verify:\n"
+            "  - Docker is running\n"
+            "  - `docker ps` works\n\n"
+            f"Original error: {ex}"
+        )
 
 def get_user_name():
     userinfo = pwd.getpwuid(os.getuid())
