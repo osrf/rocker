@@ -231,6 +231,34 @@ def get_user_name():
     userinfo = pwd.getpwuid(os.getuid())
     return getattr(userinfo, 'pw_' + 'name')
 
+def base_image_exists(base_image, docker_client=None):
+    """
+    Check if a base Docker image exists locally.
+    
+    Args:
+        base_image: The name/tag of the Docker image to check
+        docker_client: Optional docker client instance. If not provided, one will be created.
+    
+    Returns:
+        True if the image exists locally, False otherwise.
+    
+    Raises:
+        DependencyMissing: If docker client cannot be accessed.
+    """
+    if not docker_client:
+        docker_client = get_docker_client()
+    
+    try:
+        # Try to inspect the image to see if it exists locally
+        docker_client.inspect_image(base_image)
+        return True
+    except docker.errors.APIError as ex:
+        # 404 error means image not found
+        if ex.response.status_code == 404:
+            return False
+        # Re-raise other API errors
+        raise
+
 def docker_build(docker_client = None, output_callback = None, **kwargs):
     image_id = None
 

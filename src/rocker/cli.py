@@ -21,6 +21,7 @@ from .core import get_rocker_version
 from .core import RockerExtensionManager
 from .core import DependencyMissing
 from .core import ExtensionError
+from .core import base_image_exists
 from .core import OPERATIONS_DRY_RUN
 from .core import OPERATIONS_INTERACTIVE
 from .core import OPERATIONS_NON_INTERACTIVE
@@ -96,6 +97,13 @@ def main():
     print("Active extensions %s" % [e.get_name() for e in active_extensions])
 
     base_image = args.image
+
+    # Check if base image exists before proceeding
+    try:
+        if not base_image_exists(base_image):
+            parser.error(f"ERROR: Base Docker image '{base_image}' not found locally. Please pull it first (docker pull {base_image}).")
+    except DependencyMissing as ex:
+        parser.error(f"DependencyMissing encountered: {ex}")
 
     dig = DockerImageGenerator(active_extensions, args_dict, base_image)
     exit_code = dig.build(**vars(args))
