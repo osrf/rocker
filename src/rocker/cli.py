@@ -51,7 +51,7 @@ def main():
         extension_manager.extend_cli_parser(parser, default_args)
     except DependencyMissing as ex:
         # Catch errors if docker is missing or inaccessible.
-        parser.error("DependencyMissing encountered: %s" % ex)
+        parser.error(str(ex))
 
     args = parser.parse_args()
     args_dict = vars(args)

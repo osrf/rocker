@@ -221,12 +221,45 @@ def get_docker_client():
         docker_client.ping()
         return docker_client
     except (docker.errors.DockerException, docker.errors.APIError, ConnectionError) as ex:
-        raise DependencyMissing('Docker Client failed to connect to docker daemon.'
-            ' Please verify that docker is installed and running.'
-            ' As well as that you have permission to access the docker daemon.'
-            ' This is usually by being a member of the docker group.'
-            ' The underlying error was:\n"""\n%s\n"""\n' % ex)
-
+        # Connection failed - run diagnostics to provide helpful error
+        
+        # Check 1: Is Docker installed?
+        import shutil
+        if not shutil.which("docker"):
+            raise DependencyMissing(
+                "Docker is not installed.\n"
+                "Install instructions:\n"
+                "  https://docs.docker.com/engine/install/"
+            )
+        
+        # Check 2: Does Docker socket exist?
+        socket_path = "/var/run/docker.sock"
+        if not os.path.exists(socket_path):
+            raise DependencyMissing(
+                "Docker daemon is not running.\n\n"
+                "Fix:\n"
+                "  sudo systemctl start docker"
+            )
+        
+        # Check 3: Can user access the socket?
+        if not os.access(socket_path, os.R_OK | os.W_OK):
+            user = os.getenv("USER", "your-user")
+            raise DependencyMissing(
+                "Docker permission error.\n"
+                f"User '{user}' does not have access to the Docker socket.\n\n"
+                "Fix:\n"
+                f"  sudo usermod -aG docker {user}\n"
+                "  log out and log back in"
+            )
+        
+        # All checks passed but connection still failed
+        raise DependencyMissing(
+            "Docker daemon is not responding.\n\n"
+            "Verify:\n"
+            "  - Docker is running\n"
+            "  - `docker ps` works\n\n"
+            f"Original error: {ex}"
+        )
 def get_user_name():
     userinfo = pwd.getpwuid(os.getuid())
     return getattr(userinfo, 'pw_' + 'name')
