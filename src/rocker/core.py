@@ -260,10 +260,10 @@ def get_docker_client():
             "  - `docker ps` works\n\n"
             f"Original error: {ex}"
         )
+        
 def get_user_name():
     userinfo = pwd.getpwuid(os.getuid())
     return getattr(userinfo, 'pw_' + 'name')
-
 def base_image_exists(base_image, docker_client=None, output_callback=None):
     """
     Check if a base Docker image exists locally.
@@ -276,59 +276,104 @@ def base_image_exists(base_image, docker_client=None, output_callback=None):
         # Try to inspect the image to see if it exists locally
         docker_client.inspect_image(base_image)
         return True
-
     except docker.errors.APIError as ex:
         # 404 error means image not found locally
         if ex.response.status_code == 404:
             if output_callback:
                 output_callback(f"Base image '{base_image}' not found locally, attempting to pull...")
-
             try:
                 # Attempt to pull from registry
                 docker_client.pull(base_image)
                 if output_callback:
                     output_callback(f"Successfully pulled '{base_image}'")
                 return True
-
             except (docker.errors.ImageNotFound, docker.errors.NotFound):
                 # Image does not exist in the registry
                 if output_callback:
                     output_callback(f"Failed to pull image '{base_image}': not found in registry.")
                 return False
-
             except docker.errors.APIError as pull_ex:
                 # Network / auth / other Docker errors should not be hidden
                 if output_callback:
                     output_callback(f"Error while pulling image '{base_image}': {pull_ex.explanation}")
-                raise
+                return False
+        else:
+            # Other errors (e.g. Docker daemon issues) should be raised
+            raise
+def _extract_build_context(build_output, last_n_lines=15):
+    """
+    Extract the last N lines of build output for error context.
+    Filters out empty lines and formats for readability.
+    """
+    lines = []
+    for event in build_output[-last_n_lines:]:
+        stream = event.get('stream', '').rstrip()
+        error = event.get('error', '').rstrip()
+        if stream:
+            lines.append(stream)
+        if error:
+            lines.append(f"ERROR: {error}")
+    
+    return '\n'.join(lines) if lines else "(no build output captured)"
 
-        # Re-raise other non-404 API errors from inspect
-        raise
+
 
 def docker_build(docker_client = None, output_callback = None, **kwargs):
     image_id = None
+    build_output = []  # Buffer all output for error reporting
 
     if not docker_client:
         docker_client = get_docker_client()
     kwargs['decode'] = True
-    for line in docker_client.build(**kwargs):
-        output = line.get('stream', '').rstrip()
-        if not output:
-            # print("non stream data", line)
-            continue
-        if output_callback is not None:
-            output_callback(output)
 
-        match = re.match(r'Successfully built ([a-z0-9]{12})', output)
-        if match:
-            image_id = match.group(1)
+    try:
+        for line in docker_client.build(**kwargs):
+            # Buffer this line for potential error reporting
+            build_output.append(line)
+
+            # Extract and forward stream output (existing behavior)
+            output = line.get('stream', '').rstrip()
+            if output:
+                if output_callback is not None:
+                    output_callback(output)
+
+                # Check for successful build
+                match = re.match(r'Successfully built ([a-z0-9]{12})', output)
+                if match:
+                    image_id = match.group(1)
+
+            # Check for explicit build errors
+            error = line.get('error')
+            if error:
+                error_detail = line.get('errorDetail', {})
+                error_msg = error_detail.get('message', error)
+                recent_output = _extract_build_context(build_output)
+
+                raise docker.errors.BuildError(
+                    f"Docker build failed:\n{recent_output}\n\nError: {error_msg}",
+                    build_log=build_output
+                )
+
+    except docker.errors.BuildError:
+        # Re-raise BuildError as-is
+        raise
+    except docker.errors.APIError as ex:
+        # Unexpected Docker API error during build
+        recent_output = _extract_build_context(build_output)
+        raise docker.errors.BuildError(
+            f"Docker build failed:\n{recent_output}\n\nAPI Error: {ex}",
+            build_log=build_output
+        )
 
     if image_id:
         return image_id
     else:
-        print("no more output and success not detected")
-        return None
-
+        # Build completed but didn't produce an image
+        recent_output = _extract_build_context(build_output)
+        raise docker.errors.BuildError(
+            f"Docker build completed but no image was created:\n{recent_output}",
+            build_log=build_output
+        )
 def docker_remove_image(
         image_id,
         docker_client = None,
