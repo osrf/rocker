@@ -45,13 +45,21 @@ def detect_os(image_name, output_callback=None, nocache=False):
 
     iof = StringIO((DETECTION_TEMPLATE % locals()).encode())
     tag_name = "rocker:" + f"os_detect_{image_name}".replace(':', '_').replace('/', '_')
-    image_id = docker_build(
-        fileobj=iof,
-        output_callback=output_callback,
-        nocache=nocache,
-        forcerm=True,  # Remove intermediate containers from RUN commands in DETECTION_TEMPLATE
-        tag=tag_name
-    )
+    
+    try:
+        image_id = docker_build(
+            fileobj=iof,
+            output_callback=output_callback,
+            nocache=nocache,
+            forcerm=True,  # Remove intermediate containers from RUN commands in DETECTION_TEMPLATE
+            tag=tag_name
+        )
+    except docker.errors.BuildError as e:
+        # Build failed (e.g., base image doesn't exist)
+        if output_callback:
+            output_callback(f'Failed to build detector image: {e}')
+        return None
+    
     if not image_id:
         if output_callback:
             output_callback('Failed to build detector image')
