@@ -453,6 +453,14 @@ class UserExtensionTest(unittest.TestCase):
         snippet_result = p.get_snippet(user_override_active_cliargs)
         self.assertFalse('-s' in snippet_result)
 
+        user_podman_args = mock_cliargs
+        args_result = p.get_docker_args(user_podman_args)
+        self.assertNotIn('--userns=keep-id', args_result)
+
+        user_podman_args['use_podman'] = True
+        args_result = p.get_docker_args(user_podman_args)
+        self.assertIn('--userns=keep-id', args_result)
+
     @pytest.mark.docker
     def test_user_collisions(self):
         plugins = list_plugins()

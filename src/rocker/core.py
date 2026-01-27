@@ -324,7 +324,7 @@ def docker_build(docker_client = None, output_callback = None, **kwargs):
             image_id = match.group(1)
 
     if image_id:
-        return image_id
+        return docker_client.inspect_image(image_id).get('Id')
     else:
         print("no more output and success not detected")
         return None
@@ -459,7 +459,14 @@ class DockerImageGenerator(object):
             image = image_name
         else:
             image = self.image_id
-        cmd = "docker run"
+        cmd = ""
+        podman_prefix = ""
+        if kwargs.get('use_podman'):  
+            cmd += "podman run"
+            podman_prefix = "docker-daemon:"
+        else:
+            cmd += "docker run"
+
         if(not kwargs.get('nocleanup')):
             # remove container only if --nocleanup is not present
             cmd += " --rm"
@@ -468,7 +475,7 @@ class DockerImageGenerator(object):
         if operating_mode != OPERATIONS_NON_INTERACTIVE:
             # only disable for OPERATIONS_NON_INTERACTIVE
             cmd += " -it"
-        cmd += "%(docker_args)s %(image)s %(command)s" % locals()
+        cmd += "%(docker_args)s %(podman_prefix)s%(image)s %(command)s" % locals()
         return cmd
 
     def run(self, command='', **kwargs):
