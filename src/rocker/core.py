@@ -293,7 +293,13 @@ def base_image_exists(base_image, docker_client=None, output_callback=None):
                     output_callback(f"Failed to pull image '{base_image}': not found in registry.")
                 return False
             except docker.errors.APIError as pull_ex:
-                # Network / auth / other Docker errors should not be hidden
+                # Check if it's a 404/manifest not found error
+                if pull_ex.response.status_code == 404 or 'manifest' in str(pull_ex).lower():
+                    # Image does not exist in registry
+                    if output_callback:
+                        output_callback(f"Failed to pull image '{base_image}': not found in registry.")
+                    return False
+                # Other API errors (network, auth, etc.) should not be hidden
                 if output_callback:
                     output_callback(f"Error while pulling image '{base_image}': {pull_ex.explanation}")
                 return False
