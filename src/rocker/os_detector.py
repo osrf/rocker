@@ -14,7 +14,7 @@
 
 import json
 import pexpect
-
+import docker
 from io import BytesIO as StringIO
 
 from .core import docker_build, get_docker_client
