@@ -20,6 +20,8 @@ import em
 import unittest
 import pexpect
 import pytest
+from unittest.mock import patch
+import os
 
 
 from io import BytesIO as StringIO
@@ -299,12 +301,22 @@ CMD dpkg -s cuda-toolkit
         plugins = list_plugins()
         desired_plugins = ['cuda']
         active_extensions = [e() for e in plugins.values() if e.get_name() in desired_plugins]
-        for tag in self.dockerfile_tags:
-            dig = DockerImageGenerator(active_extensions, {}, tag)
-            self.assertEqual(dig.build(), 0)
-            self.assertEqual(dig.run(), 0)
-            dig.clear_image()
 
+        # This is the original, real os.path.exists function
+        original_exists = os.path.exists
+
+        # This is our new, smart mock function
+        def mock_exists(path):
+            if path == '/dev/nvidia0':
+                return False  # Lie and say the driver doesn't exist
+            return original_exists(path)  # For all other paths, tell the truth
+
+        for tag in self.dockerfile_tags:
+            # Apply the smart mock
+            with patch('rocker.nvidia_extension.os.path.exists', side_effect=mock_exists):
+                dig = DockerImageGenerator(active_extensions, {}, tag)
+                self.assertEqual(dig.build(), 0)
+                self.assertEqual(dig.run(), 0)
     def test_cuda_env_subs(self):
         plugins = list_plugins()
         cuda_plugin = plugins['cuda']
