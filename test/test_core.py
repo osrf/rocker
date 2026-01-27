@@ -26,6 +26,7 @@ from itertools import chain
 
 from rocker.core import DockerImageGenerator
 from rocker.core import ExtensionError
+from rocker.core import base_image_exists
 from rocker.core import list_plugins
 from rocker.core import get_docker_client
 from rocker.core import get_rocker_version
@@ -119,6 +120,11 @@ class RockerCoreTest(unittest.TestCase):
         self.assertEqual(dig.run('true', devices=['/dev/random']), 0)
         self.assertEqual(dig.run('true', devices=['/dev/does_not_exist']), 0)
         dig.clear_image()
+
+    @pytest.mark.docker
+    def test_missing_image(self):
+        self.assertTrue(base_image_exists('ubuntu:bionic'))
+        self.assertFalse(base_image_exists('ubuntu:bionic_does_not_exist'))
 
     @pytest.mark.docker
     def test_network(self):
