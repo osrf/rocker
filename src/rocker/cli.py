@@ -98,10 +98,10 @@ def main():
 
     base_image = args.image
 
-    # Check if base image exists before proceeding
+    # Check if base image exists before proceeding (will attempt to pull if missing)
     try:
-        if not base_image_exists(base_image):
-            parser.error(f"ERROR: Base Docker image '{base_image}' not found locally. Please pull it first (docker pull {base_image}).")
+        if not base_image_exists(base_image, output_callback=print):
+            parser.error(f"ERROR: Base Docker image '{base_image}' not found locally and could not be pulled. Please verify the image name and try 'docker pull {base_image}' manually.")
     except DependencyMissing as ex:
         parser.error(f"DependencyMissing encountered: {ex}")
 

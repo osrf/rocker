@@ -231,32 +231,45 @@ def get_user_name():
     userinfo = pwd.getpwuid(os.getuid())
     return getattr(userinfo, 'pw_' + 'name')
 
-def base_image_exists(base_image, docker_client=None):
+def base_image_exists(base_image, docker_client=None, output_callback=None):
     """
     Check if a base Docker image exists locally.
-    
-    Args:
-        base_image: The name/tag of the Docker image to check
-        docker_client: Optional docker client instance. If not provided, one will be created.
-    
-    Returns:
-        True if the image exists locally, False otherwise.
-    
-    Raises:
-        DependencyMissing: If docker client cannot be accessed.
+    If not found locally, attempt to pull it from the registry.
     """
-    if not docker_client:
+    if docker_client is None:
         docker_client = get_docker_client()
     
     try:
         # Try to inspect the image to see if it exists locally
         docker_client.inspect_image(base_image)
         return True
+
     except docker.errors.APIError as ex:
-        # 404 error means image not found
+        # 404 error means image not found locally
         if ex.response.status_code == 404:
-            return False
-        # Re-raise other API errors
+            if output_callback:
+                output_callback(f"Base image '{base_image}' not found locally, attempting to pull...")
+
+            try:
+                # Attempt to pull from registry
+                docker_client.pull(base_image)
+                if output_callback:
+                    output_callback(f"Successfully pulled '{base_image}'")
+                return True
+
+            except (docker.errors.ImageNotFound, docker.errors.NotFound):
+                # Image does not exist in the registry
+                if output_callback:
+                    output_callback(f"Failed to pull image '{base_image}': not found in registry.")
+                return False
+
+            except docker.errors.APIError as pull_ex:
+                # Network / auth / other Docker errors should not be hidden
+                if output_callback:
+                    output_callback(f"Error while pulling image '{base_image}': {pull_ex.explanation}")
+                raise
+
+        # Re-raise other non-404 API errors from inspect
         raise
 
 def docker_build(docker_client = None, output_callback = None, **kwargs):
