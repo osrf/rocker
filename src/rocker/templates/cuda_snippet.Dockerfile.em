@@ -12,27 +12,16 @@ RUN if ldconfig -p | grep -q libcuda.so || [ -f /proc/driver/nvidia/version ]; t
       export DEBIAN_FRONTEND=noninteractive; \
       apt-get update && apt-get install -y --no-install-recommends \
         wget software-properties-common gnupg2 && \
-      @[if download_osstring == 'debian']@
-      @# Enable contrib on debian to get required
-      @# https://packages.debian.org/bullseye/glx-alternative-nvidia
       wget -q https://developer.download.nvidia.com/compute/cuda/repos/@(download_osstring)@(download_verstring)/x86_64/cuda-keyring_1.1-1_all.deb && \
       dpkg -i cuda-keyring_1.1-1_all.deb && \
       rm cuda-keyring_1.1-1_all.deb && \
+@[if download_osstring == 'debian']@ \
       add-apt-repository contrib && \
+@[end if]@ \
       apt-get update && \
       apt-get -y install cuda-toolkit && \
-      rm -rf /var/lib/apt/lists/*; \
-      @[else]@
-      wget -q https://developer.download.nvidia.com/compute/cuda/repos/@(download_osstring)@(download_verstring)/x86_64/cuda-keyring_1.1-1_all.deb && \
-      dpkg -i cuda-keyring_1.1-1_all.deb && \
-      rm cuda-keyring_1.1-1_all.deb && \
-      apt-get update && \
-      apt-get -y install cuda-toolkit && \
-      rm -rf /var/lib/apt/lists/*; \
-      @[end if]@
-      @# File conflict problem with libnvidia-ml.so.1 and libcuda.so.
-      @# https://github.com/NVIDIA/nvidia-docker/issues/1551
-      rm -rf /usr/lib/x86_64-linux-gnu/libnv*; \
+      rm -rf /var/lib/apt/lists/* && \
+      rm -rf /usr/lib/x86_64-linux-gnu/libnv* && \
       rm -rf /usr/lib/x86_64-linux-gnu/libcuda*; \
     fi
 
