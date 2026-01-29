@@ -307,7 +307,6 @@ def base_image_exists(base_image, docker_client=None, output_callback=None):
 
 def docker_build(docker_client=None, output_callback=None, **kwargs):
     image_id = None
-    build_log = []
 
     if not docker_client:
         docker_client = get_docker_client()
@@ -315,8 +314,6 @@ def docker_build(docker_client=None, output_callback=None, **kwargs):
     kwargs['decode'] = True
 
     for line in docker_client.build(**kwargs):
-        build_log.append(line)
-
         stream = line.get('stream', '').rstrip()
         error = line.get('error', '').rstrip()
 
@@ -331,16 +328,15 @@ def docker_build(docker_client=None, output_callback=None, **kwargs):
         if error:
             if output_callback:
                 output_callback(error)
-            raise docker.errors.BuildError(error, build_log)
+            print(error)
+            return None
 
     if image_id:
         return image_id
 
-    raise docker.errors.BuildError(
-        "Docker build failed without success message.",
-        build_log
-    )
-
+    print("no more output and success not detected")
+    return None
+    
 def docker_remove_image(
         image_id,
         docker_client = None,
