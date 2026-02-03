@@ -306,3 +306,74 @@ class RockerCoreTest(unittest.TestCase):
         self.assertIn('--rm', dig.generate_docker_cmd(nocleanup=''))
 
         self.assertNotIn('--rm', dig.generate_docker_cmd(nocleanup='true'))
+
+
+
+class BrokenBuildSnippet(RockerExtension):
+    @staticmethod
+    def get_name():
+        return 'broken_snippet'
+
+    def __init__(self):
+        self._env_subs = None
+        self.name = BrokenBuildSnippet.get_name()
+
+
+    def get_environment_subs(self):
+        if not self._env_subs:
+            self._env_subs = {}
+        return self._env_subs
+
+    def get_preamble(self, cliargs):
+        return ''
+
+    def get_snippet(self, cliargs):
+        snippet = "BAD KEYWORD for a dockerfile"
+        return snippet #empy_expand(snippet, self.get_environment_subs())
+
+    @staticmethod
+    def register_arguments(parser, defaults):
+        parser.add_argument(name_to_argument(BrokenBuildSnippet.get_name()),
+            action='store_true',
+            default=defaults.get('broken_snippet', None),
+            help="test a broken snippet")
+        
+class BrokenBuiildTest(unittest.TestCase):
+
+    def setUp(self):
+        # Work around interference between empy Interpreter
+        # stdout proxy and test runner. empy installs a proxy on stdout
+        # to be able to capture the information.
+        # And the test runner creates a new stdout object for each test.
+        # This breaks empy as it assumes that the proxy has persistent
+        # between instances of the Interpreter class
+        # empy will error with the exception
+        # "em.Error: interpreter stdout proxy lost"
+        em.Interpreter._wasProxyInstalled = False
+
+    @pytest.mark.docker
+    def test_broken_snippet_extension(self):
+
+        # # Test build args
+        # mock_cliargs = {'shm_size_build': '2g'}
+        # build_args = p.get_build_args(mock_cliargs)
+        # self.assertEqual(build_args, {'shm_size': '2g'})
+
+        extension_manager = RockerExtensionManager()
+        extension_manager.available_plugins = {'broken_snippet': BrokenBuildSnippet}
+        active_extensions = extension_manager.get_active_extensions({'user': True, 'broken_snippet': BrokenBuildSnippet, 'extension_blacklist': ['ssh']})
+        self.assertTrue(active_extensions)
+
+        # Confirm successful build baseline
+        mock_cli_args = {'broken_snippet': False}
+        dig = DockerImageGenerator([], mock_cli_args, 'ubuntu:bionic')
+        self.assertNotIn('BAD KEYWORD', dig.dockerfile)
+        self.assertEqual(dig.build(), 0)
+
+        # Add broken build which breaks
+        mock_cli_args = {'broken_snippet': True}
+        dig = DockerImageGenerator(active_extensions, mock_cli_args, 'ubuntu:bionic')
+        # dig.output_callback = lambda output: print("OVERRIDE build > %s" % output)
+        self.assertIn('BAD KEYWORD', dig.dockerfile)
+        self.assertEqual(dig.build(), 1)
+        # TODO(tfoote) capture the console output by passing in a custom output_callback and assert we see the error there
