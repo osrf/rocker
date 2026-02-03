@@ -406,6 +406,8 @@ class DockerImageGenerator(object):
         self.dockerfile = generate_dockerfile(active_extensions, self.cliargs, base_image)
         self.image_id = None
 
+        self.output_callback = lambda output: print("build > %s" % output)
+
     def build(self, **kwargs):
         with tempfile.TemporaryDirectory() as td:
             df = os.path.join(td, 'Dockerfile')
@@ -437,7 +439,7 @@ class DockerImageGenerator(object):
             try:
                 self.image_id = docker_build(
                     **arguments,
-                    output_callback=lambda output: print("building > %s" % output)
+                    output_callback=self.output_callback
                 )
                 if self.image_id:
                     self.built = True
