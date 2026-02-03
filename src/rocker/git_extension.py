@@ -15,6 +15,7 @@
 from argparse import ArgumentTypeError
 import getpass
 import os
+import pwd
 from rocker.extensions import RockerExtension
 
 
@@ -38,7 +39,12 @@ class Git(RockerExtension):
             username = getpass.getuser()
             if 'user_override_name' in cli_args and cli_args['user_override_name']:
                 username = cli_args['user_override_name']
-            user_gitconfig_target = '/home/%(username)s/.gitconfig' % locals()
+            try:
+                user_home = pwd.getpwnam(username).pw_dir
+            except KeyError:
+                # Fallback if user doesn't exist in system
+                user_home = '/home/' + username if username != 'root' else '/root'
+            user_gitconfig_target = os.path.join(user_home, '.gitconfig')
         if os.path.exists(system_gitconfig):
             args += ' -v {system_gitconfig}:{system_gitconfig_target}:ro'.format(**locals())
         if os.path.exists(user_gitconfig):
