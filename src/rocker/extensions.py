@@ -344,7 +344,12 @@ class User(RockerExtension):
         substitutions = self.get_environment_subs()
         if 'user_override_name' in cliargs and cliargs['user_override_name']:
             substitutions['name'] = cliargs['user_override_name']
-            substitutions['dir'] = os.path.join('/home/', cliargs['user_override_name'])
+            try:
+                user_home = pwd.getpwnam(cliargs['user_override_name']).pw_dir
+            except KeyError:
+                # Fallback if user doesn't exist in system
+                user_home = '/home/' + cliargs['user_override_name'] if cliargs['user_override_name'] != 'root' else '/root'
+            substitutions['dir'] = user_home
         substitutions['user_preserve_home'] = True if 'user_preserve_home' in cliargs and cliargs['user_preserve_home'] else False
         if 'user_preserve_groups' in cliargs and isinstance(cliargs['user_preserve_groups'], list):
             query_groups = cliargs['user_preserve_groups']
