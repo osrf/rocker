@@ -306,30 +306,38 @@ def base_image_exists(base_image, docker_client=None, output_callback=None):
         # Re-raise other non-404 API errors from inspect
         raise
 
-def docker_build(docker_client = None, output_callback = None, **kwargs):
+def docker_build(docker_client=None, output_callback=None, **kwargs):
     image_id = None
 
     if not docker_client:
         docker_client = get_docker_client()
-    kwargs['decode'] = True
-    for line in docker_client.build(**kwargs):
-        output = line.get('stream', '').rstrip()
-        if not output:
-            # print("non stream data", line)
-            continue
-        if output_callback is not None:
-            output_callback(output)
 
-        match = re.match(r'Successfully built ([a-z0-9]{12})', output)
-        if match:
-            image_id = match.group(1)
+    kwargs['decode'] = True
+
+    for line in docker_client.build(**kwargs):
+        stream = line.get('stream', '').rstrip()
+        error = line.get('error', '').rstrip()
+
+        if stream:
+            if output_callback:
+                output_callback(stream)
+
+            match = re.match(r'Successfully built ([a-z0-9]{12})', stream)
+            if match:
+                image_id = match.group(1)
+
+        if error:
+            if output_callback:
+                output_callback(error)
+            print(error)
+            return None
 
     if image_id:
         return image_id
-    else:
-        print("no more output and success not detected")
-        return None
 
+    print("no more output and success not detected")
+    return None
+    
 def docker_remove_image(
         image_id,
         docker_client = None,
