@@ -96,6 +96,10 @@ def main():
         return 1
     print("Active extensions %s" % [e.get_name() for e in active_extensions])
 
+    # Give active extensions a chance to validate the arguments
+    for e in active_extensions:
+        e.validate_environment(args_dict, parser)
+
     base_image = args.image
 
     # Check if base image exists before proceeding (will attempt to pull if missing)

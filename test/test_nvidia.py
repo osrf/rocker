@@ -20,6 +20,7 @@ import em
 import unittest
 import pexpect
 import pytest
+from unittest import mock
 
 
 from io import BytesIO as StringIO
@@ -29,6 +30,7 @@ from rocker.core import DockerImageGenerator
 from rocker.core import list_plugins
 from rocker.core import get_docker_client
 from rocker.nvidia_extension import get_docker_version
+from rocker.nvidia_extension import has_nvidia_driver
 from test_extension import plugin_load_parser_correctly
 
 
@@ -249,6 +251,135 @@ CMD glmark2 --validate
         with self.assertRaises(SystemExit) as cm:
             p.get_environment_subs(mock_cliargs)
         self.assertEqual(cm.exception.code, 1)
+
+
+class CudaSkipInstallTest(unittest.TestCase):
+    """Tests for CUDA installation skip logic at container build time.
+    
+    These tests verify that issue #316 is fixed: the container-side NVIDIA
+    detection skips CUDA installation if NVIDIA is already present in the base image.
+    """
+
+    def setUp(self):
+        # Work around interference between empy Interpreter
+        # stdout proxy and test runner. empy installs a proxy on stdout
+        # to be able to capture the information.
+        # And the test runner creates a new stdout object for each test.
+        # This breaks empy as it assumes that the proxy has persistent
+        # between instances of the Interpreter class
+        # empy will error with the exception
+        # "em.Error: interpreter stdout proxy lost"
+        em.Interpreter._wasProxyInstalled = False
+
+    def test_cuda_snippet_contains_nvidia_detection(self):
+        """Test that CUDA snippet contains shell-based NVIDIA detection logic."""
+        plugins = list_plugins()
+        cuda_plugin = plugins['cuda']
+        p = cuda_plugin()
+
+        mock_cliargs = {'base_image': 'ubuntu:jammy'}
+
+        with mock.patch('rocker.nvidia_extension.detect_os', return_value=('Ubuntu', '22.04', 'jammy')):
+            snippet = p.get_snippet(mock_cliargs)
+            
+            # Verify the shell-based detection is present
+            self.assertIn('ldconfig -p | grep -q libcuda.so', snippet)
+            self.assertIn('NVIDIA detected inside container', snippet)
+            self.assertIn('NVIDIA not detected inside container', snippet)
+
+    def test_cuda_snippet_includes_installation_commands(self):
+        """Test that CUDA snippet includes the actual CUDA installation commands."""
+        plugins = list_plugins()
+        cuda_plugin = plugins['cuda']
+        p = cuda_plugin()
+
+        mock_cliargs = {'base_image': 'ubuntu:jammy'}
+
+        with mock.patch('rocker.nvidia_extension.detect_os', return_value=('Ubuntu', '22.04', 'jammy')):
+            snippet = p.get_snippet(mock_cliargs)
+            
+            # Verify installation commands are present (they run if NVIDIA is not detected)
+            self.assertIn('cuda-toolkit', snippet)
+            self.assertIn('cuda-keyring', snippet)
+
+    def test_has_nvidia_driver_function(self):
+        """Test has_nvidia_driver() helper function for host-side detection."""
+        # This function is now used in validate_environment() for error checking
+        with mock.patch('os.path.exists') as mock_exists:
+            # Test when /dev/nvidia0 exists
+            mock_exists.return_value = True
+            self.assertTrue(has_nvidia_driver())
+
+            # Test when neither device exists
+            mock_exists.return_value = False
+            self.assertFalse(has_nvidia_driver())
+
+    def test_nvidia_validate_environment_with_driver(self):
+        """Test Nvidia.validate_environment when NVIDIA driver is present."""
+        plugins = list_plugins()
+        nvidia_plugin = plugins['nvidia']
+        p = nvidia_plugin()
+        
+        mock_cliargs = {'nvidia': 'auto'}
+        mock_parser = mock.MagicMock()
+        
+        # Mock has_nvidia_driver to return True (driver present)
+        with mock.patch('rocker.nvidia_extension.has_nvidia_driver', return_value=True):
+            p.validate_environment(mock_cliargs, mock_parser)
+            # Should not call parser.error when driver is present
+            mock_parser.error.assert_not_called()
+
+    def test_nvidia_validate_environment_without_driver(self):
+        """Test Nvidia.validate_environment when NVIDIA driver is not present."""
+        plugins = list_plugins()
+        nvidia_plugin = plugins['nvidia']
+        p = nvidia_plugin()
+        
+        mock_cliargs = {'nvidia': 'auto'}
+        mock_parser = mock.MagicMock()
+        
+        # Mock has_nvidia_driver to return False (no driver)
+        with mock.patch('rocker.nvidia_extension.has_nvidia_driver', return_value=False):
+            p.validate_environment(mock_cliargs, mock_parser)
+            # Should call parser.error when driver is not present and --nvidia is specified
+            mock_parser.error.assert_called_once()
+            error_msg = mock_parser.error.call_args[0][0]
+            self.assertIn('--nvidia', error_msg)
+            self.assertIn('detected', error_msg)
+
+    def test_cuda_validate_environment_with_driver(self):
+        """Test Cuda.validate_environment when NVIDIA driver is present."""
+        plugins = list_plugins()
+        cuda_plugin = plugins['cuda']
+        p = cuda_plugin()
+        
+        mock_cliargs = {'cuda': True}
+        mock_parser = mock.MagicMock()
+        
+        # Mock has_nvidia_driver to return True (driver present)
+        with mock.patch('rocker.nvidia_extension.has_nvidia_driver', return_value=True):
+            p.validate_environment(mock_cliargs, mock_parser)
+            # Should not call parser.error when driver is present
+            mock_parser.error.assert_not_called()
+
+    def test_cuda_validate_environment_without_driver(self):
+        """Test Cuda.validate_environment when NVIDIA driver is not present."""
+        plugins = list_plugins()
+        cuda_plugin = plugins['cuda']
+        p = cuda_plugin()
+        
+        mock_cliargs = {'cuda': True}
+        mock_parser = mock.MagicMock()
+        
+        # Mock has_nvidia_driver to return False (no driver)
+        with mock.patch('rocker.nvidia_extension.has_nvidia_driver', return_value=False):
+            p.validate_environment(mock_cliargs, mock_parser)
+            # Should call parser.error when driver is not present and --cuda is specified
+            mock_parser.error.assert_called_once()
+            error_msg = mock_parser.error.call_args[0][0]
+            self.assertIn('--cuda', error_msg)
+            self.assertIn('detected', error_msg)
+
 
 @pytest.mark.docker
 @pytest.mark.nvidia # Technically not needing nvidia but too resource intensive for main runs
