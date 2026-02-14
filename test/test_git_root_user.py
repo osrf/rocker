@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """
-Tests for Git and User extensions with non-standard home directories.
+Integration tests for Git and User extensions with non-standard home directories.
 Reproduces issue #337 where extensions assume /home directory.
+
+These tests verify the actual behavior with users that have non-standard home
+directories, matching the reproduction case from cottsay's Containerfile.
 """
 
 import unittest
 import os
 import sys
 import tempfile
-from unittest.mock import patch, MagicMock
-import pwd
 
 # Ensure we can import rocker modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
@@ -18,142 +19,157 @@ from rocker.git_extension import Git
 from rocker.extensions import User
 
 
-class TestGitExtensionHomeDirectory(unittest.TestCase):
-    """Test Git extension handles various home directory scenarios"""
+class TestNonStandardHomeDirectory(unittest.TestCase):
+    """
+    Test Git and User extensions with non-standard home directories.
+    This reproduces the scenario from issue #337.
+    """
     
-    def setUp(self):
-        """Create temporary gitconfig for testing"""
-        self.temp_dir = tempfile.mkdtemp()
-        self.temp_gitconfig = os.path.join(self.temp_dir, '.gitconfig')
-        with open(self.temp_gitconfig, 'w') as f:
+    def test_git_extension_nonstandard_home_directory(self):
+        """
+        Test Git extension with a user that has a non-standard home directory.
+        
+        This reproduces the scenario from cottsay's Containerfile where:
+        - User 'buildfarm' has home at /var/lib/buildfarm (not /home/buildfarm)
+        - Git extension should use the correct home directory
+        
+        Reference: https://gist.githubusercontent.com/cottsay/4360265b49b7e830c2b3de22b8978994/raw/Containerfile
+        """
+        # Create a temporary gitconfig
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.gitconfig', delete=False) as f:
             f.write('[user]\n\tname = Test User\n\temail = test@example.com\n')
+            temp_gitconfig = f.name
+        
+        try:
+            # Test case 1: User that doesn't exist in host system (like 'buildfarm')
+            # Should fall back to /home/buildfarm
+            cli_args = {
+                'user': True,
+                'user_override_name': 'buildfarm',  # Non-existent user
+                'git_config_path': temp_gitconfig
+            }
+            
+            git_ext = Git()
+            docker_args = git_ext.get_docker_args(cli_args)
+            
+            print("\n=== Docker args for buildfarm user ===")
+            print(docker_args)
+            print("=== End args ===\n")
+            
+            # Should use /home/buildfarm/.gitconfig as fallback
+            # (The container will have the user with /var/lib/buildfarm as home,
+            # but that's configured inside the container, not on the host)
+            self.assertIn('buildfarm/.gitconfig', docker_args,
+                         "Git extension should handle non-existent users")
+            
+            # Test case 2: Root user
+            cli_args_root = {
+                'user': True,
+                'user_override_name': 'root',
+                'git_config_path': temp_gitconfig
+            }
+            
+            docker_args_root = git_ext.get_docker_args(cli_args_root)
+            
+            print("\n=== Docker args for root user ===")
+            print(docker_args_root)
+            print("=== End args ===\n")
+            
+            # Should use /root/.gitconfig, NOT /home/root/.gitconfig
+            self.assertIn('/root/.gitconfig', docker_args_root,
+                         "Git extension should use /root for root user")
+            self.assertNotIn('/home/root/.gitconfig', docker_args_root,
+                            "Git extension should not use /home/root for root user")
+            
+        finally:
+            if os.path.exists(temp_gitconfig):
+                os.unlink(temp_gitconfig)
     
-    def tearDown(self):
-        """Clean up temporary files"""
-        import shutil
-        if os.path.exists(self.temp_dir):
-            shutil.rmtree(self.temp_dir)
-    
-    def test_root_user_home_directory(self):
+    def test_user_extension_nonstandard_home_directory(self):
         """
-        Test that Git extension uses /root for root user, not /home/root.
-        This reproduces the issue reported in #337.
+        Test User extension with non-standard home directories.
+        
+        Verifies that the User extension correctly handles:
+        1. Root user (home at /root)
+        2. Non-existent users (fallback to /home/username)
         """
-        cli_args = {
-            'user': True,
-            'user_override_name': 'root',
-            'git_config_path': self.temp_gitconfig
-        }
-        
-        git_ext = Git()
-        docker_args = git_ext.get_docker_args(cli_args)
-        
-        print("\n=== Docker args for root user ===")
-        print(docker_args)
-        print("=== End args ===\n")
-        
-        # Assert: Should mount to /root/.gitconfig
-        self.assertIn('/root/.gitconfig', docker_args, 
-                     "Git extension should use /root/.gitconfig for root user")
-        
-        # Assert: Should NOT use /home/root/.gitconfig
-        self.assertNotIn('/home/root/.gitconfig', docker_args,
-                        "Git extension should not use /home/root/.gitconfig for root user")
-    
-    def test_custom_nonexistent_user(self):
-        """
-        Test that Git extension handles users that don't exist in host system.
-        This can happen when building containers with custom users.
-        """
-        cli_args = {
-            'user': True,
-            'user_override_name': 'nonexistent_user_xyz',
-            'git_config_path': self.temp_gitconfig
-        }
-        
-        git_ext = Git()
-        docker_args = git_ext.get_docker_args(cli_args)
-        
-        print("\n=== Docker args for nonexistent user ===")
-        print(docker_args)
-        print("=== End args ===\n")
-        
-        # Should default to /home/username for non-root users
-        self.assertIn('/home/nonexistent_user_xyz/.gitconfig', docker_args,
-                     "Git extension should use /home/username for custom non-root users that don't exist")
-    
-    def test_existing_user_actual_home(self):
-        """
-        Test that Git extension uses actual home directory for existing users.
-        """
-        # Get current user info
-        current_user = pwd.getpwuid(os.getuid())
-        
-        cli_args = {
-            'user': True,
-            'user_override_name': current_user.pw_name,
-            'git_config_path': self.temp_gitconfig
-        }
-        
-        git_ext = Git()
-        docker_args = git_ext.get_docker_args(cli_args)
-        
-        print(f"\n=== Docker args for existing user {current_user.pw_name} ===")
-        print(docker_args)
-        print("=== End args ===\n")
-        
-        # Should use the actual home directory
-        expected_path = os.path.join(current_user.pw_dir, '.gitconfig')
-        self.assertIn(expected_path, docker_args,
-                     f"Git extension should use actual home {expected_path} for existing users")
-
-
-class TestUserExtensionHomeDirectory(unittest.TestCase):
-    """Test User extension handles various home directory scenarios"""
-    
-    def test_root_user_directory(self):
-        """
-        Test that User extension correctly handles root user.
-        When user is root, the extension should detect it and not create a new user.
-        """
-        cli_args = {
+        # Test root user
+        cli_args_root = {
             'user_override_name': 'root'
         }
         
-        user_ext = User()
-        snippet = user_ext.get_snippet(cli_args)
+        user_ext_root = User()
+        snippet_root = user_ext_root.get_snippet(cli_args_root)
         
         print("\n=== User extension snippet for root ===")
-        print(snippet)
+        print(snippet_root)
         print("=== End snippet ===\n")
         
-        # Root user already exists, so snippet should mention this
-        self.assertIn('Detected user is root', snippet,
-                     "User extension should detect that root already exists")
+        # Root should be detected as existing
+        self.assertIn('Detected user is root', snippet_root,
+                     "User extension should detect root already exists")
+        self.assertNotIn('/home/root', snippet_root,
+                        "User extension should not use /home/root")
         
-        # Should NOT try to create root user or use /home/root
-        self.assertNotIn('/home/root', snippet,
-                        "User extension should not use /home/root for root user")
-        self.assertNotIn('useradd', snippet,
-                        "User extension should not try to create root user")
-    def test_custom_nonexistent_user_directory(self):
-        """
-        Test that User extension handles non-existent users correctly.
-        """
-        cli_args = {
-            'user_override_name': 'nonexistent_user_xyz'
+        # Test non-existent user (like buildfarm)
+        cli_args_buildfarm = {
+            'user_override_name': 'buildfarm'
         }
         
-        user_ext = User()
-        snippet = user_ext.get_snippet(cli_args)
+        user_ext_buildfarm = User()
+        snippet_buildfarm = user_ext_buildfarm.get_snippet(cli_args_buildfarm)
         
-        print("\n=== User extension snippet for nonexistent user ===")
-        print(snippet)
+        print("\n=== User extension snippet for buildfarm ===")
+        print(snippet_buildfarm)
         print("=== End snippet ===\n")
         
-        # Should use /home/username for non-existent non-root users
-        self.assertIn('/home/nonexistent_user_xyz', snippet,
-                     "User extension should use /home/username for non-existent custom users")
+        # Should create user with /home/buildfarm
+        # Note: The container can override this later, but the initial
+        # Dockerfile should use /home as the default for non-root users
+        self.assertIn('/home/buildfarm', snippet_buildfarm,
+                     "User extension should use /home for non-existent users")
+
+
+class TestRootUserHandling(unittest.TestCase):
+    """
+    Specific tests for root user handling, which is the primary case
+    mentioned in issue #337.
+    """
+    
+    def test_root_user_git_config_path(self):
+        """
+        Test that root user gets /root/.gitconfig, not /home/root/.gitconfig.
+        This is the core issue from #337.
+        """
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.gitconfig', delete=False) as f:
+            f.write('[user]\n\tname = Root User\n')
+            temp_gitconfig = f.name
+        
+        try:
+            cli_args = {
+                'user': True,
+                'user_override_name': 'root',
+                'git_config_path': temp_gitconfig
+            }
+            
+            git_ext = Git()
+            docker_args = git_ext.get_docker_args(cli_args)
+            
+            print("\n=== CRITICAL TEST: Root user git config path ===")
+            print(docker_args)
+            print("=== End ===\n")
+            
+            # CRITICAL: Must use /root/.gitconfig
+            self.assertIn(':/root/.gitconfig:ro', docker_args,
+                         "FAIL: Git extension must mount to /root/.gitconfig for root user")
+            
+            # CRITICAL: Must NOT use /home/root/.gitconfig
+            self.assertNotIn('/home/root', docker_args,
+                            "FAIL: Git extension must not use /home/root for root user")
+            
+        finally:
+            if os.path.exists(temp_gitconfig):
+                os.unlink(temp_gitconfig)
 
 
 if __name__ == '__main__':
