@@ -27,12 +27,6 @@ class Ssh(RockerExtension):
     def get_name(cls):
         return cls.name
 
-    def precondition_environment(self, cli_args):
-        pass
-
-    def validate_environment(self, cli_args):
-        pass
-
     def get_preamble(self, cli_args):
         return ''
 
