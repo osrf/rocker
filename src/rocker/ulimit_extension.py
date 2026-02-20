@@ -52,7 +52,7 @@ class Ulimit(RockerExtension):
         Returns:
             bool: True if the format is valid, False otherwise.
         """
-        ulimit_format = r'(\w+)=(\w+)(:\w+)?$'
+        ulimit_format = r'(\w+)=((-1)|(\w+))(:((-1)|(\w+)))?$'
         match = re.match(ulimit_format, arg)
         return match is not None
 
