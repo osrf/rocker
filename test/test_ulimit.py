@@ -69,6 +69,18 @@ class UlimitTest(unittest.TestCase):
         expected = " --ulimit rtprio=99 --ulimit memlock=102400 --ulimit nofile=1024:524288"
         self.assertTrue(*self._is_arg_translation_ok(mock_cliargs, expected))
 
+    def test_args_unlimited_soft(self):
+        """Test special '-1' (unlimited) soft argument."""
+        mock_cliargs = ["memlock=-1"]
+        expected = " --ulimit memlock=-1"
+        self.assertTrue(*self._is_arg_translation_ok(mock_cliargs, expected))
+
+    def test_args_unlimited_hard(self):
+        """Test special '-1' (unlimited) hard argument."""
+        mock_cliargs = ["memlock=-1:-1"]
+        expected = " --ulimit memlock=-1:-1"
+        self.assertTrue(*self._is_arg_translation_ok(mock_cliargs, expected))
+
     def test_args_wrong_single_soft(self):
         """Test if single soft limit argument is wrong."""
         mock_cliargs = ["rtprio99"]
