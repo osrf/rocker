@@ -98,7 +98,15 @@ def main():
 
     # Give active extensions a chance to validate the arguments
     for e in active_extensions:
-        e.validate_environment(args_dict, parser)
+        try:
+            e.validate_environment(args_dict, parser)
+        except TypeError as ex:
+            import traceback
+            print("DEPRECATION WARNING: validate_environment takes 3 arguments and is now invoked. This error is indicative of using the old prototype with two arguments.")
+            traceback.print_exc()
+            print("DEPRECATION WARNING: validation of the environment not successfully acomplished, but continuing. Please fix your implmentation similar to https://github.com/osrf/rocker/pull/350"
+                  " This warning will be maintained until at least Jan 2027. On removal it will cause a traceback.")
+
 
     base_image = args.image
 
