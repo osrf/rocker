@@ -37,8 +37,9 @@ class Git(RockerExtension):
         if 'user' in cli_args and cli_args['user']:
             username = getpass.getuser()
             if 'user_override_name' in cli_args and cli_args['user_override_name']:
-                username = cli_args['user_override_name']
-            user_gitconfig_target = '/home/%(username)s/.gitconfig' % locals()
+                user_gitconfig_target = os.path.join(os.path.expanduser('~' + username) if username else os.path.expanduser('~'), '.gitconfig')  # fixes #337
+     
+            )
         if os.path.exists(system_gitconfig):
             args += ' -v {system_gitconfig}:{system_gitconfig_target}:ro'.format(**locals())
         if os.path.exists(user_gitconfig):
