@@ -48,7 +48,8 @@ def detect_os(image_name, output_callback=None, nocache=False):
     detector_image = DETECTOR_IMAGE
     if not base_image_exists(detector_image, output_callback=output_callback):
         raise DependencyMissing(
-            f"OS detector helper image '{detector_image}' could not be pulled."
+            f"OS detector helper image '{detector_image}' was not found in the container "
+            f"registry. Verify the image name or try 'docker pull {detector_image}'."
         )
 
     iof = StringIO((DETECTION_TEMPLATE % locals()).encode())
