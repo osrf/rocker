@@ -17,11 +17,13 @@ import pexpect
 
 from io import BytesIO as StringIO
 
-from .core import docker_build, get_docker_client
+from .core import base_image_exists, DependencyMissing, docker_build, get_docker_client
 
+
+DETECTOR_IMAGE = "golang:1.19"
 
 DETECTION_TEMPLATE="""
-FROM golang:1.19 as detector
+FROM %(detector_image)s as detector
 
 # For reliability, pin a distro-detect commit instead of targeting a branch.
 RUN git clone -q https://github.com/dekobon/distro-detect.git && \
@@ -42,6 +44,12 @@ def detect_os(image_name, output_callback=None, nocache=False):
     # Do not rerun OS detection if there is already a cached result for the given image
     if image_name in _detect_os_cache:
         return _detect_os_cache[image_name]
+
+    detector_image = DETECTOR_IMAGE
+    if not base_image_exists(detector_image, output_callback=output_callback):
+        raise DependencyMissing(
+            f"OS detector helper image '{detector_image}' could not be pulled."
+        )
 
     iof = StringIO((DETECTION_TEMPLATE % locals()).encode())
     tag_name = "rocker:" + f"os_detect_{image_name}".replace(':', '_').replace('/', '_')
