@@ -281,7 +281,7 @@ def base_image_exists(base_image, docker_client=None, output_callback=None):
         # 404 error means image not found locally
         if ex.response.status_code == 404:
             if output_callback:
-                output_callback(f"Base image '{base_image}' not found locally, attempting to pull...")
+                output_callback(f"Image '{base_image}' not found locally, attempting to pull...")
 
             try:
                 # Attempt to pull from registry
