@@ -5,6 +5,9 @@ jobs:
   basic_ci:
     name: Basic CI
     runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+      contents: read
     strategy:
       matrix:
         python-version: ['3.8', 3.x]
@@ -23,7 +26,9 @@ jobs:
       with:
         run: python -m pytest -s -v --cov=rocker -m "not nvidia"
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
+      with:
+        use_oidc: true
   cli_smoke_tests:
     name: CLI smoke tests
     runs-on: ubuntu-22.04
