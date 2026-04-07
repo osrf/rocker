@@ -282,11 +282,28 @@ def base_image_exists(base_image, docker_client=None, output_callback=None):
         # 404 error means image not found locally
         if ex.response.status_code == 404:
             if output_callback:
-                output_callback(f"Base image '{base_image}' not found locally, attempting to pull...")
+                output_callback(f"Image '{base_image}' not found locally, attempting to pull...")
 
             try:
                 # Attempt to pull from registry
-                docker_client.pull(base_image)
+                last_status_by_id = {}
+                for line in docker_client.pull(base_image, stream=True, decode=True):
+                    status = line.get('status')
+                    if not status:
+                        continue
+                    layer_id = line.get('id')
+                    progress = line.get('progress')
+                    if layer_id:
+                        message = f"  {layer_id}: {status}"
+                        if progress:
+                            message = f"{message} {progress}"
+                        if last_status_by_id.get(layer_id) == message:
+                            continue
+                        last_status_by_id[layer_id] = message
+                    else:
+                        message = status
+                    if output_callback:
+                        output_callback(message)
                 if output_callback:
                     output_callback(f"Successfully pulled '{base_image}'")
                 return True

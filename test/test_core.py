@@ -16,6 +16,7 @@
 # under the License.
 
 import argparse
+import docker
 import em
 import os
 import pwd
@@ -306,3 +307,62 @@ class RockerCoreTest(unittest.TestCase):
         self.assertIn('--rm', dig.generate_docker_cmd(nocleanup=''))
 
         self.assertNotIn('--rm', dig.generate_docker_cmd(nocleanup='true'))
+
+    def test_base_image_exists_streaming_pull_output_dedup(self):
+        class FakeResponse:
+            def __init__(self, status_code):
+                self.status_code = status_code
+
+        class FakeDockerClient:
+            def inspect_image(self, image):
+                raise docker.errors.APIError('not found', response=FakeResponse(404))
+
+            def pull(self, image, stream=True, decode=True):
+                yield {'status': 'Pulling from library/ubuntu'}
+                yield {'id': 'layer1', 'status': 'Downloading', 'progress': '[==>    ]'}
+                yield {'id': 'layer1', 'status': 'Downloading', 'progress': '[==>    ]'}
+                yield {'id': 'layer1', 'status': 'Extracting'}
+                yield {'id': 'layer2', 'status': 'Downloading'}
+                yield {'status': 'Digest: sha256:abc'}
+
+        outputs = []
+
+        def output_callback(message):
+            outputs.append(message)
+
+        result = base_image_exists('ubuntu:test', docker_client=FakeDockerClient(), output_callback=output_callback)
+        self.assertTrue(result)
+
+        expected = [
+            "Image 'ubuntu:test' not found locally, attempting to pull...",
+            'Pulling from library/ubuntu',
+            '  layer1: Downloading [==>    ]',
+            '  layer1: Extracting',
+            '  layer2: Downloading',
+            'Digest: sha256:abc',
+            "Successfully pulled 'ubuntu:test'",
+        ]
+        self.assertEqual(outputs, expected)
+
+    def test_base_image_exists_pull_api_error_raises(self):
+        class FakeResponse:
+            def __init__(self, status_code):
+                self.status_code = status_code
+
+        class FakeDockerClient:
+            def inspect_image(self, image):
+                raise docker.errors.APIError('not found', response=FakeResponse(404))
+
+            def pull(self, image, stream=True, decode=True):
+                raise docker.errors.APIError('boom', response=FakeResponse(500), explanation='nope')
+
+        outputs = []
+
+        def output_callback(message):
+            outputs.append(message)
+
+        with self.assertRaises(docker.errors.APIError):
+            base_image_exists('ubuntu:test', docker_client=FakeDockerClient(), output_callback=output_callback)
+
+        self.assertIn("Error while pulling image 'ubuntu:test': nope", outputs)
+        self.assertNotIn("Successfully pulled 'ubuntu:test'", outputs)
