@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v0.3.0](https://github.com/osrf/rocker/releases/tag/v0.3.0) - 2026-04-08
+
+<small>[Compare with v0.2.19](https://github.com/osrf/rocker/compare/v0.2.19...v0.3.0)</small>
+
+### Added
+
+- Add resource limits extensions for CPU, memory, and shared memory (#331) ([ce67dc6](https://github.com/osrf/rocker/commit/ce67dc610ca62a4fab7854e209bca31ea908af08) by Roman Wu).
+- add detach plugin (#320) ([ade9803](https://github.com/osrf/rocker/commit/ade980316020c2e3e82412081bb656c73bd85556) by Yuqi Huai).
+- Support for unlimited (-1) value in ulimit extension [#352](https://github.com/osrf/rocker/pull/352) by miguelprada
+
+### Fixed
+
+- Show streaming pull feedback for base and OS detector images Fix [#86](https://github.com/osrf/rocker/issues/86) [#357](https://github.com/osrf/rocker/pull/357) by SarthakBagga
+- Catch TypeError created by changes in validate_environment prototype [#351](https://github.com/osrf/rocker/pull/351) 
+- Skip CUDA install when host NVIDIA driver exists Fix [#316](https://github.com/osrf/rocker/issues/316) [#338](https://github.com/osrf/rocker/pull/338) by SarthakBagga
+- Detect missing base image Fix [#26](https://github.com/osrf/rocker/issues/26) [#344](https://github.com/osrf/rocker/pull/344) by SarthakBagga
+- Doc typos and CI updates
+
+### Removed
+
+- Remove empty methods in ssh extension (#350) ([ea5d76a](https://github.com/osrf/rocker/commit/ea5d76adb289cd7075f3fe794622f222532bae84) by Miguel Prada).
+
+
 ## [v0.2.19](https://github.com/osrf/rocker/releases/tag/v0.2.19) - 2025-02-06
 
 <small>[Compare with v0.2.18](https://github.com/osrf/rocker/compare/v0.2.18...v0.2.19)</small>

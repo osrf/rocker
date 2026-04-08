@@ -35,7 +35,7 @@ install_requires.append(docker_package)
 
 kwargs = {
     'name': 'rocker',
-    'version': '0.2.19',
+    'version': '0.3.0',
     'packages': ['rocker'],
     'package_dir': {'': 'src'},
     'package_data': {'rocker': ['templates/*.em']},
@@ -74,7 +74,7 @@ kwargs = {
         ]
     },
     'author': 'Tully Foote',
-    'author_email': 'tfoote@osrfoundation.org',
+    'author_email': 'tullyfoote@intrinsic.ai',
     'keywords': ['Docker'],
     'classifiers': [
         'Programming Language :: Python',
