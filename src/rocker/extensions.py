@@ -63,9 +63,6 @@ class Devices(RockerExtension):
     def get_name():
         return 'devices'
 
-    def __init__(self):
-        self.name = Devices.get_name()
-
     def get_preamble(self, cliargs):
         return ''
 
@@ -94,8 +91,6 @@ class DevHelpers(RockerExtension):
 
     def __init__(self):
         self._env_subs = None
-        self.name = DevHelpers.get_name()
-
 
     def get_environment_subs(self):
         if not self._env_subs:
@@ -106,7 +101,7 @@ class DevHelpers(RockerExtension):
         return ''
 
     def get_snippet(self, cliargs):
-        snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
+        snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.get_name()).decode('utf-8')
         return empy_expand(snippet, self.get_environment_subs())
 
     @staticmethod
@@ -121,9 +116,6 @@ class Expose(RockerExtension):
     @staticmethod
     def get_name():
         return 'expose'
-
-    def __init__(self):
-        self.name = Expose.get_name()
 
     def get_preamble(self, cliargs):
         return ''
@@ -142,14 +134,18 @@ class Expose(RockerExtension):
             action='append',
             help="Exposes a port from the container to host machine.")
 
+    @staticmethod
+    def register_arguments(parser, defaults={}):
+        parser.add_argument('--expose',
+            default=defaults.get('expose', None),
+            action='append',
+            help="Exposes a port from the container to host machine.")
+
 
 class Hostname(RockerExtension):
     @staticmethod
     def get_name():
         return 'hostname'
-
-    def __init__(self):
-        self.name = Hostname.get_name()
 
     def get_preamble(self, cliargs):
         return ''
@@ -194,9 +190,6 @@ class Name(RockerExtension):
     def get_name():
         return 'name'
 
-    def __init__(self):
-        self.name = Name.get_name()
-
     def get_preamble(self, cliargs):
         return ''
 
@@ -217,9 +210,6 @@ class Network(RockerExtension):
     @staticmethod
     def get_name():
         return 'network'
-
-    def __init__(self):
-        self.name = Network.get_name()
 
     def get_preamble(self, cliargs):
         return ''
@@ -242,9 +232,6 @@ class Port(RockerExtension):
     @staticmethod
     def get_name():
         return 'port'
-
-    def __init__(self):
-        self.name = Port.get_name()
 
     def get_preamble(self, cliargs):
         return ''
@@ -271,8 +258,6 @@ class PulseAudio(RockerExtension):
 
     def __init__(self):
         self._env_subs = None
-        self.name = PulseAudio.get_name()
-
 
     def get_environment_subs(self):
         if not self._env_subs:
@@ -286,7 +271,7 @@ class PulseAudio(RockerExtension):
         return ''
 
     def get_snippet(self, cliargs):
-        snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
+        snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.get_name()).decode('utf-8')
         return empy_expand(snippet, self.get_environment_subs())
 
     def get_docker_args(self, cliargs):
@@ -306,9 +291,6 @@ class HomeDir(RockerExtension):
     @staticmethod
     def get_name():
         return 'home'
-
-    def __init__(self):
-        self.name = HomeDir.get_name()
 
     def get_docker_args(self, cliargs):
         return ' -v %s:%s ' % (Path.home(), Path.home())
@@ -337,10 +319,9 @@ class User(RockerExtension):
 
     def __init__(self):
         self._env_subs = None
-        self.name = User.get_name()
 
     def get_snippet(self, cliargs):
-        snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
+        snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.get_name()).decode('utf-8')
         substitutions = self.get_environment_subs()
         if 'user_override_name' in cliargs and cliargs['user_override_name']:
             substitutions['name'] = cliargs['user_override_name']
@@ -404,9 +385,6 @@ class Environment(RockerExtension):
     def get_name():
         return 'env'
 
-    def __init__(self):
-        self.name = Environment.get_name()
-
     def get_snippet(self, cli_args):
         return ''
 
@@ -452,9 +430,6 @@ class Privileged(RockerExtension):
     def get_name():
         return 'privileged'
 
-    def __init__(self):
-        self.name = Privileged.get_name()
-
     def get_snippet(self, cli_args):
         return ''
 
@@ -474,9 +449,6 @@ class GroupAdd(RockerExtension):
     @staticmethod
     def get_name():
         return 'group_add'
-
-    def __init__(self):
-        self.name = GroupAdd.get_name()
 
     def get_preamble(self, cliargs):
         return ''

@@ -154,13 +154,13 @@ class RockerCoreTest(unittest.TestCase):
 
     def test_strict_required_extensions(self):
         class Foo(RockerExtension):
-            @classmethod
-            def get_name(cls):
+            @staticmethod
+            def get_name():
                 return 'foo'
 
         class Bar(RockerExtension):
-            @classmethod
-            def get_name(cls):
+            @staticmethod
+            def get_name():
                 return 'bar'
 
             def required(self, cli_args):
@@ -178,13 +178,13 @@ class RockerCoreTest(unittest.TestCase):
 
     def test_implicit_required_extensions(self):
         class Foo(RockerExtension):
-            @classmethod
-            def get_name(cls):
+            @staticmethod
+            def get_name():
                 return 'foo'
 
         class Bar(RockerExtension):
-            @classmethod
-            def get_name(cls):
+            @staticmethod
+            def get_name():
                 return 'bar'
 
             def required(self, cli_args):
@@ -205,13 +205,13 @@ class RockerCoreTest(unittest.TestCase):
 
     def test_extension_sorting(self):
         class Foo(RockerExtension):
-            @classmethod
-            def get_name(cls):
+            @staticmethod
+            def get_name():
                 return 'foo'
 
         class Bar(RockerExtension):
-            @classmethod
-            def get_name(cls):
+            @staticmethod
+            def get_name():
                 return 'bar'
 
             def invoke_after(self, cli_args):
@@ -267,11 +267,9 @@ class RockerCoreTest(unittest.TestCase):
         user_snippet_content = "RUN echo run as user"
 
         class UserSnippet(RockerExtension):
-            def __init__(self):
-                self.name = 'usersnippet'
 
-            @classmethod
-            def get_name(cls):
+            @staticmethod
+            def get_name():
                 return 'usersnippet'
 
             def get_snippet(self, cli_args):
