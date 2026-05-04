@@ -24,6 +24,7 @@ from pathlib import Path
 import pwd
 import pytest
 from io import BytesIO as StringIO
+import grp
 
 
 from rocker.core import DockerImageGenerator
@@ -418,7 +419,18 @@ class UserExtensionTest(unittest.TestCase):
         user_override_active_cliargs = mock_cliargs
         user_override_active_cliargs['user_preserve_groups'] = []
         snippet_result = p.get_snippet(user_override_active_cliargs)
-        self.assertTrue('usermod -aG' in snippet_result)
+        
+        user_groups = [g for g in grp.getgrall() if env_subs['name'] in g.gr_mem]
+        if user_groups:
+            self.assertTrue('usermod -aG' in snippet_result)
+        else:
+            self.assertFalse('usermod -aG' in snippet_result)
+
+    
+
+
+
+    
 
         user_override_active_cliargs = mock_cliargs
         user_override_active_cliargs['user_preserve_groups'] = ['cdrom', 'audio']
@@ -430,8 +442,18 @@ class UserExtensionTest(unittest.TestCase):
         user_override_active_cliargs['user_preserve_groups'] = []
         user_override_active_cliargs['user_preserve_groups_permissive'] = True
         snippet_result = p.get_snippet(user_override_active_cliargs)
-        self.assertTrue('usermod -aG' in snippet_result)
-        self.assertTrue('user-preserve-group-permissive Enabled' in snippet_result)
+       
+        if user_groups:
+            self.assertTrue('usermod -aG' in snippet_result)
+        else:
+            self.assertFalse('usermod -aG' in snippet_result)
+
+        
+
+        if user_groups:
+            self.assertTrue('user-preserve-group-permissive Enabled' in snippet_result)
+        else:
+            self.assertFalse('user-preserve-group-permissive Enabled' in snippet_result)
 
         user_override_active_cliargs['user_override_name'] = 'testusername'
         snippet_result = p.get_snippet(user_override_active_cliargs)
