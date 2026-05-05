@@ -357,7 +357,10 @@ class User(RockerExtension):
                     print('Warning skipping groups %s because they do not exist on the host.' % unmatched_groups)
                 substitutions['user_groups'] = ' '.join(['{};{}'.format(g.gr_name, g.gr_gid) for g in matched_groups])
             else:
-                substitutions['user_groups'] = ' '.join(['{};{}'.format(g.gr_name, g.gr_gid) for g in all_groups if substitutions['name'] in g.gr_mem])
+                matched_groups = [g for g in all_groups if substitutions['name'] in g.gr_mem]
+                if not matched_groups:
+                    print('User %s is not a member of any supplementary groups, skipping group preservation.' % substitutions['name'])
+                substitutions['user_groups'] = ' '.join(['{};{}'.format(g.gr_name, g.gr_gid) for g in matched_groups])
         else:
             substitutions['user_groups'] = ''
         substitutions['user_preserve_groups_permissive'] = True if 'user_preserve_groups_permissive' in cliargs and cliargs['user_preserve_groups_permissive'] else False
