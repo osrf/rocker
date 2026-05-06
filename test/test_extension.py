@@ -24,6 +24,8 @@ from pathlib import Path
 import pwd
 import pytest
 from io import BytesIO as StringIO
+import grp
+from unittest.mock import patch
 
 
 from rocker.core import DockerImageGenerator
@@ -415,23 +417,46 @@ class UserExtensionTest(unittest.TestCase):
         home_active_cliargs['home'] = True
         self.assertFalse('mkhomedir_helper' in p.get_snippet(home_active_cliargs))
 
+        # Test user_preserve_groups with mocked groups (user IS a member)
         user_override_active_cliargs = mock_cliargs
         user_override_active_cliargs['user_preserve_groups'] = []
-        snippet_result = p.get_snippet(user_override_active_cliargs)
-        self.assertTrue('usermod -aG' in snippet_result)
+        mock_group_with_user = grp.struct_group(('testgroup', 'x', 1234, [env_subs['name']]))
+        with patch('rocker.extensions.grp.getgrall', return_value=[mock_group_with_user]):
+            snippet_result = p.get_snippet(user_override_active_cliargs)
+            self.assertTrue('usermod -aG' in snippet_result)
 
+        # Test user_preserve_groups with mocked groups (user is NOT a member)
+        mock_group_without_user = grp.struct_group(('othergroup', 'x', 5678, ['someotheruser']))
+        with patch('rocker.extensions.grp.getgrall', return_value=[mock_group_without_user]):
+            snippet_result = p.get_snippet(user_override_active_cliargs)
+            self.assertFalse('usermod -aG' in snippet_result)
+
+        # Test explicit group list
         user_override_active_cliargs = mock_cliargs
         user_override_active_cliargs['user_preserve_groups'] = ['cdrom', 'audio']
-        snippet_result = p.get_snippet(user_override_active_cliargs)
-        self.assertTrue('cdrom' in snippet_result)
-        self.assertTrue('audio' in snippet_result)
+        mock_explicit_groups = [
+            grp.struct_group(('cdrom', 'x', 24, [])),
+            grp.struct_group(('audio', 'x', 29, [])),
+        ]
+        with patch('rocker.extensions.grp.getgrall', return_value=mock_explicit_groups):
+            snippet_result = p.get_snippet(user_override_active_cliargs)
+            self.assertTrue('cdrom' in snippet_result)
+            self.assertTrue('audio' in snippet_result)
 
+        # Test permissive mode with mocked groups (user IS a member)
         user_override_active_cliargs = mock_cliargs
         user_override_active_cliargs['user_preserve_groups'] = []
         user_override_active_cliargs['user_preserve_groups_permissive'] = True
-        snippet_result = p.get_snippet(user_override_active_cliargs)
-        self.assertTrue('usermod -aG' in snippet_result)
-        self.assertTrue('user-preserve-group-permissive Enabled' in snippet_result)
+        with patch('rocker.extensions.grp.getgrall', return_value=[mock_group_with_user]):
+            snippet_result = p.get_snippet(user_override_active_cliargs)
+            self.assertTrue('usermod -aG' in snippet_result)
+            self.assertTrue('user-preserve-group-permissive Enabled' in snippet_result)
+
+        # Test permissive mode with mocked groups (user is NOT a member)
+        with patch('rocker.extensions.grp.getgrall', return_value=[mock_group_without_user]):
+            snippet_result = p.get_snippet(user_override_active_cliargs)
+            self.assertFalse('usermod -aG' in snippet_result)
+            self.assertFalse('user-preserve-group-permissive Enabled' in snippet_result)
 
         user_override_active_cliargs['user_override_name'] = 'testusername'
         snippet_result = p.get_snippet(user_override_active_cliargs)
