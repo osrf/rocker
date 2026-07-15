@@ -392,6 +392,7 @@ class CudaTest(unittest.TestCase):
             ('ubuntu','focal'),
             ('ubuntu','jammy'),
             ('ubuntu','noble'),
+            ('ubuntu','resolute'),
             ('debian','bookworm'),
             ('debian','bullseye'),
             ]:

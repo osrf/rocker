@@ -70,9 +70,11 @@ def glvnd_version_from_policy(image_version, policy):
             return '20.04'
         if image_version in ['22.04', '22.10', '23.04', '23.10']:
             return '22.04'
-        # 24.04 is not available yet
+        # 24.04 and 26.04 glvnd base images are not available yet, fall back to 22.04
         # if image_version in ['24.04', '24.10', '25.04', '25.10']:
         #     return '24.04'
+        # if image_version in ['26.04', '26.10', '27.04', '27.10']:
+        #     return '26.04'
         return '22.04'
     return None
 
@@ -129,7 +131,7 @@ class Nvidia(RockerExtension):
         self._env_subs = None
         self.name = Nvidia.get_name()
         self.supported_distros = ['Ubuntu', 'Debian GNU/Linux']
-        self.supported_versions = ['16.04', '18.04', '20.04', '10', '22.04', '24.04']
+        self.supported_versions = ['16.04', '18.04', '20.04', '10', '22.04', '24.04', '26.04']
 
 
     def get_environment_subs(self, cliargs={}):
@@ -216,7 +218,7 @@ class Cuda(RockerExtension):
         self._env_subs = None
         self.name = Cuda.get_name()
         self.supported_distros = ['Ubuntu', 'Debian GNU/Linux']
-        self.supported_versions = ['20.04', '22.04', '24.04', '11', '12'] # Debian 11 and 12
+        self.supported_versions = ['20.04', '22.04', '24.04', '26.04', '11', '12'] # Debian 11 and 12
 
     def get_environment_subs(self, cliargs={}):
         if not self._env_subs:
