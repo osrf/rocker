@@ -176,7 +176,7 @@ class RockerExtensionManager:
                             yield name
                             next_emitted.append(name)  # remember what was emitted for difference_update()
                     if not next_emitted:
-                        raise ExtensionError("Cyclic dependancy detected: %r" % (next_pending,))
+                        raise ExtensionError("Cyclic dependency detected: %r" % (next_pending,))
                     pending = next_pending
                     emitted = next_emitted
 
