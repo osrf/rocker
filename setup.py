@@ -41,7 +41,8 @@ kwargs = {
     'package_data': {'rocker': ['templates/*.em']},
     'entry_points': {
         'console_scripts': [
-            'rocker = rocker.cli:main',
+            'rocker = rocker.cli:rocker_main',
+            'rodman = rocker.cli:rodman_main',
             'detect_docker_image_os = rocker.cli:detect_image_os',
         ],
         'rocker.extensions': [
