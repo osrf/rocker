@@ -345,6 +345,8 @@ class User(RockerExtension):
         if 'user_override_name' in cliargs and cliargs['user_override_name']:
             substitutions['name'] = cliargs['user_override_name']
             substitutions['dir'] = os.path.join('/home/', cliargs['user_override_name'])
+        if 'user_override_home' in cliargs and cliargs['user_override_home']:
+            substitutions['dir'] = cliargs['user_override_home']
         substitutions['user_preserve_home'] = True if 'user_preserve_home' in cliargs and cliargs['user_preserve_home'] else False
         if 'user_preserve_groups' in cliargs and isinstance(cliargs['user_preserve_groups'], list):
             query_groups = cliargs['user_preserve_groups']
@@ -382,6 +384,10 @@ class User(RockerExtension):
             action='store',
             default=defaults.get('user-override-name', None),
             help="override the current user's name")
+        parser.add_argument('--user-override-home',
+            action='store',
+            default=defaults.get('user-override-home', None),
+            help="override the user's home directory")
         parser.add_argument('--user-preserve-home',
             action='store_true',
             default=defaults.get('user-preserve-home', False),
