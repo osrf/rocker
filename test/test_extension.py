@@ -463,6 +463,11 @@ class UserExtensionTest(unittest.TestCase):
         self.assertTrue('WORKDIR /home/testusername' in snippet_result)
         self.assertTrue('userdel -r' in snippet_result)
 
+        user_override_active_cliargs['user_override_home'] = '/home/otherdirectory'
+        snippet_result = p.get_snippet(user_override_active_cliargs)
+        self.assertFalse('WORKDIR /home/testusername' in snippet_result)
+        self.assertTrue('WORKDIR /home/otherdirectory' in snippet_result)
+
         user_override_active_cliargs['user_preserve_home'] = True
         snippet_result = p.get_snippet(user_override_active_cliargs)
         self.assertFalse('userdel -r' in snippet_result)
