@@ -37,7 +37,7 @@ class Git(RockerExtension):
         if 'user' in cli_args and cli_args['user']:
             if 'user_override_home' in cli_args and cli_args['user_override_home']:
                 homedir = cli_args['user_override_home']
-                user_git_config_target = '%(homedir)s/.gitconfig' % locals()
+                user_gitconfig_target = '%(homedir)s/.gitconfig' % locals()
             else:
                 username = getpass.getuser()
                 if 'user_override_name' in cli_args and cli_args['user_override_name']:
