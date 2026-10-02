@@ -168,6 +168,9 @@ Notes:
 - Make sure to use the python3 instance of pytest from inside the environment.
 - The tests include an nvidia test which assumes you're using a machine with an nvidia gpu. To skip them use `-m "not nvidia"`
 
+### Current Coverage
+
+Historical Coverage is visible at: [![codecov](https://codecov.io/gh/osrf/rocker/graph/badge.svg?token=17WPnXJPFC)](https://codecov.io/gh/osrf/rocker)
 
 # Example usage
 
