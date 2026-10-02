@@ -18,7 +18,7 @@ import pexpect
 import docker
 from io import BytesIO as StringIO
 
-from .core import base_image_exists, DependencyMissing, docker_build, get_docker_client
+from .core import base_image_exists, DependencyMissing, docker_build, get_docker_client, ImageNotFound
 
 
 DETECTOR_IMAGE = "golang:1.19"
@@ -73,12 +73,33 @@ def ensure_detector_image(client, output_callback=None, nocache=False):
     return DETECTOR_TAG
 
 
-def detect_os(image_name, output_callback=None, nocache=False):
+def detect_os(image_name, output_callback=None, nocache=False, auto_pull=True):
+    """Detect the operating system of a docker image.
+
+    Returns a (distribution, version, codename) tuple, or None if the OS could
+    not be determined. Raises ImageNotFound if the image is not available
+    locally (it is pulled automatically unless auto_pull is False) and
+    DependencyMissing if the detector tooling is unavailable.
+    """
     # Do not rerun OS detection if there is already a cached result for the given image
     if image_name in _detect_os_cache:
         return _detect_os_cache[image_name]
 
     client = get_docker_client()
+
+    # The image must be present before `docker run` below: if docker pulled it
+    # there, the pull progress would be interleaved with the detector's output.
+    if not base_image_exists(image_name, docker_client=client, output_callback=output_callback, pull=auto_pull):
+        if auto_pull:
+            raise ImageNotFound(
+                f"Image '{image_name}' not found locally and could not be pulled. "
+                f"Verify the image name or try 'docker pull {image_name}' manually."
+            )
+        raise ImageNotFound(
+            f"Image '{image_name}' not found locally and auto-pull is disabled. "
+            f"Run 'docker pull {image_name}' first or enable auto-pull."
+        )
+
     detector_tag = ensure_detector_image(client, output_callback=output_callback, nocache=nocache)
     if not detector_tag:
         raise DependencyMissing(
@@ -86,7 +107,7 @@ def detect_os(image_name, output_callback=None, nocache=False):
         )
 
     cmd = (
-        f"docker run -it --rm --network=none "
+        f"docker run -it --rm --network=none --pull=never "
         f"--mount type=image,source={detector_tag},target={DETECTOR_MOUNT} "
         f"--entrypoint {DETECTOR_MOUNT}/distro-detect "
         f"{image_name} -format json-one-line"

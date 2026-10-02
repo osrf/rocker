@@ -366,3 +366,20 @@ class RockerCoreTest(unittest.TestCase):
 
         self.assertIn("Error while pulling image 'ubuntu:test': nope", outputs)
         self.assertNotIn("Successfully pulled 'ubuntu:test'", outputs)
+
+    def test_base_image_exists_no_pull(self):
+        class FakeResponse:
+            def __init__(self, status_code):
+                self.status_code = status_code
+
+        class FakeDockerClient:
+            def inspect_image(self, image):
+                raise docker.errors.APIError('not found', response=FakeResponse(404))
+
+            def pull(self, image, stream=True, decode=True):
+                raise AssertionError('pull must not be attempted when pull=False')
+
+        outputs = []
+        result = base_image_exists('ubuntu:test', docker_client=FakeDockerClient(), output_callback=outputs.append, pull=False)
+        self.assertFalse(result)
+        self.assertEqual(outputs, [])

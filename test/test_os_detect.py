@@ -28,8 +28,20 @@ except ImportError:
 import unittest
 from unittest.mock import patch
 
-from rocker.core import DependencyMissing
-from rocker.os_detector import detect_os, ensure_detector_image, DETECTOR_TAG
+from rocker.core import DependencyMissing, ImageNotFound, get_docker_client
+from rocker.os_detector import detect_os, ensure_detector_image, DETECTOR_TAG, _detect_os_cache
+
+# Small image used to exercise the pull code paths. It is removed locally before use.
+AUTO_PULL_IMAGE = "alpine:3.20"
+
+
+def remove_local_image(image_name):
+    try:
+        get_docker_client().remove_image(image_name, force=True)
+    except docker.errors.ImageNotFound:
+        pass
+    _detect_os_cache.pop(image_name, None)
+
 
 class RockerOSDetectorTest(unittest.TestCase):
 
@@ -67,14 +79,32 @@ class RockerOSDetectorTest(unittest.TestCase):
 
     @pytest.mark.docker
     def test_does_not_exist(self):
-        result = detect_os("osrf/ros:does_not_exist")
-        self.assertEqual(result, None)
+        with self.assertRaises(ImageNotFound):
+            detect_os("osrf/ros:does_not_exist")
 
     @pytest.mark.docker
     def test_cannot_detect_os(self):
+        # hello-world runs but carries no OS release information
         # Test with output callback too get coverage of error reporting
-        result = detect_os("scratch", output_callback=print)
+        result = detect_os("hello-world:latest", output_callback=print)
         self.assertEqual(result, None)
+
+    @pytest.mark.docker
+    def test_auto_pull(self):
+        remove_local_image(AUTO_PULL_IMAGE)
+        result = detect_os(AUTO_PULL_IMAGE, output_callback=print)
+        self.assertEqual(result[0], 'Alpine Linux')
+        self.assertTrue(result[1].startswith('3.20'))
+
+    @pytest.mark.docker
+    def test_no_auto_pull(self):
+        remove_local_image(AUTO_PULL_IMAGE)
+        with self.assertRaises(ImageNotFound) as cm:
+            detect_os(AUTO_PULL_IMAGE, auto_pull=False)
+        self.assertIn('auto-pull is disabled', str(cm.exception))
+        # The image must not have been pulled
+        with self.assertRaises(docker.errors.ImageNotFound):
+            get_docker_client().inspect_image(AUTO_PULL_IMAGE)
 
     @pytest.mark.docker
     def test_detector_image_build_failure(self):
