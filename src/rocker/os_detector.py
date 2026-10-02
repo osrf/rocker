@@ -15,35 +15,39 @@
 import json
 import pexpect
 
+import docker
 from io import BytesIO as StringIO
 
 from .core import base_image_exists, DependencyMissing, docker_build, get_docker_client
 
 
 DETECTOR_IMAGE = "golang:1.19"
+DETECTOR_TAG = "rocker:distro-detect"
+DETECTOR_MOUNT = "/detect_os"
 
-DETECTION_TEMPLATE="""
+DETECTOR_TEMPLATE = """
 FROM %(detector_image)s as detector
 
 # For reliability, pin a distro-detect commit instead of targeting a branch.
-RUN git clone -q https://github.com/dekobon/distro-detect.git && \
-    cd distro-detect && \
-    git checkout -q 5f5b9c724b9d9a117732d2a4292e6288905734e1 && \
-    CGO_ENABLED=0 go build .
+RUN git clone -q https://github.com/dekobon/distro-detect.git && \\
+    cd distro-detect && \\
+    git checkout -q 5f5b9c724b9d9a117732d2a4292e6288905734e1 && \\
+    CGO_ENABLED=0 go build -o /distro-detect .
 
-FROM %(image_name)s
-
-COPY --from=detector /go/distro-detect/distro-detect /tmp/detect_os
-ENTRYPOINT [ "/tmp/detect_os", "-format", "json-one-line" ]
-CMD [ "" ]
+FROM scratch
+COPY --from=detector /distro-detect /distro-detect
 """
 
 _detect_os_cache = dict()
 
-def detect_os(image_name, output_callback=None, nocache=False):
-    # Do not rerun OS detection if there is already a cached result for the given image
-    if image_name in _detect_os_cache:
-        return _detect_os_cache[image_name]
+
+def ensure_detector_image(client, output_callback=None, nocache=False):
+    if not nocache:
+        try:
+            client.inspect_image(DETECTOR_TAG)
+            return DETECTOR_TAG
+        except docker.errors.APIError:
+            pass
 
     detector_image = DETECTOR_IMAGE
     if not base_image_exists(detector_image, output_callback=output_callback):
@@ -52,32 +56,48 @@ def detect_os(image_name, output_callback=None, nocache=False):
             f"registry. Verify the image name or try 'docker pull {detector_image}'."
         )
 
-    iof = StringIO((DETECTION_TEMPLATE % locals()).encode())
-    tag_name = "rocker:" + f"os_detect_{image_name}".replace(':', '_').replace('/', '_')
+    iof = StringIO((DETECTOR_TEMPLATE % locals()).encode())
     image_id = docker_build(
         fileobj=iof,
         output_callback=output_callback,
         nocache=nocache,
-        forcerm=True,  # Remove intermediate containers from RUN commands in DETECTION_TEMPLATE
-        tag=tag_name
+        forcerm=True,
+        tag=DETECTOR_TAG
     )
     if not image_id:
         if output_callback:
-            output_callback('Failed to build detector image')
-        return None
+            output_callback(f"Failed to build detector image '{DETECTOR_TAG}'")
+        raise DependencyMissing(
+            f"Failed to build OS detector helper image '{DETECTOR_TAG}'."
+        )
+    return DETECTOR_TAG
 
-    cmd="docker run -it --rm %s" % image_id
+
+def detect_os(image_name, output_callback=None, nocache=False):
+    # Do not rerun OS detection if there is already a cached result for the given image
+    if image_name in _detect_os_cache:
+        return _detect_os_cache[image_name]
+
+    client = get_docker_client()
+    detector_tag = ensure_detector_image(client, output_callback=output_callback, nocache=nocache)
+    if not detector_tag:
+        raise DependencyMissing(
+            f"Failed to build or locate OS detector helper image '{DETECTOR_TAG}'."
+        )
+
+    cmd = (
+        f"docker run -it --rm --network=none "
+        f"--mount type=image,source={detector_tag},target={DETECTOR_MOUNT} "
+        f"--entrypoint {DETECTOR_MOUNT}/distro-detect "
+        f"{image_name} -format json-one-line"
+    )
     if output_callback:
         output_callback("running, ", cmd)
     p = pexpect.spawn(cmd)
     output = p.read().decode()
     if output_callback:
         output_callback("output: ", output)
-    p.terminate()
-
-    # Clean up the image
-    client = get_docker_client()
-    client.remove_image(image=tag_name)
+    p.close()
 
     if p.exitstatus == 0:
         try:
@@ -96,7 +116,7 @@ def detect_os(image_name, output_callback=None, nocache=False):
         return _detect_os_cache[image_name]
     else:
         if output_callback:
-            output_callback("/tmp/detect_os failed:")
+            output_callback(f"{DETECTOR_MOUNT}/distro-detect failed:")
             for l in output.splitlines():
                 output_callback("> %s" % l)
         return None

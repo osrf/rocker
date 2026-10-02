@@ -16,11 +16,20 @@
 # under the License.
 
 import docker
-import pytest
+try:
+    import pytest
+except ImportError:
+    class _MockMark:
+        def __getattr__(self, name):
+            return lambda func: func
+    class _MockPytest:
+        mark = _MockMark()
+    pytest = _MockPytest()
 import unittest
+from unittest.mock import patch
 
-
-from rocker.os_detector import detect_os
+from rocker.core import DependencyMissing
+from rocker.os_detector import detect_os, ensure_detector_image, DETECTOR_TAG
 
 class RockerOSDetectorTest(unittest.TestCase):
 
@@ -40,6 +49,17 @@ class RockerOSDetectorTest(unittest.TestCase):
         self.assertEqual(result[1], '18.04')
 
     @pytest.mark.docker
+    def test_ubuntu_focal(self):
+        result = detect_os("ubuntu:focal")
+        self.assertEqual(result[0], 'Ubuntu')
+        self.assertEqual(result[1], '20.04')
+
+        # Cover verbose codepath
+        result = detect_os("ubuntu:focal", output_callback=print)
+        self.assertEqual(result[0], 'Ubuntu')
+        self.assertEqual(result[1], '20.04')
+
+    @pytest.mark.docker
     def test_fedora(self):
         result = detect_os("fedora:29")
         self.assertEqual(result[0], 'Fedora')
@@ -55,3 +75,10 @@ class RockerOSDetectorTest(unittest.TestCase):
         # Test with output callback too get coverage of error reporting
         result = detect_os("scratch", output_callback=print)
         self.assertEqual(result, None)
+
+    @pytest.mark.docker
+    def test_detector_image_build_failure(self):
+        # Tooling failure mode: helper image cannot be built
+        with patch('rocker.os_detector.docker_build', return_value=None):
+            with self.assertRaises(DependencyMissing):
+                detect_os("ubuntu:focal", nocache=True)

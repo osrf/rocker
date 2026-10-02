@@ -24,7 +24,7 @@ jobs:
     - name: Run headless tests
       uses: coactions/setup-xvfb@v1
       with:
-        run: python -m pytest -s -v --cov=rocker -m "not nvidia"
+        run: python -m pytest -s -v --cov=rocker -m "not nvidia and not benchmark"
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v6
       with:
@@ -47,6 +47,7 @@ jobs:
         python -m pip install -e .
     - name: Check os_detector script
       run: |
+        docker pull ubuntu
         detect_docker_image_os ubuntu
     - name: Check detector help
       run: |
