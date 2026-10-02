@@ -91,6 +91,12 @@ class GitExtensionTest(unittest.TestCase):
         user_gitconfig_target = '/home/testusername/.gitconfig'
         self.assertIn('-v %s:%s' % (user_gitconfig, user_gitconfig_target), user_args)
 
+        # Test with overridden home directory
+        mock_cliargs['user_override_home'] = '/home/otherdir'
+        user_args = p.get_docker_args(mock_cliargs)
+        user_gitconfig_target = '/home/otherdir/.gitconfig'
+        self.assertIn('-v %s:%s' % (user_gitconfig, user_gitconfig_target), user_args)
+
         # Test non-extant files no generation
         mock_cliargs['git_config_path'] = '/path-does-not-exist'
         mock_cliargs['git_config_path_system'] = '/path-does-not-exist-either'
