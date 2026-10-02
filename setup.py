@@ -70,6 +70,7 @@ kwargs = {
             'ulimit = rocker.ulimit_extension:Ulimit',
             'user = rocker.extensions:User',
             'volume = rocker.volume_extension:Volume',
+            'workdir = rocker.extensions:WorkDir',
             'x11 = rocker.nvidia_extension:X11',
         ]
     },
