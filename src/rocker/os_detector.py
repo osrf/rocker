@@ -121,8 +121,14 @@ def detect_os(image_name, output_callback=None, nocache=False, auto_pull=True):
     p.close()
 
     if p.exitstatus == 0:
+        # Filter out Docker CLI daemon warnings (e.g. "WARNING: Image mount is an
+        # experimental feature" emitted by Docker Engine < 29.7).
+        json_output = "\n".join(
+            line for line in output.splitlines()
+            if not line.startswith("WARNING:")
+        ).strip()
         try:
-            detect_dict = json.loads(output.strip())
+            detect_dict = json.loads(json_output)
         except ValueError:
             if output_callback:
                 output_callback('Failed to parse JSON')

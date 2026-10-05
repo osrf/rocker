@@ -112,3 +112,27 @@ class RockerOSDetectorTest(unittest.TestCase):
         with patch('rocker.os_detector.docker_build', return_value=None):
             with self.assertRaises(DependencyMissing):
                 detect_os("ubuntu:focal", nocache=True)
+
+    @pytest.mark.docker
+    def test_docker_cli_warning_filtered(self):
+        # Docker Engine < 29.7 emits "WARNING: Image mount is an experimental feature"
+        # on stderr when --mount type=image is used.
+        class FakeSpawn:
+            exitstatus = 0
+
+            def read(self):
+                return (
+                    b'WARNING: Image mount is an experimental feature\r\n'
+                    b'{"name":"Ubuntu","os_release":{"VERSION_ID":"22.04","VERSION_CODENAME":"jammy"}}\r\n'
+                )
+
+            def close(self):
+                pass
+
+        _detect_os_cache.pop("ubuntu:jammy-warning-test", None)
+        with patch('rocker.os_detector.base_image_exists', return_value=True), \
+             patch('rocker.os_detector.ensure_detector_image', return_value=DETECTOR_TAG), \
+             patch('rocker.os_detector.pexpect.spawn', return_value=FakeSpawn()):
+            result = detect_os("ubuntu:jammy-warning-test")
+        self.assertEqual(result, ('Ubuntu', '22.04', 'jammy'))
+
