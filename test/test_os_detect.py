@@ -25,6 +25,7 @@ except ImportError:
     class _MockPytest:
         mark = _MockMark()
     pytest = _MockPytest()
+from packaging.version import Version
 import unittest
 from unittest.mock import patch
 
@@ -135,4 +136,24 @@ class RockerOSDetectorTest(unittest.TestCase):
              patch('rocker.os_detector.pexpect.spawn', return_value=FakeSpawn()):
             result = detect_os("ubuntu:jammy-warning-test")
         self.assertEqual(result, ('Ubuntu', '22.04', 'jammy'))
+
+    # TODO: Remove this test once Docker Engine >= 28.0.0 is the minimum supported version.
+    @pytest.mark.docker
+    def test_legacy_docker_fallback(self):
+        _detect_os_cache.pop("ubuntu:focal", None)
+        with patch('rocker.os_detector._get_docker_version', return_value=Version("27.5.1")):
+            result = detect_os("ubuntu:focal", output_callback=print)
+        self.assertEqual(result[0], 'Ubuntu')
+        self.assertEqual(result[1], '20.04')
+        # Ensure the temporary per-image detector image was cleaned up
+        with self.assertRaises(docker.errors.ImageNotFound):
+            get_docker_client().inspect_image("rocker:os_detect_ubuntu_focal")
+
+        # Also test failure to build the temporary per-image detector image
+        _detect_os_cache.pop("ubuntu:focal", None)
+        with patch('rocker.os_detector._get_docker_version', return_value=Version("27.5.1")), \
+             patch('rocker.os_detector.ensure_detector_image', return_value=DETECTOR_TAG), \
+             patch('rocker.os_detector.docker_build', return_value=None):
+            result = detect_os("ubuntu:focal", output_callback=print)
+        self.assertIsNone(result)
 

@@ -23,6 +23,7 @@ import unittest
 from pathlib import Path
 import pwd
 import tempfile
+from unittest.mock import patch
 
 
 from rocker.core import list_plugins
@@ -73,16 +74,20 @@ class GitExtensionTest(unittest.TestCase):
         self.assertIn('-v %s:%s' % (user_gitconfig, user_gitconfig_target), args)
 
         # Test with user "enabled"
+        # Mock the username so the expected target does not depend on the
+        # account running the tests or where its home directory lives.
         mock_cliargs = {'user': True}
         mock_cliargs['git_config_path'] = mock_config_file.name
-        user_args = p.get_docker_args(mock_cliargs)
-        user_gitconfig_target = os.path.expanduser('~/.gitconfig')
+        with patch('getpass.getuser', return_value='mockuser'):
+            user_args = p.get_docker_args(mock_cliargs)
+        user_gitconfig_target = '/home/mockuser/.gitconfig'
         self.assertIn('-v %s:%s' % (user_gitconfig, user_gitconfig_target), user_args)
 
         # Test with an existing overridden user key, but with None value
         mock_cliargs['user_override_name'] = None
-        user_args = p.get_docker_args(mock_cliargs)
-        user_gitconfig_target = os.path.expanduser('~/.gitconfig')
+        with patch('getpass.getuser', return_value='mockuser'):
+            user_args = p.get_docker_args(mock_cliargs)
+        user_gitconfig_target = '/home/mockuser/.gitconfig'
         self.assertIn('-v %s:%s' % (user_gitconfig, user_gitconfig_target), user_args)
 
         # Test with overridden user
