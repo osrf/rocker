@@ -47,6 +47,7 @@ jobs:
         python -m pip install -e .
     - name: Check os_detector script
       run: |
+        docker pull ubuntu
         detect_docker_image_os ubuntu
     - name: Check detector help
       run: |
