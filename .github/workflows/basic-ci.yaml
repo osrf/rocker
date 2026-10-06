@@ -24,7 +24,7 @@ jobs:
     - name: Run headless tests
       uses: coactions/setup-xvfb@v1
       with:
-        run: python -m pytest -s -v --cov=rocker -m "not nvidia and not benchmark"
+        run: python -m pytest -s -v --cov=rocker -m "not nvidia"
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v6
       with:
