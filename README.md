@@ -172,6 +172,16 @@ Notes:
 
 Historical Coverage is visible at: [![codecov](https://codecov.io/gh/osrf/rocker/graph/badge.svg?token=17WPnXJPFC)](https://codecov.io/gh/osrf/rocker)
 
+### Releasing and PyPI Publishing
+
+Releases are automatically built and published to [PyPI](https://pypi.org/project/rocker/) via GitHub Actions using [PyPI Trusted Publishing (OIDC)](https://docs.pypi.org/trusted-publishers/).
+
+The [`.github/workflows/publish-pypi.yaml`](.github/workflows/publish-pypi.yaml) workflow triggers whenever a new GitHub Release is published (`release: [published]`):
+
+1. **Prepare the release**: Update the version in `setup.py` and `CHANGELOG.md`, commit, and push a version tag (e.g. `vX.Y.Z`).
+2. **Publish a GitHub Release**: Create and publish a new release on GitHub from the tag.
+3. **Automatic PyPI upload**: The GitHub Actions workflow builds the source distribution (`.tar.gz`) and wheel (`.whl`) in an isolated `build` job, and then uploads them to PyPI in the `pypi-publish` job using the `pypi` GitHub Environment and OIDC authentication (no manual API tokens required).
+
 # Example usage
 
 
