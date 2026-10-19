@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v0.4.0](https://github.com/osrf/rocker/releases/tag/v0.4.0) - 2026-10-18
+
+<small>[Compare with v0.3.0](https://github.com/osrf/rocker/compare/v0.3.0...v0.4.0)</small>
+
+### Added
+
+- Add ability to override home directory when using User extension (#363) ([019c54b](https://github.com/osrf/rocker/commit/019c54b562d9bbed8eaea97e542cd653946258ad) by Miguel Prada).
+- Add Ubuntu 26.04 to supported NVIDIA versions (#360) ([162789b](https://github.com/osrf/rocker/commit/162789b214be0050a8ec43eb70f1bfa3ed3bee63) by Thibault Poignonec).
+- Automatic PyPI publishing via OIDC Trusted Publishing ([7ee00a2](https://github.com/osrf/rocker/commit/7ee00a2ebc4e300f1b5b6a3bf9f67bf86e5523ed) by Tully Foote).
+
+### Fixed
+
+- Handle User extension test when invoking user has no groups (#339) (#359) ([abe51e0](https://github.com/osrf/rocker/commit/abe51e08596960b5a55af0949c6d4f8983250cbb) by arnav03op).
+- Fix typo in error message (#361) ([00bf38f](https://github.com/osrf/rocker/commit/00bf38f685ffab5d5a250e484bd13809161cb08a) by fazalpsinfo-cmyk).
+- Update README with coverage information ([36ee9da](https://github.com/osrf/rocker/commit/36ee9dab2a16f45b3cba3cb95fb52a3ce2e618d0) by Tully Foote).
+
+
 ## [v0.3.0](https://github.com/osrf/rocker/releases/tag/v0.3.0) - 2026-04-08
 
 <small>[Compare with v0.2.19](https://github.com/osrf/rocker/compare/v0.2.19...v0.3.0)</small>
