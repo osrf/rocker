@@ -20,11 +20,9 @@ from rocker.extensions import RockerExtension
 
 class Git(RockerExtension):
 
-    name = 'git'
-
-    @classmethod
-    def get_name(cls):
-        return cls.name
+    @staticmethod
+    def get_name():
+        return 'git'
 
 
     def get_docker_args(self, cli_args):

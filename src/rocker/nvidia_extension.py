@@ -84,7 +84,6 @@ class X11(RockerExtension):
         return 'x11'
 
     def __init__(self):
-        self.name = X11.get_name()
         self._env_subs = None
         self._xauth = None
 
@@ -129,7 +128,6 @@ class Nvidia(RockerExtension):
 
     def __init__(self):
         self._env_subs = None
-        self.name = Nvidia.get_name()
         self.supported_distros = ['Ubuntu', 'Debian GNU/Linux']
         self.supported_versions = ['16.04', '18.04', '20.04', '10', '22.04', '24.04', '26.04']
 
@@ -175,11 +173,11 @@ class Nvidia(RockerExtension):
                            "         The container may not have access to GPU hardware.")
 
     def get_preamble(self, cliargs):
-        preamble = pkgutil.get_data('rocker', 'templates/%s_preamble.Dockerfile.em' % self.name).decode('utf-8')
+        preamble = pkgutil.get_data('rocker', 'templates/%s_preamble.Dockerfile.em' % self.get_name()).decode('utf-8')
         return empy_expand(preamble, self.get_environment_subs(cliargs))
 
     def get_snippet(self, cliargs):
-        snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
+        snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.get_name()).decode('utf-8')
         return empy_expand(snippet, self.get_environment_subs(cliargs))
 
     def get_docker_args(self, cliargs):
@@ -216,7 +214,6 @@ class Cuda(RockerExtension):
 
     def __init__(self):
         self._env_subs = None
-        self.name = Cuda.get_name()
         self.supported_distros = ['Ubuntu', 'Debian GNU/Linux']
         self.supported_versions = ['20.04', '22.04', '24.04', '26.04', '11', '12'] # Debian 11 and 12
 
@@ -262,11 +259,11 @@ class Cuda(RockerExtension):
 
     def get_preamble(self, cliargs):
         return ''
-        # preamble = pkgutil.get_data('rocker', 'templates/%s_preamble.Dockerfile.em' % self.name).decode('utf-8')
+        # preamble = pkgutil.get_data('rocker', 'templates/%s_preamble.Dockerfile.em' % self.get_name()).decode('utf-8')
         # return empy_expand(preamble, self.get_environment_subs(cliargs))
 
     def get_snippet(self, cliargs):
-        snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
+        snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.get_name()).decode('utf-8')
         return empy_expand(snippet, self.get_environment_subs(cliargs))
 
     def get_docker_args(self, cliargs):
