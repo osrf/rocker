@@ -59,6 +59,11 @@ class ExtensionError(RuntimeError):
     pass
 
 
+class ImageNotFound(RuntimeError):
+    """A docker image is not available locally and could not (or must not) be pulled."""
+    pass
+
+
 class RockerExtension(object):
     """The base class for Rocker extension points"""
 
@@ -265,10 +270,10 @@ def get_user_name():
     userinfo = pwd.getpwuid(os.getuid())
     return getattr(userinfo, 'pw_' + 'name')
 
-def base_image_exists(base_image, docker_client=None, output_callback=None):
+def base_image_exists(base_image, docker_client=None, output_callback=None, pull=True):
     """
     Check if a base Docker image exists locally.
-    If not found locally, attempt to pull it from the registry.
+    If not found locally, attempt to pull it from the registry unless pull is False.
     """
     if docker_client is None:
         docker_client = get_docker_client()
@@ -281,6 +286,8 @@ def base_image_exists(base_image, docker_client=None, output_callback=None):
     except docker.errors.APIError as ex:
         # 404 error means image not found locally
         if ex.response.status_code == 404:
+            if not pull:
+                return False
             if output_callback:
                 output_callback(f"Image '{base_image}' not found locally, attempting to pull...")
 

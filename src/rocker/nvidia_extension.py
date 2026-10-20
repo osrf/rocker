@@ -25,6 +25,7 @@ from .os_detector import detect_os
 
 from .extensions import name_to_argument
 from .core import get_docker_client
+from .core import ImageNotFound
 from .core import RockerExtension
 from .em import empy_expand
 
@@ -141,7 +142,11 @@ class Nvidia(RockerExtension):
             self._env_subs['username'] = getpass.getuser()
 
         # non static elements test every time
-        detected_os = detect_os(cliargs['base_image'], print, nocache=cliargs.get('nocache', False))
+        try:
+            detected_os = detect_os(cliargs['base_image'], print, nocache=cliargs.get('nocache', False))
+        except ImageNotFound as ex:
+            print("WARNING %s" % ex)
+            sys.exit(1)
         if detected_os is None:
             print("WARNING unable to detect os for base image '%s', maybe the base image does not exist" % cliargs['base_image'])
             sys.exit(1)
@@ -227,7 +232,11 @@ class Cuda(RockerExtension):
             self._env_subs['username'] = getpass.getuser()
 
         # non static elements test every time
-        detected_os = detect_os(cliargs['base_image'], print, nocache=cliargs.get('nocache', False))
+        try:
+            detected_os = detect_os(cliargs['base_image'], print, nocache=cliargs.get('nocache', False))
+        except ImageNotFound as ex:
+            print("WARNING %s" % ex)
+            sys.exit(1)
         if detected_os is None:
             print("WARNING unable to detect os for base image '%s', maybe the base image does not exist" % cliargs['base_image'])
             sys.exit(1)

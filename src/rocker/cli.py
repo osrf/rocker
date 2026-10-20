@@ -21,6 +21,7 @@ from .core import get_rocker_version
 from .core import RockerExtensionManager
 from .core import DependencyMissing
 from .core import ExtensionError
+from .core import ImageNotFound
 from .core import base_image_exists
 from .core import OPERATIONS_DRY_RUN
 from .core import OPERATIONS_INTERACTIVE
@@ -138,10 +139,15 @@ def detect_image_os():
     parser.add_argument('image')
     parser.add_argument('--verbose', action='store_true',
         help='Display verbose output of the process')
+    parser.add_argument('--no-auto-pull', action='store_true',
+        help='Do not pull the image automatically if it is not available locally')
 
     args = parser.parse_args()    
 
-    results = detect_os(args.image, print if args.verbose else None)
+    try:
+        results = detect_os(args.image, print if args.verbose else None, auto_pull=not args.no_auto_pull)
+    except (ImageNotFound, DependencyMissing) as ex:
+        parser.error(str(ex))
     print(results)
     if results:
         return 0
