@@ -13,9 +13,9 @@
 # limitations under the License.
 
 from argparse import ArgumentTypeError
-import getpass
 import os
 from rocker.extensions import RockerExtension
+from rocker.extensions import User
 
 
 class Git(RockerExtension):
@@ -35,14 +35,8 @@ class Git(RockerExtension):
         user_gitconfig = cli_args.get('git_config_path', os.path.expanduser('~/.gitconfig'))
         user_gitconfig_target = '/root/.gitconfig'
         if 'user' in cli_args and cli_args['user']:
-            if 'user_override_home' in cli_args and cli_args['user_override_home']:
-                homedir = cli_args['user_override_home']
-                user_gitconfig_target = '%(homedir)s/.gitconfig' % locals()
-            else:
-                username = getpass.getuser()
-                if 'user_override_name' in cli_args and cli_args['user_override_name']:
-                    username = cli_args['user_override_name']
-                user_gitconfig_target = '/home/%(username)s/.gitconfig' % locals()
+            homedir = User.get_home_dir(cli_args)
+            user_gitconfig_target = '%(homedir)s/.gitconfig' % locals()
         if os.path.exists(system_gitconfig):
             args += ' -v {system_gitconfig}:{system_gitconfig_target}:ro'.format(**locals())
         if os.path.exists(user_gitconfig):

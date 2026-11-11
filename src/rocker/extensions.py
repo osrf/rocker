@@ -339,14 +339,21 @@ class User(RockerExtension):
         self._env_subs = None
         self.name = User.get_name()
 
+    @staticmethod
+    def get_home_dir(cliargs):
+        """Return the home directory of the user created in the container."""
+        if 'user_override_home' in cliargs and cliargs['user_override_home']:
+            return cliargs['user_override_home']
+        if 'user_override_name' in cliargs and cliargs['user_override_name']:
+            return os.path.join('/home/', cliargs['user_override_name'])
+        return pwd.getpwuid(os.getuid()).pw_dir
+
     def get_snippet(self, cliargs):
         snippet = pkgutil.get_data('rocker', 'templates/%s_snippet.Dockerfile.em' % self.name).decode('utf-8')
         substitutions = self.get_environment_subs()
         if 'user_override_name' in cliargs and cliargs['user_override_name']:
             substitutions['name'] = cliargs['user_override_name']
-            substitutions['dir'] = os.path.join('/home/', cliargs['user_override_name'])
-        if 'user_override_home' in cliargs and cliargs['user_override_home']:
-            substitutions['dir'] = cliargs['user_override_home']
+        substitutions['dir'] = self.get_home_dir(cliargs)
         substitutions['user_preserve_home'] = True if 'user_preserve_home' in cliargs and cliargs['user_preserve_home'] else False
         if 'user_preserve_groups' in cliargs and isinstance(cliargs['user_preserve_groups'], list):
             query_groups = cliargs['user_preserve_groups']

@@ -21,12 +21,14 @@ import getpass
 import os
 import unittest
 from pathlib import Path
+from unittest import mock
 import pwd
 import tempfile
 
 
 from rocker.core import list_plugins
 from rocker.extensions import name_to_argument
+from rocker.git_extension import Git
 
 from test_extension import plugin_load_parser_correctly
 
@@ -102,3 +104,34 @@ class GitExtensionTest(unittest.TestCase):
         mock_cliargs['git_config_path_system'] = '/path-does-not-exist-either'
         user_args = p.get_docker_args(mock_cliargs)
         self.assertNotIn('-v', user_args)
+
+    def _user_gitconfig_args(self, pw_dir, **overrides):
+        passwd = pwd.struct_passwd(('someuser', 'x', 1000, 1000, '', pw_dir, '/bin/bash'))
+        mock_config_file = tempfile.NamedTemporaryFile()
+        mock_cliargs = {'user': True, 'git_config_path': mock_config_file.name,
+                        'git_config_path_system': '/path-does-not-exist'}
+        mock_cliargs.update(overrides)
+        with mock.patch('rocker.extensions.pwd.getpwuid', return_value=passwd):
+            return mock_config_file.name, Git().get_docker_args(mock_cliargs)
+
+    def test_git_extension_user_home_is_root(self):
+        # The user extension creates the user with the home of the host user,
+        # which is /root when running as root.
+        user_gitconfig, args = self._user_gitconfig_args('/root')
+        self.assertIn('-v %s:/root/.gitconfig' % user_gitconfig, args)
+        self.assertNotIn('/home/', args)
+
+    def test_git_extension_user_home_outside_home(self):
+        user_gitconfig, args = self._user_gitconfig_args('/srv/someuser')
+        self.assertIn('-v %s:/srv/someuser/.gitconfig' % user_gitconfig, args)
+
+    def test_git_extension_override_home_takes_precedence(self):
+        user_gitconfig, args = self._user_gitconfig_args('/root', user_override_home='/data/other')
+        self.assertIn('-v %s:/data/other/.gitconfig' % user_gitconfig, args)
+        user_gitconfig, args = self._user_gitconfig_args(
+            '/root', user_override_name='other', user_override_home='/data/other')
+        self.assertIn('-v %s:/data/other/.gitconfig' % user_gitconfig, args)
+
+    def test_git_extension_override_name_with_root_home(self):
+        user_gitconfig, args = self._user_gitconfig_args('/root', user_override_name='other')
+        self.assertIn('-v %s:/home/other/.gitconfig' % user_gitconfig, args)
